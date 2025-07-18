@@ -396,9 +396,22 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   // Determine which sprite to use based on enemy type
   let monsterSprite = null;
   if (enemy.type === 'TANK' || enemy.type === 'HEAVY_TANK') {
-    const bigMonster = monsterImages.get('big');
-    if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
-      monsterSprite = bigMonster;
+    // Try to load heavy tank sprite, fallback to big monster
+    let heavyTankMonster = monsterImages.get('heavy-tank');
+    if (!heavyTankMonster) {
+      heavyTankMonster = new Image();
+      heavyTankMonster.src = '/heavy-tank-monster.png';
+      monsterImages.set('heavy-tank', heavyTankMonster);
+    }
+    
+    if (heavyTankMonster && heavyTankMonster.complete && heavyTankMonster.naturalWidth > 0) {
+      monsterSprite = heavyTankMonster;
+    } else {
+      // Fallback to big monster sprite
+      const bigMonster = monsterImages.get('big');
+      if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+        monsterSprite = bigMonster;
+      }
     }
   } else if (enemy.type === 'BOSS') {
     // Try to load boss sprite, fallback to big monster
