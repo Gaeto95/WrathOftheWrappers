@@ -226,11 +226,6 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     handleRestart();
   }, [handleRestart]);
 
-  const handleCloseUpgrades = useCallback(() => {
-    // Just close upgrades and resume current game - never restart
-    setGameState(prev => ({ ...prev, gameStatus: 'playing' }));
-  }, []);
-
   // Save stats when returning to profiles
   useEffect(() => {
     return () => {
