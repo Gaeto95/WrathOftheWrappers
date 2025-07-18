@@ -99,18 +99,20 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         gameOverAudio.play().catch(e => console.log('Game over sound failed to play:', e));
       }
       
-      const finalStats = {
-        survivalTime: gameState.score,
-        goldEarned: gameState.gold,
-        enemiesKilled: gameState.enemiesKilled || 0
-      };
-      
-      console.log('Game ended, saving stats:', finalStats);
-      bolterSystem.saveCurrentSessionStats(finalStats);
-      setSessionEnded(true);
+      // Only save stats if we have a current session
+      if (bolterSystem.currentSession) {
+        const finalStats = {
+          survivalTime: gameState.score,
+          goldEarned: gameState.gold,
+          enemiesKilled: gameState.enemiesKilled || 0
+        };
+        
+        console.log('Game ended, saving stats:', finalStats);
+        bolterSystem.saveCurrentSessionStats(finalStats);
+        setSessionEnded(true);
+      }
     }
-  }
-  )
+  }, [gameState.gameStatus, sessionEnded, bolterSystem, audio, gameOverAudio, gameState.score, gameState.gold, gameState.enemiesKilled]);
 
   const handleRestart = useCallback(() => {
     console.log('Quick restart - creating fresh game without saving current session');
