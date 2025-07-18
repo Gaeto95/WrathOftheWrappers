@@ -13,7 +13,7 @@ This project was built entirely with it — any resemblance to real platforms, j
 
 ## 🎮 Game Overview
 
-**Wrath of the Wrappers** is a fast-paced survival action RPG where players control a skilled bolter to survive endless waves of enemies while collecting gold and upgrading their abilities. Built entirely in the browser using bolt.new, with beautiful sprite animations.
+**Wrath of the Wrappers** is a fast-paced survival action RPG where players control a skilled Bolter to survive endless waves of enemies while collecting gold and upgrading their abilities. Built entirely in the browser using bolt.new, with beautiful sprite animations and a polished upgrade system.
 
 ### 🎯 Core Gameplay Loop
 1. **Survive** - Navigate through endless enemy waves using WASD controls
@@ -31,37 +31,37 @@ This project was built entirely with it — any resemblance to real platforms, j
 - **Persistent Progression** - Gold and upgrades carry over between runs
 - **Multiple Enemy Types** - Grunts, Runners, and Tanks with unique behaviors
 - **Visual Feedback** - Screen shake, particle effects, and damage flashing
-- **Animated Bolter Sprites** - 9 different animations with 10 frames each
+- **Animated Bolter Sprites** - 9 different animations with 8 frames each
 
 ### 🏹 Bolter Character System
 - **Professional Sprite Animations** - High-quality 64x64 pixel art sprites
 - **9 Animation States**: Idle, Running, Jumping, Normal Attack, Low Attack, High Attack, Crouch, Dash, Death
 - **Dynamic Animation Speed** - Attack animations scale with fire rate upgrades
 - **Direction-Based Sprites** - Character flips based on movement direction
-- **Smooth Frame Cycling** - 10 frames per animation for fluid movement
+- **Smooth Frame Cycling** - 8 frames per animation for fluid movement
 
 ### 🛡️ Player Systems
 - **Health Management** - Take damage from enemy contact with invincibility frames
 - **Upgrade Tree** - Five distinct upgrade paths for different playstyles
 - **Gold Economy** - Earn currency from enemy kills with bonus multipliers
-- **High Score Tracking** - Local leaderboard system with best survival times
-- **Profile System** - Multiple character profiles with individual progress
+- **High Score Tracking** - Local storage system with best survival times
+- **Skill System** - Random skill drops with passive abilities
 
 ### 👾 Enemy Variety
 | Enemy Type | Health | Speed | Damage | Behavior | Gold Drop |
 |------------|--------|-------|--------|----------|-----------|
-| **Grunt** | 20 HP | Medium | 10 DMG | Balanced approach | 10-20 Gold |
-| **Runner** | 10 HP | Fast | 5 DMG | Quick, aggressive | 5-15 Gold |
-| **Tank** | 50 HP | Slow | 20 DMG | High damage, tanky | 20-30 Gold |
+| **Grunt** | 25 HP | Medium | 15 DMG | Balanced approach | 15-25 Gold |
+| **Runner** | 12 HP | Fast | 8 DMG | Quick, aggressive | 8-18 Gold |
+| **Tank** | 60 HP | Slow | 25 DMG | High damage, tanky | 30-45 Gold |
 
 ### 💰 Upgrade System
 | Upgrade | Effect | Base Cost | Scaling |
 |---------|--------|-----------|---------|
-| **Damage** | +10 damage per level | 50 Gold | Exponential |
-| **Speed** | +5% movement speed | 30 Gold | Exponential |
-| **Health** | +20 max HP | 40 Gold | Exponential |
-| **Fire Rate** | -0.05s attack cooldown | 60 Gold | Exponential |
-| **Gold Bonus** | +20% gold drops | 100 Gold | Exponential |
+| **Damage** | +15% damage per level | 100 Gold | Exponential |
+| **Speed** | +8% movement speed | 80 Gold | Exponential |
+| **Health** | +25% max HP | 120 Gold | Exponential |
+| **Fire Rate** | -8% attack cooldown | 150 Gold | Exponential |
+| **Gold Bonus** | +25% gold drops | 200 Gold | Exponential |
 
 ## 🏹 Bolter Class Features
 
@@ -76,6 +76,13 @@ This project was built entirely with it — any resemblance to real platforms, j
 - **Speed**: 240 pixels/second (20% faster than base)
 - **Damage**: 25 base damage (normal damage)
 - **Fire Rate**: 0.3 seconds (40% faster than base)
+
+### 🎯 Passive Skills System
+Random skill drops enhance gameplay:
+- **Critical Strike** - Chance to deal double damage
+- **Gold Magnet** - Increased pickup radius for items
+- **Explosive Impact** - Projectiles explode on impact
+- **Battle Frenzy** - Flat fire rate reduction (0.5% per level)
 
 ## 🎨 Visual Design
 
@@ -105,18 +112,21 @@ src/
 │   ├── Canvas.tsx      # Main game rendering with sprite animation
 │   ├── Game.tsx        # Game state management
 │   ├── UI.tsx          # HUD and interface
-│   └── ProfileSelector.tsx # Character profile management
+│   ├── BolterMenu.tsx  # Main menu with beautiful animations
+│   ├── LoadingScreen.tsx # Animated loading screen
+│   └── EnhancedUpgradeScreen.tsx # Upgrade interface
 ├── hooks/              # Custom React Hooks
 │   ├── useGameLoop.ts  # Main game loop logic
 │   ├── useInput.ts     # Keyboard input handling
-│   └── useProfileSystem.ts # Profile persistence
+│   └── useBolterSystem.ts # Bolter data persistence
 ├── utils/              # Core Game Logic
 │   ├── gameLogic.ts    # Game state and mechanics
 │   ├── collision.ts    # Collision detection
+│   ├── skillSystem.ts  # Passive skill management
 │   └── constants.ts    # Game configuration
 ├── types/              # TypeScript Definitions
-│   ├── classes.ts      # Character class definitions
-│   └── profile.ts      # Profile system types
+│   ├── classes.ts      # Bolter class definitions
+│   └── bolter.ts       # Bolter system types
 └── App.tsx            # Application Entry Point
 ```
 
@@ -158,21 +168,23 @@ npm run build
 | **S/↓** | Move Down |
 | **D/→** | Move Right |
 | **ESC** | Pause/Resume |
+| **C** | Accept Skill Drop |
+| **V** | Reject Skill Drop |
 | **Auto** | Attack (Automatic) |
 
 ### 🎵 Adding Assets
 Place these files in the `public/` folder:
 
 #### Required Sprite Files:
-- `Idle.png` - Idle animation (10 frames in 2x5 grid)
-- `Running.png` - Running animation (10 frames in 2x5 grid)
-- `Jumping.png` - Jumping animation (10 frames in 2x5 grid)
-- `Normal Attack.png` - Normal attack animation (10 frames in 2x5 grid)
-- `Low attack.png` - Low attack animation (10 frames in 2x5 grid)
-- `High Attack.png` - High attack animation (10 frames in 2x5 grid)
-- `crouch.png` - Crouch animation (10 frames in 2x5 grid)
-- `Dash.png` - Dash animation (10 frames in 2x5 grid)
-- `death.png` - Death animation (10 frames in 2x5 grid)
+- `Idle.png` - Idle animation (8 frames horizontally)
+- `Running.png` - Running animation (8 frames horizontally)
+- `Jumping.png` - Jumping animation (8 frames horizontally)
+- `Normal Attack.png` - Normal attack animation (8 frames in top row)
+- `Low attack.png` - Low attack animation (8 frames horizontally)
+- `High Attack.png` - High attack animation (8 frames horizontally)
+- `crouch.png` - Crouch animation (8 frames horizontally)
+- `Dash.png` - Dash animation (8 frames horizontally)
+- `death.png` - Death animation (8 frames horizontally)
 
 #### Optional Assets:
 - `coin.png` - Gold coin sprite
@@ -184,8 +196,8 @@ Place these files in the `public/` folder:
 ## 🎯 Game Balance
 
 ### 📈 Difficulty Scaling
-- **Spawn Rate Increase** - 30% faster enemy spawning every 15 seconds
-- **Health Scaling** - 50% more enemy HP every 45 seconds
+- **Spawn Rate Increase** - 35% faster enemy spawning every 15 seconds
+- **Health Scaling** - 40% more enemy HP every 60 seconds
 - **Progressive Challenge** - Maintains engagement without overwhelming players
 
 ### ⚖️ Economy Balance
@@ -240,8 +252,8 @@ Place these files in the `public/` folder:
 
 ### 📐 Sprite Specifications
 - **Frame Size** - 64x64 pixels per frame
-- **Layout** - 2x5 grid (2 rows, 5 frames per row)
-- **Total Frames** - 10 frames per animation
+- **Layout** - 8 frames horizontally for most animations
+- **Total Frames** - 8 frames per animation
 - **File Format** - PNG with transparency
 
 ### ⚡ Animation Features
@@ -249,6 +261,20 @@ Place these files in the `public/` folder:
 - **Direction Flipping** - Sprites flip horizontally for left movement
 - **Smooth Cycling** - Seamless frame transitions
 - **Fallback System** - Colored rectangles if sprites fail to load
+
+## 🎮 Skill System
+
+### 🎯 Passive Skills
+- **Random Drops** - Skills drop with 3% base chance after enemy kills
+- **Level Progression** - Skills can be upgraded up to level 10
+- **Inventory Management** - Up to 5 skills can be equipped
+- **Keyboard Shortcuts** - C to accept, V to reject skill drops
+
+### 💫 Available Skills
+- **Critical Strike** (Epic) - Chance to deal double damage
+- **Gold Magnet** (Common) - Increased item pickup radius
+- **Explosive Impact** (Legendary) - Projectiles explode on impact
+- **Battle Frenzy** (Rare) - Flat fire rate reduction
 
 ## 🤝 Contributing
 
