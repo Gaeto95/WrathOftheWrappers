@@ -51,6 +51,8 @@ interface CanvasProps {
 // Monster sprite images cache
 const monsterImages = new Map<string, HTMLImageElement>();
 const spriteImages = new Map<string, HTMLImageElement>();
+const coinImageCache = new Map<string, HTMLImageElement>();
+const potionImageCache = new Map<string, HTMLImageElement>();
 let spritesLoaded = false;
 let monstersLoaded = false;
 
@@ -515,10 +517,6 @@ function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any) {
 }
 
 function drawItem(ctx: CanvasRenderingContext2D, item: any) {
-  // Use cached images to prevent re-creation
-  const coinImageCache = new Map<string, HTMLImageElement>();
-  const potionImageCache = new Map<string, HTMLImageElement>();
-  
   if (item.type === 'gold') {
     let coinImage = coinImageCache.get('coin');
     if (!coinImage) {
