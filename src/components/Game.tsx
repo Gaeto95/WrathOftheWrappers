@@ -82,13 +82,13 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
       const finalStats = {
         survivalTime: gameState.score,
         goldEarned: gameState.gold,
-        enemiesKilled: sessionStats.enemiesKilled
+        enemiesKilled: gameState.enemiesKilled || 0
       };
       
       profileSystem.endGameSession(finalStats);
       setSessionEnded(true);
     }
-  }, [gameState.gameStatus, gameState.gold, gameState.score, sessionStats, profileSystem, sessionEnded]);
+  }, [gameState.gameStatus, gameState.gold, gameState.score, gameState.enemiesKilled, profileSystem, sessionEnded]);
 
   const handleRestart = useCallback(() => {
     setGameState(createInitialGameState(profile.permanentUpgrades, profile.selectedClass));
@@ -241,7 +241,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
             sessionStats={{
               survivalTime: gameState.score,
               goldEarned: gameState.gold,
-              enemiesKilled: sessionStats.enemiesKilled
+              enemiesKilled: gameState.enemiesKilled || 0
             }}
             onUpgrade={handleUpgradeAndRestart}
             onRestart={handleRestart}

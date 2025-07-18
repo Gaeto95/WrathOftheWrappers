@@ -189,9 +189,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   // Remove dead enemies and create items
   const items = [...state.items];
   let pendingSkillDrop = state.pendingSkillDrop;
+  let enemiesKilled = state.enemiesKilled;
   const aliveEnemies = enemies.filter(enemy => {
     if (enemy.hp <= 0) {
       totalEnemiesKilled++;
+      enemiesKilled++;
       
       // Create death particles
       particles.push(...createParticles({ x: enemy.x, y: enemy.y }, enemy.color, 8));
@@ -334,6 +336,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
     screenShake,
     camera,
     pendingSkillDrop,
-    screenScale
+    screenScale,
+    enemiesKilled
   };
 }

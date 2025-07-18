@@ -94,6 +94,7 @@ export interface GameState {
   camera: { x: number; y: number };
   pendingSkillDrop: PassiveSkill | null;
   screenScale: number;
+  enemiesKilled: number;
 }
 
 export function createInitialPlayer(upgrades: Upgrades, characterClass: CharacterClass): Player {
@@ -138,7 +139,8 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     screenShake: 0,
     camera: { x: 0, y: 0 },
     pendingSkillDrop: null,
-    screenScale: 1
+    screenScale: 1,
+    enemiesKilled: 0
   };
 }
 
