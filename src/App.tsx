@@ -6,40 +6,37 @@ import { useProfileSystem } from './hooks/useProfileSystem';
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false);
-  const [gameKey, setGameKey] = useState(0); // Force new game instance
+  const [gameKey, setGameKey] = useState(0);
+  const [lastProfileId, setLastProfileId] = useState<string | null>(null);
   const profileSystem = useProfileSystem();
 
   const handleStartGame = () => {
     console.log('Starting game with profile:', profileSystem.activeProfile?.name);
     setGameStarted(true);
-    setGameKey(prev => prev + 1); // Force new game instance
+    setGameKey(prev => prev + 1);
+    setLastProfileId(profileSystem.activeProfile?.id || null);
   };
 
   const handleReturnToProfiles = () => {
     console.log('Returning to profiles');
-    // Save current game stats before returning to profiles
-    if (gameStarted && profileSystem.activeProfile) {
-      // This will be handled by the Game component's cleanup
-    }
     setGameStarted(false);
-    setGameKey(prev => prev + 1); // Force new game instance when returning
+    setLastProfileId(null);
   };
 
-  const handleProfileChange = () => {
-    console.log('Profile changed, forcing new game instance');
-    // Force new game instance when profile changes
+  // Check if profile changed and force new game
+  const currentProfileId = profileSystem.activeProfile?.id || null;
+  if (gameStarted && currentProfileId !== lastProfileId && currentProfileId !== null) {
+    console.log('Profile changed during game, forcing restart');
     setGameKey(prev => prev + 1);
-  };
+    setLastProfileId(currentProfileId);
+  }
 
   if (!gameStarted || !profileSystem.activeProfile) {
     return (
       <ProfileSelector
         profiles={profileSystem.profiles}
         activeProfile={profileSystem.activeProfile}
-        onSelectProfile={(profileId) => {
-          profileSystem.selectProfile(profileId);
-          handleProfileChange();
-        }}
+        onSelectProfile={profileSystem.selectProfile}
         onCreateProfile={profileSystem.createProfile}
         onDeleteProfile={profileSystem.deleteProfile}
         onStartGame={handleStartGame}

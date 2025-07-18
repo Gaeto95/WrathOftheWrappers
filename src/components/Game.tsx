@@ -213,6 +213,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, []);
 
   const handleCloseUpgrades = useCallback(() => {
+    // Just resume the current game, don't restart
     setGameState(prev => ({ ...prev, gameStatus: 'playing' }));
   }, []);
 
@@ -222,37 +223,18 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
-    // Get the most current profile data
-    const currentProfile = profileSystem.getCurrentProfile();
-    if (!currentProfile) return;
-    
-    // Create completely fresh game state
-    setGameState(createInitialGameState(currentProfile.permanentUpgrades, currentProfile.selectedClass));
-    setSessionStats({
-      startTime: Date.now(),
-      enemiesKilled: 0
-    });
-    setSessionEnded(false);
-    
-    // Start fresh session
-    profileSystem.startGameSession();
+    // This should only be called from the "Start New Game" button
+    handleRestart();
   }, [profileSystem]);
 
   const handleCloseUpgradesAndRestart = useCallback(() => {
-    // Get the most current profile data
-    const currentProfile = profileSystem.getCurrentProfile();
-    if (!currentProfile) return;
-    
-    // Create completely fresh game state
-    setGameState(createInitialGameState(currentProfile.permanentUpgrades, currentProfile.selectedClass));
-    setSessionStats({
-      startTime: Date.now(),
-      enemiesKilled: 0
-    });
-    setSessionEnded(false);
-    
-    // Start fresh session
-    profileSystem.startGameSession();
+    // This should only restart if the session has ended (from death screen)
+    if (sessionEnded) {
+      handleRestart();
+    } else {
+      // Just close upgrades and resume current game
+      setGameState(prev => ({ ...prev, gameStatus: 'playing' }));
+    }
   }, [profileSystem]);
 
   // Save stats when returning to profiles
