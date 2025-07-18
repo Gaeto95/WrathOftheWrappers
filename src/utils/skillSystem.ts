@@ -24,8 +24,17 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
   // Don't apply skills if there are none
   if (!skills || skills.length === 0) return player;
   
-  // Create a copy to avoid mutations
+  // Create a copy and reset to base stats first
   let modifiedPlayer = { ...player };
+  
+  // Get base stats from upgrades (without previous skill effects)
+  const upgrades = {
+    damage: 0, // We'll calculate this from permanent upgrades if needed
+    speed: 0,
+    health: 0,
+    fireRate: 0,
+    goldBonus: 0
+  };
   
   // Calculate total bonuses from all skills
   let damageBonus = 0;
@@ -58,7 +67,7 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
     });
   });
   
-  // Apply bonuses to base stats (not cumulative)
+  // Apply bonuses to current stats
   modifiedPlayer.damage = player.damage + damageBonus;
   modifiedPlayer.fireRate = Math.max(0.05, player.fireRate - fireRateReduction);
   modifiedPlayer.goldMultiplier = player.goldMultiplier + goldBonus;

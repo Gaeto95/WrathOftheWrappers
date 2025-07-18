@@ -161,15 +161,21 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         newSkills.push(prev.pendingSkillDrop!);
       }
       
+      // Create updated player with new skills applied
+      const updatedPlayer = {
+        ...prev.player,
+        classState: {
+          ...prev.player.classState,
+          equippedSkills: newSkills
+        }
+      };
+      
+      // Apply skill effects to the updated player
+      const playerWithSkillEffects = applySkillEffects(updatedPlayer, newSkills);
+      
       return {
         ...prev,
-        player: {
-          ...prev.player,
-          classState: {
-            ...prev.player.classState,
-            equippedSkills: newSkills
-          }
-        },
+        player: playerWithSkillEffects,
         pendingSkillDrop: null
       };
     });
@@ -180,16 +186,26 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   }, []);
 
   const handleRemoveSkill = useCallback((skillId: string) => {
-    setGameState(prev => ({
-      ...prev,
-      player: {
+    setGameState(prev => {
+      const newSkills = prev.player.classState.equippedSkills.filter(s => s.id !== skillId);
+      
+      // Create updated player with skill removed
+      const updatedPlayer = {
         ...prev.player,
         classState: {
           ...prev.player.classState,
-          equippedSkills: prev.player.classState.equippedSkills.filter(s => s.id !== skillId)
+          equippedSkills: newSkills
         }
-      }
-    }));
+      };
+      
+      // Apply skill effects to the updated player
+      const playerWithSkillEffects = applySkillEffects(updatedPlayer, newSkills);
+      
+      return {
+        ...prev,
+        player: playerWithSkillEffects
+      };
+    });
   }, []);
 
   const handlePause = useCallback(() => {
