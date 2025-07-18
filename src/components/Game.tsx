@@ -253,7 +253,23 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     
     // Start fresh session
     profileSystem.startGameSession();
-  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
+  }, [profileSystem]);
+
+  // Save stats when returning to profiles
+  useEffect(() => {
+    return () => {
+      // Cleanup function - save stats when component unmounts
+      if (!sessionEnded && gameState.gold > 0) {
+        const finalStats = {
+          survivalTime: gameState.score,
+          goldEarned: gameState.gold,
+          enemiesKilled: gameState.enemiesKilled || 0
+        };
+        console.log('Component unmounting, saving stats:', finalStats);
+        profileSystem.saveStatsImmediately(finalStats);
+      }
+    };
+  }, [gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profileSystem]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">

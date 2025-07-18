@@ -34,7 +34,6 @@ export function useProfileSystem() {
       achievements: []
     };
 
-    console.log('Creating new profile:', newProfile);
     setProfiles(prev => [...prev, newProfile]);
     setActiveProfileId(newProfile.id);
     return newProfile;
@@ -62,7 +61,8 @@ export function useProfileSystem() {
         ? updatedProfile
         : p
     ));
-  }, [activeProfile, setProfiles]);
+  }
+  )
 
   // Add method to get current profile with latest data
   const getCurrentProfile = useCallback(() => {

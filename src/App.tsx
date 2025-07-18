@@ -17,6 +17,10 @@ function App() {
 
   const handleReturnToProfiles = () => {
     console.log('Returning to profiles');
+    // Save current game stats before returning to profiles
+    if (gameStarted && profileSystem.activeProfile) {
+      // This will be handled by the Game component's cleanup
+    }
     setGameStarted(false);
     setGameKey(prev => prev + 1); // Force new game instance when returning
   };
