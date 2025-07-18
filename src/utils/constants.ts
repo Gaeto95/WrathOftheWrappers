@@ -42,7 +42,7 @@ export const GAME_CONFIG = {
     HEAVY_TANK: {
       hp: 120, // 2x tank HP
       speed: 140, // 2x tank speed
-      damage: 50, // 2x tank damage
+      damage: 35, // Reduced damage
       size: 40, // Same size as tank
       color: '#cc0000', // Darker red
       goldDrop: { min: 60, max: 90 } // 2x tank gold
@@ -51,7 +51,7 @@ export const GAME_CONFIG = {
       hp: 300, // 5x tank HP (50% reduction)
       speed: 50, // Slower than tank
       damage: 40, // Lower damage
-      size: 60, // 50% bigger than tank (40 * 1.5 = 60)
+      size: 90, // 125% bigger than tank (40 * 2.25 = 90)
       color: '#800080', // Purple for boss
       goldDrop: { min: 150, max: 225 } // 5x tank gold (adjusted for lower HP)
     }
