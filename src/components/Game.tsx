@@ -17,10 +17,10 @@ import { PassiveSkill } from '../types/classes';
 interface GameProps {
   profile: PlayerProfile;
   profileSystem: any;
-  onReturnToProfiles: () => void;
+  onStartNewGame: () => void;
 }
 
-export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) {
+export function Game({ profile, profileSystem, onStartNewGame }: GameProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
@@ -224,18 +224,18 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
 
   const handleUpgradeScreenRestart = useCallback(() => {
     // This should only be called from the "Start New Game" button
-    handleRestart();
-  }, [profileSystem]);
+    onStartNewGame();
+  }, [onStartNewGame]);
 
   const handleCloseUpgradesAndRestart = useCallback(() => {
     // This should only restart if the session has ended (from death screen)
     if (sessionEnded) {
-      handleRestart();
+      onStartNewGame();
     } else {
       // Just close upgrades and resume current game
       setGameState(prev => ({ ...prev, gameStatus: 'playing' }));
     }
-  }, [profileSystem]);
+  }, [onStartNewGame, sessionEnded]);
 
   // Save stats when returning to profiles
   useEffect(() => {
@@ -294,7 +294,6 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
             onResume={handleResume}
             onUpgrade={handleShowUpgrades}
             onRestart={handleRestart}
-            onReturnToProfiles={onReturnToProfiles}
           />
         )}
         

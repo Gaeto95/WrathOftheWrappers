@@ -12,17 +12,14 @@ const DEFAULT_UPGRADES: PermanentUpgrades = {
 };
 
 export function useProfileSystem() {
-  const [profiles, setProfiles] = useLocalStorage<PlayerProfile[]>('mystic-grind-profiles', []);
-  const [activeProfileId, setActiveProfileId] = useLocalStorage<string | null>('mystic-grind-active-profile', null);
+  const [profile, setProfile] = useLocalStorage<PlayerProfile>('mystic-grind-profile', createDefaultProfile());
   const [currentSession, setCurrentSession] = useState<GameSession | null>(null);
 
-  const activeProfile = profiles.find(p => p.id === activeProfileId) || null;
-
-  const createProfile = useCallback((name: string, selectedClass: CharacterClass): PlayerProfile => {
-    const newProfile: PlayerProfile = {
-      id: `profile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name,
-      selectedClass,
+  function createDefaultProfile(): PlayerProfile {
+    return {
+      id: 'default-profile',
+      name: 'Player',
+      selectedClass: 'bolter',
       createdAt: Date.now(),
       lastPlayed: Date.now(),
       totalGold: 0,
@@ -33,51 +30,20 @@ export function useProfileSystem() {
       permanentUpgrades: { ...DEFAULT_UPGRADES },
       achievements: []
     };
-
-    setProfiles(prev => [...prev, newProfile]);
-    setActiveProfileId(newProfile.id);
-    return newProfile;
-  }, [setProfiles, setActiveProfileId]);
-
-  const selectProfile = useCallback((profileId: string) => {
-    setActiveProfileId(profileId);
-  }, [setActiveProfileId]);
-
-  const deleteProfile = useCallback((profileId: string) => {
-    setProfiles(prev => prev.filter(p => p.id !== profileId));
-    if (activeProfileId === profileId) {
-      setActiveProfileId(null);
-    }
-  }, [setProfiles, activeProfileId, setActiveProfileId]);
+  }
 
   const updateProfile = useCallback((updates: Partial<PlayerProfile>) => {
-    if (!activeProfile) return;
-
-    const updatedProfile = { ...activeProfile, ...updates, lastPlayed: Date.now() };
+    const updatedProfile = { ...profile, ...updates, lastPlayed: Date.now() };
     console.log('Updating profile:', updatedProfile.name, 'New gold:', updatedProfile.totalGold);
-    
-    setProfiles(prev => prev.map(p => 
-      p.id === activeProfile.id 
-        ? updatedProfile
-        : p
-    ));
-  }
-  )
-
-  // Add method to get current profile with latest data
-  const getCurrentProfile = useCallback(() => {
-    return profiles.find(p => p.id === activeProfileId) || null;
-  }, [profiles, activeProfileId]);
+    setProfile(updatedProfile);
+  }, [profile, setProfile]);
 
   const purchaseUpgrade = useCallback((upgradeType: keyof PermanentUpgrades, cost: number) => {
-    const currentProfile = getCurrentProfile();
-    if (!currentProfile) return false;
-
-    console.log('Purchasing upgrade:', upgradeType, 'Cost:', cost, 'Current gold:', currentProfile.totalGold);
+    console.log('Purchasing upgrade:', upgradeType, 'Cost:', cost, 'Current gold:', profile.totalGold);
     
     const newUpgrades = {
-      ...currentProfile.permanentUpgrades,
-      [upgradeType]: currentProfile.permanentUpgrades[upgradeType] + 1
+      ...profile.permanentUpgrades,
+      [upgradeType]: profile.permanentUpgrades[upgradeType] + 1
     };
 
     updateProfile({
@@ -85,7 +51,7 @@ export function useProfileSystem() {
     });
 
     return true;
-  }, [getCurrentProfile, updateProfile]);
+  }, [profile, updateProfile]);
 
   const startGameSession = useCallback(() => {
     if (currentSession) return; // Prevent starting multiple sessions
@@ -100,58 +66,30 @@ export function useProfileSystem() {
     setCurrentSession(session);
   }, [currentSession]);
 
-  const endGameSession = useCallback((finalStats: {
-    goldEarned: number;
-    enemiesKilled: number;
-    survivalTime: number;
-  }) => {
-    if (!currentSession) return;
-
-    const currentProfile = getCurrentProfile();
-    if (!currentProfile) return;
-
-    const sessionDuration = Date.now() - currentSession.startTime;
-    
-    updateProfile({
-      totalGold: currentProfile.totalGold + finalStats.goldEarned,
-      totalPlayTime: currentProfile.totalPlayTime + sessionDuration,
-      bestSurvivalTime: Math.max(currentProfile.bestSurvivalTime, finalStats.survivalTime),
-      totalEnemiesKilled: currentProfile.totalEnemiesKilled + finalStats.enemiesKilled,
-      totalDeaths: currentProfile.totalDeaths + 1
-    });
-
-    setCurrentSession(null);
-  }, [currentSession, activeProfile, getCurrentProfile, updateProfile]);
-
   const saveCurrentSessionStats = useCallback((stats: {
     goldEarned: number;
     enemiesKilled: number;
     survivalTime: number;
   }) => {
     console.log('saveCurrentSessionStats called with:', stats);
-    const currentProfile = getCurrentProfile();
-    if (!currentProfile) {
-      console.log('No current profile found');
-      return;
-    }
     
-    // Only calculate session duration if we have a valid session
+    // Calculate session duration if we have a valid session
     const sessionDuration = currentSession ? Date.now() - currentSession.startTime : 0;
     
     console.log('Saving session stats:', {
-      currentGold: currentProfile.totalGold,
+      currentGold: profile.totalGold,
       goldEarned: stats.goldEarned,
-      newTotal: currentProfile.totalGold + stats.goldEarned,
+      newTotal: profile.totalGold + stats.goldEarned,
       enemiesKilled: stats.enemiesKilled,
       survivalTime: stats.survivalTime
     });
     
     const updatedData = {
-      totalGold: currentProfile.totalGold + stats.goldEarned,
-      totalPlayTime: currentProfile.totalPlayTime + sessionDuration,
-      bestSurvivalTime: Math.max(currentProfile.bestSurvivalTime, stats.survivalTime),
-      totalEnemiesKilled: currentProfile.totalEnemiesKilled + stats.enemiesKilled,
-      totalDeaths: currentProfile.totalDeaths + 1
+      totalGold: profile.totalGold + stats.goldEarned,
+      totalPlayTime: profile.totalPlayTime + sessionDuration,
+      bestSurvivalTime: Math.max(profile.bestSurvivalTime, stats.survivalTime),
+      totalEnemiesKilled: profile.totalEnemiesKilled + stats.enemiesKilled,
+      totalDeaths: profile.totalDeaths + 1
     };
     
     console.log('Updating profile with:', updatedData);
@@ -159,27 +97,14 @@ export function useProfileSystem() {
     
     // Clear the session after saving
     setCurrentSession(null);
-  }, [getCurrentProfile, updateProfile, currentSession]);
-
-  // Auto-create first profile if none exist
-  useEffect(() => {
-    if (profiles.length === 0) {
-      createProfile('Player 1', 'bolter');
-    }
-  }, [profiles.length, createProfile]);
+  }, [profile, updateProfile, currentSession]);
 
   return {
-    profiles,
-    activeProfile: getCurrentProfile(),
+    profile,
     currentSession,
-    createProfile,
-    selectProfile,
-    deleteProfile,
     updateProfile,
     purchaseUpgrade,
     startGameSession,
-    endGameSession,
-    getCurrentProfile,
     saveCurrentSessionStats
   };
 }
