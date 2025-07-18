@@ -28,7 +28,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   useEffect(() => {
     const audioElement = new Audio('/background-music.mp3');
     audioElement.loop = true;
-    audioElement.volume = 0.3;
+    audioElement.volume = 0.21;
     setAudio(audioElement);
     
     // Autoplay music when game starts
