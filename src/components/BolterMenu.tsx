@@ -201,34 +201,8 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 
                 <div className="relative z-10 flex items-center gap-4">
-                  <Play className={`w-6 h-6 transition-transform duration-300 ${isHovered ? 'scale-125 rotate-12' : ''}`} />
-                  <span>Start Game</span>
-                  <div className="text-xl animate-pulse">🏹</div>
-                </div>
-              </button>
-              
-              {/* Button subtitle */}
-              <p className="mt-2 text-gray-400 text-sm animate-pulse">
-                Enter the battlefield and prove your worth
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Corner decorations - positioned at corners of the main card */}
-      <div className="absolute top-0 left-0 animate-bounce" style={{ animationDelay: '0s' }}>
-        <Sword className="w-6 h-6 text-yellow-400 drop-shadow-lg" />
-      </div>
-      <div className="absolute top-0 right-0 animate-bounce" style={{ animationDelay: '0.5s' }}>
-        <Shield className="w-6 h-6 text-blue-400 drop-shadow-lg" />
-      </div>
-      <div className="absolute bottom-0 left-0 animate-bounce" style={{ animationDelay: '1s' }}>
-        <Zap className="w-6 h-6 text-purple-400 drop-shadow-lg" />
-      </div>
-      <div className="absolute bottom-0 right-0 animate-bounce" style={{ animationDelay: '1.5s' }}>
-        <Target className="w-6 h-6 text-green-400 drop-shadow-lg" />
-      </div>
       </div>
     </>
   );
