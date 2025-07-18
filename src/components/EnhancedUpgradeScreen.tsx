@@ -53,7 +53,7 @@ export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrad
       case 'health':
         return 'Increase max health by 20';
       case 'fireRate':
-        return 'Decrease attack cooldown by 0.05s';
+        return 'Decrease attack cooldown by 4%';
       case 'goldBonus':
         return 'Increase gold drops by 20%';
       default:
@@ -73,7 +73,7 @@ export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrad
         const healthBonus = Math.floor(((level * 0.25) / (1 + level * 0.02)) * 100);
         return `+${healthBonus}%`;
       case 'fireRate':
-        const fireRateBonus = Math.floor(((level * 0.08) / (1 + level * 0.02)) * 100);
+        const fireRateBonus = Math.floor(((level * 0.04) / (1 + level * 0.05)) * 100);
         return `-${fireRateBonus}%`;
       case 'goldBonus':
         const goldBonus = Math.floor(((level * 0.25) / (1 + level * 0.02)) * 100);
@@ -96,7 +96,7 @@ export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrad
         const healthBonus = Math.floor(((nextLevel * 0.25) / (1 + nextLevel * 0.02)) * 100);
         return `+${healthBonus}%`;
       case 'fireRate':
-        const fireRateBonus = Math.floor(((nextLevel * 0.08) / (1 + nextLevel * 0.02)) * 100);
+        const fireRateBonus = Math.floor(((nextLevel * 0.04) / (1 + nextLevel * 0.05)) * 100);
         return `-${fireRateBonus}%`;
       case 'goldBonus':
         const goldBonus = Math.floor(((nextLevel * 0.25) / (1 + nextLevel * 0.02)) * 100);
