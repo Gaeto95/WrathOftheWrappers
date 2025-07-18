@@ -13,6 +13,7 @@ import { SkillDropNotification } from './SkillDropNotification';
 import { GAME_CONFIG } from '../utils/constants';
 import { BolterData, PermanentUpgrades } from '../types/bolter';
 import { PassiveSkill } from '../types/classes';
+import { applySkillEffects } from '../utils/skillSystem';
 
 interface GameProps {
   bolterData: BolterData;
