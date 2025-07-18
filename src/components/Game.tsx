@@ -89,6 +89,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       bolterSystem.saveCurrentSessionStats(finalStats);
       setSessionEnded(true);
     }
+  }
+  )
 
   const handleRestart = useCallback(() => {
     // Save current session stats before restarting only if we have an active session
@@ -111,6 +113,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     setSessionEnded(false);
     // Start new session
     bolterSystem.startGameSession();
+  }
+  )
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)
@@ -227,7 +231,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   useEffect(() => {
     return () => {
       // Cleanup function - save stats when component unmounts
-      if (!sessionEnded && bolterSystem.currentSession && gameState.gameStatus !== 'dead' && (gameState.gold > 0 || gameState.enemiesKilled > 0)) {
+      if (!sessionEnded && gameState.gold > 0 && gameState.gameStatus !== 'dead') {
         const finalStats = {
           survivalTime: gameState.score,
           goldEarned: gameState.gold,
@@ -237,6 +241,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         bolterSystem.saveCurrentSessionStats(finalStats);
       }
     };
+  }, [gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, bolterSystem]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">
