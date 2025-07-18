@@ -24,17 +24,8 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
   // Don't apply skills if there are none
   if (!skills || skills.length === 0) return player;
   
-  // Create a copy and reset to base stats first
+  // Create a copy of the player
   let modifiedPlayer = { ...player };
-  
-  // Get base stats from upgrades (without previous skill effects)
-  const upgrades = {
-    damage: 0, // We'll calculate this from permanent upgrades if needed
-    speed: 0,
-    health: 0,
-    fireRate: 0,
-    goldBonus: 0
-  };
   
   // Calculate total bonuses from all skills
   let damageBonus = 0;
@@ -67,15 +58,61 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
     });
   });
   
-  // Apply bonuses to current stats
-  modifiedPlayer.damage = player.damage + damageBonus;
-  modifiedPlayer.fireRate = Math.max(0.05, player.fireRate - fireRateReduction);
-  modifiedPlayer.goldMultiplier = player.goldMultiplier + goldBonus;
-  
-  // Store magnet radius for use in collision detection
-  (modifiedPlayer as any).magnetRadius = magnetRadius;
+  // Store skill bonuses separately to avoid stacking
+  (modifiedPlayer as any).skillBonuses = {
+    damage: damageBonus,
+    fireRateReduction: fireRateReduction,
+    goldBonus: goldBonus,
+    magnetRadius: magnetRadius
+  };
   
   return modifiedPlayer;
+}
+
+export function calculateFinalStats(basePlayer: Player, skills: PassiveSkill[]): Player {
+  // Start with base player stats (from upgrades only)
+  let finalPlayer = { ...basePlayer };
+  
+  // Calculate total skill bonuses
+  let totalDamageBonus = 0;
+  let totalFireRateReduction = 0;
+  let totalGoldBonus = 0;
+  let totalMagnetRadius = 0;
+  
+  skills.forEach(skill => {
+    skill.effects.forEach(effect => {
+      const levelMultiplier = skill.currentLevel;
+      const effectValue = effect.value * levelMultiplier;
+      
+      switch (effect.type) {
+        case 'damage':
+          totalDamageBonus += effectValue;
+          break;
+          
+        case 'fireRate':
+          totalFireRateReduction += effectValue;
+          break;
+          
+        case 'goldBonus':
+          totalGoldBonus += effectValue / 100;
+          break;
+          
+        case 'magnet':
+          totalMagnetRadius += effectValue;
+          break;
+      }
+    });
+  });
+  
+  // Apply bonuses to base stats (not current stats)
+  finalPlayer.damage = basePlayer.damage + totalDamageBonus;
+  finalPlayer.fireRate = Math.max(0.05, basePlayer.fireRate - totalFireRateReduction);
+  finalPlayer.goldMultiplier = basePlayer.goldMultiplier + totalGoldBonus;
+  
+  // Store magnet radius for collision detection
+  (finalPlayer as any).magnetRadius = totalMagnetRadius;
+  
+  return finalPlayer;
 }
 
 export function getSkillTooltip(skill: PassiveSkill): string {

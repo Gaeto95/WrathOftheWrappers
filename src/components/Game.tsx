@@ -13,7 +13,7 @@ import { SkillDropNotification } from './SkillDropNotification';
 import { GAME_CONFIG } from '../utils/constants';
 import { BolterData, PermanentUpgrades } from '../types/bolter';
 import { PassiveSkill } from '../types/classes';
-import { applySkillEffects } from '../utils/skillSystem';
+import { calculateFinalStats, createInitialPlayer } from '../utils/gameLogic';
 
 interface GameProps {
   bolterData: BolterData;
@@ -162,21 +162,29 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         newSkills.push(prev.pendingSkillDrop!);
       }
       
-      // Create updated player with new skills applied
-      const updatedPlayer = {
-        ...prev.player,
+      // Create a fresh base player from upgrades only
+      const basePlayer = createInitialPlayer(prev.upgrades, prev.player.classState.selectedClass);
+      
+      // Preserve current position and health
+      const playerWithSkills = {
+        ...basePlayer,
+        x: prev.player.x,
+        y: prev.player.y,
+        hp: prev.player.hp,
+        lastShot: prev.player.lastShot,
+        invulnerableUntil: prev.player.invulnerableUntil,
         classState: {
           ...prev.player.classState,
           equippedSkills: newSkills
         }
       };
       
-      // Apply skill effects to the updated player
-      const playerWithSkillEffects = applySkillEffects(updatedPlayer, newSkills);
+      // Calculate final stats with skills applied to base stats
+      const finalPlayer = calculateFinalStats(playerWithSkills, newSkills);
       
       return {
         ...prev,
-        player: playerWithSkillEffects,
+        player: finalPlayer,
         pendingSkillDrop: null
       };
     });
@@ -190,21 +198,29 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     setGameState(prev => {
       const newSkills = prev.player.classState.equippedSkills.filter(s => s.id !== skillId);
       
-      // Create updated player with skill removed
-      const updatedPlayer = {
-        ...prev.player,
+      // Create a fresh base player from upgrades only
+      const basePlayer = createInitialPlayer(prev.upgrades, prev.player.classState.selectedClass);
+      
+      // Preserve current position and health
+      const playerWithSkills = {
+        ...basePlayer,
+        x: prev.player.x,
+        y: prev.player.y,
+        hp: prev.player.hp,
+        lastShot: prev.player.lastShot,
+        invulnerableUntil: prev.player.invulnerableUntil,
         classState: {
           ...prev.player.classState,
           equippedSkills: newSkills
         }
       };
       
-      // Apply skill effects to the updated player
-      const playerWithSkillEffects = applySkillEffects(updatedPlayer, newSkills);
+      // Calculate final stats with remaining skills applied to base stats
+      const finalPlayer = calculateFinalStats(playerWithSkills, newSkills);
       
       return {
         ...prev,
-        player: playerWithSkillEffects
+        player: finalPlayer
       };
     });
   }, []);

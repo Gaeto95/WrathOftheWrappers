@@ -1,7 +1,7 @@
 import { GAME_CONFIG, EnemyType, UpgradeType, ENEMY_TYPE_NAMES } from './constants';
 import { Point, getDistance, normalize, getRandomSpawnPosition } from './collision';
 import { CharacterClass, CLASS_CONFIGS, PassiveSkill, PlayerClassState } from '../types/classes';
-import { applySkillEffects, generateRandomSkill, shouldDropSkill } from './skillSystem';
+import { calculateFinalStats, generateRandomSkill, shouldDropSkill } from './skillSystem';
 import { useClassAbility, regenerateMana } from './classAbilities';
 
 export interface Player {
@@ -126,7 +126,7 @@ export function createInitialPlayer(upgrades: Upgrades, characterClass: Characte
   };
   
   // Apply initial skill effects if any skills are equipped
-  return applySkillEffects(basePlayer, basePlayer.classState.equippedSkills);
+  return calculateFinalStats(basePlayer, basePlayer.classState.equippedSkills);
 }
 
 export function createInitialGameState(upgrades: Upgrades, characterClass: CharacterClass): GameState {
