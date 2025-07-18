@@ -179,9 +179,9 @@ export function EnhancedUpgradeScreen({ profile, onUpgrade, onClose }: EnhancedU
         <div className="mt-6 text-center">
           <button
             onClick={onClose}
-            className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-lg font-bold text-lg transition-all duration-200 transform hover:scale-105"
+            className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-lg font-bold text-lg transition-all duration-200 transform hover:scale-105"
           >
-            Start New Game
+            🎮 Start New Game
           </button>
         </div>
       </div>

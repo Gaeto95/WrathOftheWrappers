@@ -182,13 +182,19 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
-    // Create new game state with updated upgrades and restart
-    setGameState(createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass));
+    // Reset session state first
+    setSessionEnded(false);
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
     });
-    setSessionEnded(false);
+    
+    // Create new game state with updated upgrades and restart
+    const newGameState = createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass);
+    setGameState(newGameState);
+    
+    // Start new session
+    profileSystem.startGameSession();
   }, [profileSystem.activeProfile.permanentUpgrades, profile.selectedClass]);
 
   return (
