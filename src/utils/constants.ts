@@ -88,6 +88,9 @@ export const GAME_CONFIG = {
   SCREEN_SHAKE_DURATION: 200,
   SCREEN_SHAKE_INTENSITY: 5,
   
+  // Boss spawning
+  BOSS_SPAWN_INTERVAL: 60000, // 60 seconds
+  
   // Colors
   COLORS: {
     BACKGROUND: '#0a0a0a',

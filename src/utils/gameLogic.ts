@@ -1,5 +1,5 @@
 import { GAME_CONFIG, EnemyType, UpgradeType, ENEMY_TYPE_NAMES } from './constants';
-import { HEAVY_TANK_SPAWN_CHANCE, BOSS_SPAWN_INTERVAL } from './constants';
+import { HEAVY_TANK_SPAWN_CHANCE } from './constants';
 import { Point, getDistance, normalize, getRandomSpawnPosition } from './collision';
 import { CharacterClass, CLASS_CONFIGS, PassiveSkill, PlayerClassState } from '../types/classes';
 import { calculateFinalStats, generateRandomSkill, shouldDropSkill } from './skillSystem';

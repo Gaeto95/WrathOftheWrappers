@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { GameState, createEnemy, createProjectile, createItem, createParticles, findNearestEnemy } from '../utils/gameLogic';
-import { circleToCircle, circleToCircleWithRadius, isOffScreen, getDistance, normalize } from '../utils/collision';
+import { circleToCircle, circleToCircleWithRadius, isOffScreen, getDistance, normalize, getRandomSpawnPosition } from '../utils/collision';
 import { GAME_CONFIG } from '../utils/constants';
 import { InputState } from './useInput';
 import { applySkillEffects, generateRandomSkill, shouldDropSkill } from '../utils/skillSystem';
@@ -300,7 +300,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   }
   
   // Boss spawning every 60 seconds
-  if (newTime - lastBossSpawn > 60000) { // 60 seconds
+  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL) {
     const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
     const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     
