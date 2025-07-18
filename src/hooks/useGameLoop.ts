@@ -240,7 +240,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
         
         // Play damage sound effect
         const damageAudio = new Audio('/damage-sound.mp3');
-        damageAudio.volume = 0.2; // 20% volume
+        damageAudio.volume = 0.06; // 6% volume (70% lower than 20%)
         damageAudio.play().catch(e => console.log('Damage sound failed to play:', e));
         
         // Create hit particles
