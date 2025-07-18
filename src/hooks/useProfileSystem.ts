@@ -115,6 +115,8 @@ export function useProfileSystem() {
     });
 
     setCurrentSession(null);
+  }
+  )
 
   // Auto-create first profile if none exist
   useEffect(() => {
