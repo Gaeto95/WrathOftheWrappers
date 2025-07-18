@@ -213,6 +213,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start a new session
     profileSystem.startGameSession();
+  }, [profileSystem, profile.selectedClass, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
 
   const handleCloseUpgradesAndRestart = useCallback(() => {
     // Save current session stats before restarting
@@ -234,6 +235,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start a new session
     profileSystem.startGameSession();
+  }, [profileSystem, profile.selectedClass, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">
