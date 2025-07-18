@@ -8,6 +8,8 @@ This project was built entirely with it — any resemblance to real platforms, j
 
 ![Game Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Tech Stack](https://img.shields.io/badge/Tech-React%20%7C%20TypeScript%20%7C%20Canvas-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Open Source](https://img.shields.io/badge/Open%20Source-❤️-red)
 
 ## 🎮 Game Overview
 
@@ -134,6 +136,10 @@ src/
 
 ### 🔧 Installation
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/wrath-of-the-wrappers.git
+cd wrath-of-the-wrappers
+
 # Install dependencies
 npm install
 
@@ -246,15 +252,79 @@ Place these files in the `public/` folder:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our contributing guidelines for:
-- Code style and conventions
-- Testing requirements
-- Pull request process
-- Issue reporting
+We welcome contributions! Here's how you can help:
+
+### 🐛 Bug Reports
+- Use the [Issues](https://github.com/yourusername/wrath-of-the-wrappers/issues) tab
+- Include browser version, OS, and steps to reproduce
+- Screenshots or videos are helpful
+
+### 💡 Feature Requests
+- Check existing issues first
+- Describe the feature and its benefits
+- Consider implementation complexity
+
+### 🔧 Development Setup
+```bash
+# Fork the repository
+# Clone your fork
+git clone https://github.com/yourusername/wrath-of-the-wrappers.git
+
+# Create a feature branch
+git checkout -b feature/amazing-feature
+
+# Make your changes
+# Test thoroughly
+npm run dev
+
+# Commit and push
+git commit -m "Add amazing feature"
+git push origin feature/amazing-feature
+
+# Create a Pull Request
+```
+
+### 📝 Code Style
+- Use TypeScript for type safety
+- Follow existing naming conventions
+- Add comments for complex logic
+- Test your changes thoroughly
+
+### 🧪 Testing
+- Ensure the game runs smoothly at 60fps
+- Test on multiple browsers
+- Verify all animations work correctly
+- Check for memory leaks during long sessions
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### MIT License Summary
+- ✅ Commercial use
+- ✅ Modification
+- ✅ Distribution
+- ✅ Private use
+- ❌ Liability
+- ❌ Warranty
+
+## 🙏 Acknowledgments
+
+- **Bolt AI** - For making this development process incredibly smooth
+- **React Team** - For the amazing framework
+- **Vite** - For lightning-fast development
+- **Tailwind CSS** - For beautiful styling
+- **TypeScript** - For type safety and better DX
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/yourusername/wrath-of-the-wrappers/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/wrath-of-the-wrappers/discussions)
+- **Email**: your.email@example.com
+
+## 🌟 Star History
+
+If you find this project helpful, please consider giving it a star! ⭐
 
 ---
 
