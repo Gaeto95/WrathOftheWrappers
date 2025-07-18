@@ -31,6 +31,7 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
   let damageBonus = 0;
   let fireRateBonus = 0;
   let goldBonus = 0;
+  let magnetRadius = 0;
   
   skills.forEach(skill => {
     skill.effects.forEach(effect => {
@@ -49,6 +50,10 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
         case 'goldBonus':
           goldBonus += effectValue / 100;
           break;
+          
+        case 'magnet':
+          magnetRadius += effectValue;
+          break;
       }
     });
   });
@@ -57,6 +62,9 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
   modifiedPlayer.damage = player.damage + damageBonus;
   modifiedPlayer.fireRate = Math.max(0.1, player.fireRate + fireRateBonus);
   modifiedPlayer.goldMultiplier = player.goldMultiplier + goldBonus;
+  
+  // Store magnet radius for use in collision detection
+  (modifiedPlayer as any).magnetRadius = magnetRadius;
   
   return modifiedPlayer;
 }

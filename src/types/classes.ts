@@ -90,14 +90,6 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
 };
 
 export const PASSIVE_SKILLS: Record<string, Omit<PassiveSkill, 'id' | 'currentLevel'>> = {
-  vampirism: {
-    name: 'Vampirism',
-    description: 'Heal for a percentage of damage dealt',
-    icon: '🧛',
-    maxLevel: 10,
-    rarity: 'rare',
-    effects: [{ type: 'vampirism', value: 1, isPercentage: true }]
-  },
   criticalStrike: {
     name: 'Critical Strike',
     description: 'Chance to deal double damage',

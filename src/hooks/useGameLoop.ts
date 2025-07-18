@@ -253,7 +253,13 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   // Check player-item collisions
   let gold = state.gold;
   const uncollectedItems = items.filter(item => {
-    const itemRadius = item.type === 'gold' ? 40 : 25; // Larger collection radius for coins
+    // Base collection radius
+    let itemRadius = item.type === 'gold' ? 40 : 25;
+    
+    // Apply magnet skill bonus
+    const magnetBonus = (player as any).magnetRadius || 0;
+    itemRadius += magnetBonus;
+    
     const collision = circleToCircleWithRadius(
       { x: player.x, y: player.y, radius: GAME_CONFIG.PLAYER_SIZE / 2 },
       { x: item.x, y: item.y, radius: itemRadius },
