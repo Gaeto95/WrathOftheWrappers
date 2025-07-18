@@ -65,6 +65,12 @@ export function useBolterSystem() {
   }) => {
     console.log('saveCurrentSessionStats called with:', stats);
     
+    // Prevent saving if session is null (already saved)
+    if (!currentSession) {
+      console.log('No active session, skipping save');
+      return;
+    }
+    
     const sessionDuration = currentSession ? Date.now() - currentSession.startTime : 0;
     
     console.log('Saving session stats:', {
@@ -75,9 +81,10 @@ export function useBolterSystem() {
       survivalTime: stats.survivalTime
     });
     
-    // Prevent duplicate gold addition - check if this session was already saved
-    if (stats.goldEarned === 0) {
-      console.log('No gold to save, skipping gold update');
+    // Prevent saving empty sessions
+    if (stats.goldEarned === 0 && stats.enemiesKilled === 0) {
+      console.log('Empty session, skipping save');
+      setCurrentSession(null);
       return;
     }
     
@@ -92,6 +99,7 @@ export function useBolterSystem() {
     console.log('Updating Bolter data with:', updatedData);
     updateBolterData(updatedData);
     
+    // Clear session immediately to prevent duplicate saves
     setCurrentSession(null);
   }, [bolterData, updateBolterData, currentSession]);
 
