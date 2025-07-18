@@ -253,7 +253,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     
     // Start fresh session
     profileSystem.startGameSession();
-  }, [profileSystem]);
+  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">
