@@ -223,8 +223,15 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
-    // This should only be called from the "Start New Game" button
-    handleRestart();
+    // Create completely fresh game state with current upgrades
+    setGameState(createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter'));
+    setSessionStats({
+      startTime: Date.now(),
+      enemiesKilled: 0
+    });
+    setSessionEnded(false);
+    // Start new session
+    bolterSystem.startGameSession();
   }, [handleRestart]);
 
   // Save stats when returning to profiles
