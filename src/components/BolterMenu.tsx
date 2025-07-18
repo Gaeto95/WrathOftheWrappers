@@ -215,13 +215,21 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
           </div>
         </div>
       </div>
+
+      {/* Corner decorations - positioned at corners of the main card */}
+      <div className="absolute top-0 left-0 animate-bounce" style={{ animationDelay: '0s' }}>
+        <Sword className="w-6 h-6 text-yellow-400 drop-shadow-lg" />
       </div>
-      
-      {/* Corner decorations - moved outside the main card */}
-      <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-purple-500/20 to-transparent rounded-br-full" />
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-pink-500/20 to-transparent rounded-bl-full" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-tr-full" />
-      <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-purple-500/20 to-transparent rounded-tl-full" />
+      <div className="absolute top-0 right-0 animate-bounce" style={{ animationDelay: '0.5s' }}>
+        <Shield className="w-6 h-6 text-blue-400 drop-shadow-lg" />
+      </div>
+      <div className="absolute bottom-0 left-0 animate-bounce" style={{ animationDelay: '1s' }}>
+        <Zap className="w-6 h-6 text-purple-400 drop-shadow-lg" />
+      </div>
+      <div className="absolute bottom-0 right-0 animate-bounce" style={{ animationDelay: '1.5s' }}>
+        <Target className="w-6 h-6 text-green-400 drop-shadow-lg" />
+      </div>
+      </div>
     </>
   );
 }
