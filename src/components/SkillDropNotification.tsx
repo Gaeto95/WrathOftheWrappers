@@ -73,7 +73,7 @@ export function SkillDropNotification({
   };
 
   return (
-    <div className="absolute top-20 left-4 z-50">
+    <div className="absolute top-40 left-4 z-50">
       <div className={`${getRarityColor(skill.rarity)} border rounded-lg p-2 w-40 shadow-xl`}>
         <div className="text-center mb-2">
           <div className="text-lg mb-1">{skill.icon}</div>

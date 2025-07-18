@@ -91,19 +91,31 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, [gameState.gameStatus, gameState.gold, gameState.score, gameState.enemiesKilled, profileSystem, sessionEnded]);
 
   const handleRestart = useCallback(() => {
+    // Save current session stats before restarting
+    if (!sessionEnded) {
+      const finalStats = {
+        survivalTime: gameState.score,
+        goldEarned: gameState.gold,
+        enemiesKilled: gameState.enemiesKilled || 0
+      };
+      profileSystem.endGameSession(finalStats);
+    }
+    
     setGameState(createInitialGameState(profile.permanentUpgrades, profile.selectedClass));
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
     });
     setSessionEnded(false);
+    // Start new session
+    profileSystem.startGameSession();
   }, [profile.permanentUpgrades, profileSystem]);
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     const success = profileSystem.purchaseUpgrade(type, cost);
     // Don't auto-restart, just return success status
     return success;
-  }, [profileSystem]);
+  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
 
   const handleAcceptSkill = useCallback(() => {
     if (!gameState.pendingSkillDrop) return;
@@ -182,6 +194,16 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
+    // Save current session stats before restarting
+    if (!sessionEnded) {
+      const finalStats = {
+        survivalTime: gameState.score,
+        goldEarned: gameState.gold,
+        enemiesKilled: gameState.enemiesKilled || 0
+      };
+      profileSystem.endGameSession(finalStats);
+    }
+    
     // Properly restart the game with fresh state
     setGameState(createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass));
     setSessionStats({
@@ -191,9 +213,18 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start a new session
     profileSystem.startGameSession();
-  }, [profileSystem]);
 
   const handleCloseUpgradesAndRestart = useCallback(() => {
+    // Save current session stats before restarting
+    if (!sessionEnded) {
+      const finalStats = {
+        survivalTime: gameState.score,
+        goldEarned: gameState.gold,
+        enemiesKilled: gameState.enemiesKilled || 0
+      };
+      profileSystem.endGameSession(finalStats);
+    }
+    
     // When closing upgrades after death, start fresh game
     setGameState(createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass));
     setSessionStats({
@@ -203,7 +234,6 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start a new session
     profileSystem.startGameSession();
-  }, [profileSystem, profile.selectedClass]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">
