@@ -35,6 +35,21 @@ export function SkillDropNotification({
     return () => clearInterval(interval);
   }, [skill, onAccept]); // Changed dependency
 
+  // Add keyboard shortcuts
+  useEffect(() => {
+    if (!skill) return;
+
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === 'c') {
+        onAccept();
+      } else if (event.key.toLowerCase() === 'v') {
+        onReject();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [skill, onAccept, onReject]);
   if (!skill) return null;
 
   const getRarityColor = (rarity: string) => {
@@ -58,48 +73,48 @@ export function SkillDropNotification({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <div className={`${getRarityColor(skill.rarity)} border rounded-lg p-2 w-48 shadow-xl`}>
-        <div className="text-center mb-3">
-          <div className="text-xl mb-1">{skill.icon}</div>
-          <h3 className="text-sm font-bold text-white">{skill.name}</h3>
+    <div className="fixed top-20 left-4 z-50">
+      <div className={`${getRarityColor(skill.rarity)} border rounded-lg p-2 w-40 shadow-xl`}>
+        <div className="text-center mb-2">
+          <div className="text-lg mb-1">{skill.icon}</div>
+          <h3 className="text-xs font-bold text-white">{skill.name}</h3>
           <div className={`text-xs font-medium ${getRarityText(skill.rarity)} capitalize`}>
             {skill.rarity} Skill
           </div>
         </div>
 
-        <div className="mb-3">
-          <p className="text-gray-300 text-xs text-center mb-1 leading-tight">
+        <div className="mb-2">
+          <p className="text-gray-300 text-xs text-center mb-1 leading-tight line-clamp-2">
             {skill.description}
           </p>
           <div className="text-center">
-            <span className="text-blue-400 font-bold text-xs">Level {skill.currentLevel}</span>
-            <span className="text-gray-400 text-xs"> / {skill.maxLevel}</span>
+            <span className="text-blue-400 font-bold text-xs">Lv{skill.currentLevel}</span>
+            <span className="text-gray-400 text-xs">/{skill.maxLevel}</span>
           </div>
         </div>
 
-        <div className="flex gap-1 mb-2">
+        <div className="flex gap-1 mb-1">
           <button
             onClick={onAccept}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 px-1 rounded text-xs font-medium transition-colors flex items-center justify-center"
           >
-            <Check className="w-2 h-2" />
-            Equip
+            <Check className="w-3 h-3" />
+            C
           </button>
           <button
             onClick={onReject}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white py-1 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white py-1 px-1 rounded text-xs font-medium transition-colors flex items-center justify-center"
           >
-            <X className="w-2 h-2" />
-            Reject
+            <X className="w-3 h-3" />
+            V
           </button>
         </div>
 
         <div className="text-center">
           <div className="text-xs text-gray-400">
-            Auto-accept in {Math.ceil(timeLeft)}s
+            Auto in {Math.ceil(timeLeft)}s
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-1 mt-1">
+          <div className="w-full bg-gray-700 rounded-full h-1">
             <div 
               className="bg-green-500 h-1 rounded-full transition-all duration-1000"
               style={{ width: `${(timeLeft / 5) * 100}%` }}
