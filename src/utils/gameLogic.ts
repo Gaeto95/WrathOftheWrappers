@@ -1,5 +1,5 @@
 import { GAME_CONFIG, EnemyType, UpgradeType, ENEMY_TYPE_NAMES } from './constants';
-import { HEAVY_TANK_SPAWN_CHANCE } from './constants';
+import { HEAVY_TANK_SPAWN_CHANCE, BOSS_SPAWN_INTERVAL } from './constants';
 import { Point, getDistance, normalize, getRandomSpawnPosition } from './collision';
 import { CharacterClass, CLASS_CONFIGS, PassiveSkill, PlayerClassState } from '../types/classes';
 import { calculateFinalStats, generateRandomSkill, shouldDropSkill } from './skillSystem';
@@ -158,12 +158,14 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
 }
 
 export function createEnemy(gameState: GameState): Enemy {
-  // 5% chance for Heavy Tank, otherwise normal distribution
+  // 5% chance for Heavy Tank, 95% chance for normal monsters
   let type: EnemyType;
   if (Math.random() < HEAVY_TANK_SPAWN_CHANCE) {
     type = 'HEAVY_TANK';
   } else {
-    type = ENEMY_TYPE_NAMES[Math.floor(Math.random() * ENEMY_TYPE_NAMES.length)];
+    // Only spawn from normal enemy types (excluding HEAVY_TANK and BOSS)
+    const normalEnemies = ENEMY_TYPE_NAMES.filter(name => name !== 'HEAVY_TANK' && name !== 'BOSS');
+    type = normalEnemies[Math.floor(Math.random() * normalEnemies.length)];
   }
   
   const config = GAME_CONFIG.ENEMY_TYPES[type];
