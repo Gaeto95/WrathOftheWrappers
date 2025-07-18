@@ -34,6 +34,7 @@ export function useProfileSystem() {
       achievements: []
     };
 
+    console.log('Creating new profile:', newProfile);
     setProfiles(prev => [...prev, newProfile]);
     setActiveProfileId(newProfile.id);
     return newProfile;
@@ -61,8 +62,7 @@ export function useProfileSystem() {
         ? updatedProfile
         : p
     ));
-  }
-  )
+  }, [activeProfile, setProfiles]);
 
   // Add method to get current profile with latest data
   const getCurrentProfile = useCallback(() => {
@@ -128,8 +128,12 @@ export function useProfileSystem() {
     enemiesKilled: number;
     survivalTime: number;
   }) => {
+    console.log('saveCurrentSessionStats called with:', stats);
     const currentProfile = getCurrentProfile();
-    if (!currentProfile) return;
+    if (!currentProfile) {
+      console.log('No current profile found');
+      return;
+    }
     
     // Only calculate session duration if we have a valid session
     const sessionDuration = currentSession ? Date.now() - currentSession.startTime : 0;
@@ -142,13 +146,16 @@ export function useProfileSystem() {
       survivalTime: stats.survivalTime
     });
     
-    updateProfile({
+    const updatedData = {
       totalGold: currentProfile.totalGold + stats.goldEarned,
       totalPlayTime: currentProfile.totalPlayTime + sessionDuration,
       bestSurvivalTime: Math.max(currentProfile.bestSurvivalTime, stats.survivalTime),
       totalEnemiesKilled: currentProfile.totalEnemiesKilled + stats.enemiesKilled,
       totalDeaths: currentProfile.totalDeaths + 1
-    });
+    };
+    
+    console.log('Updating profile with:', updatedData);
+    updateProfile(updatedData);
     
     // Clear the session after saving
     setCurrentSession(null);

@@ -10,16 +10,19 @@ function App() {
   const profileSystem = useProfileSystem();
 
   const handleStartGame = () => {
+    console.log('Starting game with profile:', profileSystem.activeProfile?.name);
     setGameStarted(true);
     setGameKey(prev => prev + 1); // Force new game instance
   };
 
   const handleReturnToProfiles = () => {
+    console.log('Returning to profiles');
     setGameStarted(false);
     setGameKey(prev => prev + 1); // Force new game instance when returning
   };
 
   const handleProfileChange = () => {
+    console.log('Profile changed, forcing new game instance');
     // Force new game instance when profile changes
     setGameKey(prev => prev + 1);
   };
