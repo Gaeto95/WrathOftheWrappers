@@ -79,18 +79,13 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   // Handle death
   useEffect(() => {
     if (gameState.gameStatus === 'dead' && !sessionEnded) {
-      // Update profile with current session gold before ending
-      profileSystem.updateProfile({
-        totalGold: profileSystem.activeProfile.totalGold + gameState.gold
-      });
-      
       const finalStats = {
         survivalTime: gameState.score,
         goldEarned: gameState.gold,
         enemiesKilled: gameState.enemiesKilled || 0
       };
       
-      profileSystem.endGameSession(finalStats);
+      profileSystem.saveCurrentSessionStats(finalStats);
       setSessionEnded(true);
     }
   }, [gameState.gameStatus, gameState.gold, gameState.score, gameState.enemiesKilled, profileSystem, sessionEnded]);
@@ -103,10 +98,11 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         goldEarned: gameState.gold,
         enemiesKilled: gameState.enemiesKilled || 0
       };
-      profileSystem.endGameSession(finalStats);
+      profileSystem.saveCurrentSessionStats(finalStats);
     }
     
-    setGameState(createInitialGameState(profile.permanentUpgrades, profile.selectedClass));
+    const currentProfile = profileSystem.getCurrentProfile();
+    setGameState(createInitialGameState(currentProfile.permanentUpgrades, profile.selectedClass));
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
@@ -114,7 +110,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start new session
     profileSystem.startGameSession();
-  }, [profile.permanentUpgrades, profileSystem]);
+  }, [profile.permanentUpgrades, profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)

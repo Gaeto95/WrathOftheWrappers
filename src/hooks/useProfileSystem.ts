@@ -114,8 +114,26 @@ export function useProfileSystem() {
     });
 
     setCurrentSession(null);
-  }
-  )
+  }, [currentSession, activeProfile, getCurrentProfile, updateProfile]);
+
+  const saveCurrentSessionStats = useCallback((stats: {
+    goldEarned: number;
+    enemiesKilled: number;
+    survivalTime: number;
+  }) => {
+    const currentProfile = getCurrentProfile();
+    if (!currentProfile) return;
+    
+    const sessionDuration = Date.now() - (currentSession?.startTime || Date.now());
+    
+    updateProfile({
+      totalGold: currentProfile.totalGold + stats.goldEarned,
+      totalPlayTime: currentProfile.totalPlayTime + sessionDuration,
+      bestSurvivalTime: Math.max(currentProfile.bestSurvivalTime, stats.survivalTime),
+      totalEnemiesKilled: currentProfile.totalEnemiesKilled + stats.enemiesKilled,
+      totalDeaths: currentProfile.totalDeaths + 1
+    });
+  }, [getCurrentProfile, updateProfile, currentSession]);
 
   // Auto-create first profile if none exist
   useEffect(() => {
@@ -135,6 +153,7 @@ export function useProfileSystem() {
     purchaseUpgrade,
     startGameSession,
     endGameSession,
-    getCurrentProfile
+    getCurrentProfile,
+    saveCurrentSessionStats
   };
 }
