@@ -1,13 +1,19 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Game } from './components/Game';
 import { BolterMenu } from './components/BolterMenu';
+import { LoadingScreen } from './components/LoadingScreen';
 import { useBolterSystem } from './hooks/useBolterSystem';
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const bolterSystem = useBolterSystem();
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
 
   const handleStartGame = () => {
     console.log('Starting game with Bolter');
@@ -19,6 +25,10 @@ function App() {
     console.log('Returning to menu');
     setGameStarted(false);
   };
+
+  if (isLoading) {
+    return <LoadingScreen onComplete={handleLoadingComplete} />;
+  }
 
   if (!gameStarted) {
     return (
