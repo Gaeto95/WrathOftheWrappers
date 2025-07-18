@@ -2,13 +2,14 @@ import React from 'react';
 import { GameState } from '../utils/gameLogic';
 import { GAME_CONFIG } from '../utils/constants';
 import { CLASS_CONFIGS } from '../types/classes';
+import { BolterData } from '../types/bolter';
 
 interface UIProps {
   gameState: GameState;
-  profile?: any;
+  bolterData: BolterData;
 }
 
-export function UI({ gameState, profile }: UIProps) {
+export function UI({ gameState, bolterData }: UIProps) {
   const healthPercent = (gameState.player.hp / gameState.player.maxHp) * 100;
   const currentScore = Math.floor(gameState.time / 1000);
   const highScore = bolterData?.bestSurvivalTime || 0;
