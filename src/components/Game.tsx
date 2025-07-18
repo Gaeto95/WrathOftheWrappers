@@ -266,7 +266,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
           enemiesKilled: gameState.enemiesKilled || 0
         };
         console.log('Component unmounting, saving stats:', finalStats);
-        profileSystem.saveStatsImmediately(finalStats);
+        profileSystem.saveCurrentSessionStats(finalStats);
       }
     };
   }, [gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profileSystem]);
