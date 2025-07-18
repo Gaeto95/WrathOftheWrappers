@@ -13,7 +13,7 @@ This project was built entirely with it — any resemblance to real platforms, j
 
 ## 🎮 Game Overview
 
-**Wrath of the Wrappers** is a fast-paced survival action RPG where players control a skilled bolter to survive endless waves of enemies while collecting gold and upgrading their abilities. Built entirely in the browser using modern web technologies with beautiful sprite animations.
+**Wrath of the Wrappers** is a fast-paced survival action RPG where players control a skilled bolter to survive endless waves of enemies while collecting gold and upgrading their abilities. Built entirely in the browser using bolt.new, with beautiful sprite animations.
 
 ### 🎯 Core Gameplay Loop
 1. **Survive** - Navigate through endless enemy waves using WASD controls
