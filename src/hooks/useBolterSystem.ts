@@ -34,8 +34,6 @@ export function useBolterSystem() {
   }, [bolterData, setBolterData]);
 
   const purchaseUpgrade = useCallback((upgradeType: keyof PermanentUpgrades, cost: number) => {
-    console.log('Purchasing upgrade:', upgradeType, 'Cost:', cost, 'Current gold:', bolterData.totalGold);
-    
     const newUpgrades = {
       ...bolterData.permanentUpgrades,
       [upgradeType]: bolterData.permanentUpgrades[upgradeType] + 1

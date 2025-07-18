@@ -118,29 +118,27 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     const totalGold = bolterSystem.bolterData.totalGold + gameState.gold;
     if (totalGold < cost) return false;
     
-    const success = bolterSystem.purchaseUpgrade(type, cost);
-    
     // Deduct cost from session gold first, then profile if needed
-    if (success) {
-      if (gameState.gold >= cost) {
-        // Deduct from session gold only
-        setGameState(prev => ({
-          ...prev,
-          gold: prev.gold - cost
-        }));
-      } else {
-        // Deduct what we can from session, rest from profile
-        const remainingCost = cost - gameState.gold;
-        bolterSystem.updateBolterData({
-          totalGold: bolterSystem.bolterData.totalGold - remainingCost
-        });
-        setGameState(prev => ({
-          ...prev,
-          gold: 0
-        }));
-      }
+    if (gameState.gold >= cost) {
+      // Deduct from session gold only
+      setGameState(prev => ({
+        ...prev,
+        gold: prev.gold - cost
+      }));
+    } else {
+      // Deduct what we can from session, rest from profile
+      const remainingCost = cost - gameState.gold;
+      bolterSystem.updateBolterData({
+        totalGold: bolterSystem.bolterData.totalGold - remainingCost
+      });
+      setGameState(prev => ({
+        ...prev,
+        gold: 0
+      }));
     }
     
+    // Purchase the upgrade (this should NOT modify gold)
+    const success = bolterSystem.purchaseUpgrade(type, cost);
     return success;
   }, [bolterSystem, gameState.gold]);
 
