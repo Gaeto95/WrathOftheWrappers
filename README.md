@@ -318,9 +318,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/wrath-of-the-wrappers/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/wrath-of-the-wrappers/discussions)
-- **Email**: your.email@example.com
+- **Issues**: [GitHub Issues](https://github.com/gaeto95/wrath-of-the-wrappers/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/gaeto95/wrath-of-the-wrappers/discussions)
+- **Email**: gaeto1992@gmail.com
 
 ## 🌟 Star History
 
