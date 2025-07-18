@@ -166,8 +166,8 @@ export function createEnemy(gameState: GameState): Enemy {
     // 5% chance for Heavy Tank
     type = 'HEAVY_TANK';
   } else {
-    // 95% chance for normal enemies - equal distribution
-    const normalTypes: EnemyType[] = ['GRUNT', 'RUNNER', 'TANK'];
+    // 95% chance for normal enemies - explicit equal distribution
+    const normalTypes = ['GRUNT', 'RUNNER', 'TANK'] as const;
     type = normalTypes[Math.floor(Math.random() * normalTypes.length)];
   }
   
