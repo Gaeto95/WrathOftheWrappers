@@ -49,18 +49,18 @@ interface CanvasProps {
 }
 
 // Monster sprite images cache
-const monsterImagesRef = {
-  big: null as HTMLImageElement | null,
-  small: null as HTMLImageElement | null
-};
+const monsterImages = new Map<string, HTMLImageElement>();
+const spriteImages = new Map<string, HTMLImageElement>();
+let spritesLoaded = false;
+let monstersLoaded = false;
 
 export function Canvas({ gameState, width, height, input }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const spriteImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Load all sprite images
   useEffect(() => {
-    const imageMap = new Map<string, HTMLImageElement>();
+    if (spritesLoaded) return; // Prevent reloading
+    
     const loadPromises: Promise<void>[] = [];
     
     Object.entries(SPRITE_CONFIG.animations).forEach(([animName, config]) => {
@@ -69,7 +69,7 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
       
       const loadPromise = new Promise<void>((resolve) => {
         img.onload = () => {
-          imageMap.set(animName, img);
+          spriteImages.set(animName, img);
           resolve();
         };
         img.onerror = () => {
@@ -81,30 +81,34 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
       loadPromises.push(loadPromise);
     });
     
-    // Update the ref only after all sprites have attempted to load
     Promise.all(loadPromises).then(() => {
-      spriteImagesRef.current = imageMap;
+      spritesLoaded = true;
     });
-    
+  }, []); // Empty dependency array - only run once
+
+  // Load monster sprites
+  useEffect(() => {
+    if (monstersLoaded) return; // Prevent reloading
+
     // Load monster sprites
     const bigMonsterImg = new Image();
     bigMonsterImg.src = '/big-monster.png';
     bigMonsterImg.onload = () => {
-      monsterImagesRef.big = bigMonsterImg;
+      monsterImages.set('big', bigMonsterImg);
     };
     bigMonsterImg.onerror = () => {
       console.warn('Failed to load big-monster.png');
-      monsterImagesRef.big = null;
     };
     
     const smallMonsterImg = new Image();
     smallMonsterImg.src = '/small-monster.png';
     smallMonsterImg.onload = () => {
-      monsterImagesRef.small = smallMonsterImg;
+      monsterImages.set('small', smallMonsterImg);
+      monstersLoaded = true;
     };
     smallMonsterImg.onerror = () => {
       console.warn('Failed to load small-monster.png');
-      monsterImagesRef.small = null;
+      monstersLoaded = true;
     };
   }, []);
 
@@ -161,7 +165,7 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
     });
 
     // Draw player
-    drawPlayer(ctx, gameState.player, gameState.time, input, spriteImagesRef.current);
+    drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages);
 
     ctx.restore();
   }, [gameState, width, height, input]);
@@ -257,7 +261,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   
   // Try to get the sprite for current animation
   let finalAnimation = currentAnimation;
-  let spriteImage = spriteImages?.get(finalAnimation);
+  let spriteImage = spriteImages.get(finalAnimation);
   
   // More thorough sprite validation
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
@@ -272,12 +276,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   // If current animation sprite isn't ready, try idle
   if (!isSpriteReady(spriteImage)) {
     finalAnimation = 'idle';
-    spriteImage = spriteImages?.get('idle');
+    spriteImage = spriteImages.get('idle');
   }
   
   // If idle also isn't ready, use fallback
   if (!isSpriteReady(spriteImage)) {
-    console.warn('Sprite not ready, using fallback:', finalAnimation, spriteImage?.src);
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
   }
@@ -394,10 +397,16 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   
   // Determine which sprite to use based on enemy type
   let monsterSprite = null;
-  if (enemy.type === 'TANK' && monsterImagesRef.big && monsterImagesRef.big.complete) {
-    monsterSprite = monsterImagesRef.big;
-  } else if ((enemy.type === 'GRUNT' || enemy.type === 'RUNNER') && monsterImagesRef.small && monsterImagesRef.small.complete) {
-    monsterSprite = monsterImagesRef.small;
+  if (enemy.type === 'TANK') {
+    const bigMonster = monsterImages.get('big');
+    if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+      monsterSprite = bigMonster;
+    }
+  } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER') {
+    const smallMonster = monsterImages.get('small');
+    if (smallMonster && smallMonster.complete && smallMonster.naturalWidth > 0) {
+      monsterSprite = smallMonster;
+    }
   }
   
   if (monsterSprite) {
@@ -506,10 +515,17 @@ function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any) {
 }
 
 function drawItem(ctx: CanvasRenderingContext2D, item: any) {
+  // Use cached images to prevent re-creation
+  const coinImageCache = new Map<string, HTMLImageElement>();
+  const potionImageCache = new Map<string, HTMLImageElement>();
+  
   if (item.type === 'gold') {
-    // Try to draw coin image, fallback to circle if not loaded
-    const coinImage = new Image();
-    coinImage.src = '/coin.png';
+    let coinImage = coinImageCache.get('coin');
+    if (!coinImage) {
+      coinImage = new Image();
+      coinImage.src = '/coin.png';
+      coinImageCache.set('coin', coinImage);
+    }
     
     if (coinImage.complete && coinImage.naturalWidth > 0) {
       // Draw coin image
@@ -547,9 +563,12 @@ function drawItem(ctx: CanvasRenderingContext2D, item: any) {
       ctx.stroke();
     }
   } else {
-    // Try to draw potion image, fallback to circle if not loaded
-    const potionImage = new Image();
-    potionImage.src = '/potion.png';
+    let potionImage = potionImageCache.get('potion');
+    if (!potionImage) {
+      potionImage = new Image();
+      potionImage.src = '/potion.png';
+      potionImageCache.set('potion', potionImage);
+    }
     
     if (potionImage.complete && potionImage.naturalWidth > 0) {
       // Draw potion image
