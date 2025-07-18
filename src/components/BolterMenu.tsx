@@ -29,7 +29,8 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const bolterConfig = CLASS_CONFIGS.bolter;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 relative overflow-hidden">
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         {/* Larger glowing orbs */}
@@ -215,12 +216,13 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
         </div>
       </div>
 
-    </div>
+      </div>
 
-    {/* Corner decorations - moved outside the main card */}
-    <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-purple-500/20 to-transparent rounded-br-full" />
-    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-pink-500/20 to-transparent rounded-bl-full" />
-    <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-tr-full" />
-    <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-purple-500/20 to-transparent rounded-tl-full" />
+      {/* Corner decorations - moved outside the main card */}
+      <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-purple-500/20 to-transparent rounded-br-full" />
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-pink-500/20 to-transparent rounded-bl-full" />
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-tr-full" />
+      <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-purple-500/20 to-transparent rounded-tl-full" />
+    </>
   );
 }
