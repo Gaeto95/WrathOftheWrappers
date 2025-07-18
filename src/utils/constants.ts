@@ -48,12 +48,12 @@ export const GAME_CONFIG = {
       goldDrop: { min: 60, max: 90 } // 2x tank gold
     },
     BOSS: {
-      hp: 600, // 10x tank HP
+      hp: 300, // 5x tank HP (50% reduction)
       speed: 50, // Slower than tank
       damage: 40, // Lower damage
-      size: 60, // Bigger than tank
+      size: 60, // 50% bigger than tank (40 * 1.5 = 60)
       color: '#800080', // Purple for boss
-      goldDrop: { min: 300, max: 450 } // 10x tank gold
+      goldDrop: { min: 150, max: 225 } // 5x tank gold (adjusted for lower HP)
     }
   },
   

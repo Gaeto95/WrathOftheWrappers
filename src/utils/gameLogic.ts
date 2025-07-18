@@ -159,13 +159,16 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
 
 export function createEnemy(gameState: GameState): Enemy {
   // 5% chance for Heavy Tank, 95% chance for normal monsters
+  const spawnRoll = Math.random();
   let type: EnemyType;
-  if (Math.random() < HEAVY_TANK_SPAWN_CHANCE) {
+  
+  if (spawnRoll < 0.05) {
+    // 5% chance for Heavy Tank
     type = 'HEAVY_TANK';
   } else {
-    // Only spawn from normal enemy types (GRUNT, RUNNER, TANK only)
-    const normalEnemies: EnemyType[] = ['GRUNT', 'RUNNER', 'TANK'];
-    type = normalEnemies[Math.floor(Math.random() * normalEnemies.length)];
+    // 95% chance for normal enemies - equal distribution
+    const normalTypes: EnemyType[] = ['GRUNT', 'RUNNER', 'TANK'];
+    type = normalTypes[Math.floor(Math.random() * normalTypes.length)];
   }
   
   const config = GAME_CONFIG.ENEMY_TYPES[type];
