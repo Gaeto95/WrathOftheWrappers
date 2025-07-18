@@ -25,6 +25,7 @@ interface GameProps {
 export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [gameOverAudio, setGameOverAudio] = useState<HTMLAudioElement | null>(null);
 
   // Background music setup
   useEffect(() => {
@@ -32,6 +33,11 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     audioElement.loop = true;
     audioElement.volume = 0.105;
     setAudio(audioElement);
+    
+    // Setup game over sound
+    const gameOverElement = new Audio('/game-over.mp3');
+    gameOverElement.volume = 0.3;
+    setGameOverAudio(gameOverElement);
     
     // Autoplay music when game starts
     audioElement.play().then(() => {
@@ -44,6 +50,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     return () => {
       audioElement.pause();
       audioElement.currentTime = 0;
+      gameOverElement.pause();
+      gameOverElement.currentTime = 0;
     };
   }, []);
 
@@ -81,6 +89,16 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   // Handle death
   useEffect(() => {
     if (gameState.gameStatus === 'dead' && !sessionEnded && bolterSystem.currentSession) {
+      // Stop background music and play game over sound
+      if (audio) {
+        audio.pause();
+        setMusicEnabled(false);
+      }
+      if (gameOverAudio) {
+        gameOverAudio.currentTime = 0;
+        gameOverAudio.play().catch(e => console.log('Game over sound failed to play:', e));
+      }
+      
       const finalStats = {
         survivalTime: gameState.score,
         goldEarned: gameState.gold,
@@ -96,6 +114,16 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
 
   const handleRestart = useCallback(() => {
     console.log('Quick restart - creating fresh game without saving current session');
+    
+    // Stop game over sound and restart background music
+    if (gameOverAudio) {
+      gameOverAudio.pause();
+      gameOverAudio.currentTime = 0;
+    }
+    if (audio && musicEnabled) {
+      audio.currentTime = 0;
+      audio.play().catch(e => console.log('Background music restart failed:', e));
+    }
     
     // Create completely fresh game state
     setGameState(createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter'));
@@ -252,6 +280,16 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     // Force a completely fresh restart without saving current session
     console.log('Creating completely fresh game state');
     
+    // Stop game over sound and restart background music
+    if (gameOverAudio) {
+      gameOverAudio.pause();
+      gameOverAudio.currentTime = 0;
+    }
+    if (audio && musicEnabled) {
+      audio.currentTime = 0;
+      audio.play().catch(e => console.log('Background music restart failed:', e));
+    }
+    
     // Create brand new game state with current upgrades
     const freshGameState = createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter');
     console.log('Fresh game state created:', {
@@ -269,7 +307,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     
     // Start completely new session
     bolterSystem.startGameSession();
-  }, [bolterSystem]);
+  }, [bolterSystem, audio, gameOverAudio, musicEnabled]);
 
   // Save stats when returning to profiles
   useEffect(() => {
