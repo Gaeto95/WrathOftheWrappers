@@ -104,7 +104,7 @@ export function createInitialPlayer(upgrades: Upgrades, characterClass: Characte
   const damageMultiplier = 1 + (upgrades.damage * 0.15) / (1 + upgrades.damage * 0.02);
   const speedMultiplier = 1 + (upgrades.speed * 0.08) / (1 + upgrades.speed * 0.015);
   const healthMultiplier = 1 + (upgrades.health * 0.25) / (1 + upgrades.health * 0.02);
-  const fireRateReduction = Math.min(0.85, (upgrades.fireRate * 0.08) / (1 + upgrades.fireRate * 0.02));
+  const fireRateReduction = Math.min(0.75, (upgrades.fireRate * 0.04) / (1 + upgrades.fireRate * 0.05));
   const goldMultiplier = 1 + (upgrades.goldBonus * 0.25) / (1 + upgrades.goldBonus * 0.02);
   
   const basePlayer = {
