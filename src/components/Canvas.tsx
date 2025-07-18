@@ -53,8 +53,7 @@ const monsterImages = new Map<string, HTMLImageElement>();
 const spriteImages = new Map<string, HTMLImageElement>();
 const coinImageCache = new Map<string, HTMLImageElement>();
 const potionImageCache = new Map<string, HTMLImageElement>();
-let spritesLoaded = 0; // Track number of loaded sprites
-let totalSprites = 0; // Track total sprites to load
+let spritesInitialized = false; // Track if sprites have been initialized
 let monstersLoaded = false;
 
 export function Canvas({ gameState, width, height, input }: CanvasProps) {
@@ -62,11 +61,10 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
 
   // Load all sprite images
   useEffect(() => {
-    if (spritesLoaded >= totalSprites && totalSprites > 0) return; // Prevent reloading
+    if (spritesInitialized) return; // Prevent reloading
     
     const animations = Object.entries(SPRITE_CONFIG.animations);
-    totalSprites = animations.length;
-    spritesLoaded = 0;
+    spritesInitialized = true;
     
     animations.forEach(([animName, config]) => {
       const img = new Image();
@@ -74,12 +72,10 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
       
       img.onload = () => {
         spriteImages.set(animName, img);
-        spritesLoaded++;
       };
       
       img.onerror = () => {
         console.warn(`Failed to load sprite: ${config.file}`);
-        spritesLoaded++; // Still count as "loaded" to not block
       };
     });
   }, []); // Empty dependency array - only run once
@@ -225,15 +221,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     currentAnimation = 'running';
   }
   
-  // Check if enough sprites are loaded (at least idle should be ready)
-  const hasSprites = spritesLoaded >= Math.min(3, totalSprites) && spriteImages.size > 0;
-  
-  // If no sprites are loaded yet, always use fallback
-  if (!hasSprites) {
-    drawPlayerFallback(ctx, player, alpha, facingLeft);
-    return;
-  }
-  
   // Calculate animation speed with limits
   let animConfig = SPRITE_CONFIG.animations[currentAnimation as keyof typeof SPRITE_CONFIG.animations];
   let animSpeed = animConfig?.speed || 100;
@@ -266,8 +253,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     if (!img) return false;
     if (!img.complete) return false;
     if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
-    // Check if image actually loaded successfully
-    if (img.src && img.src.includes('blob:')) return false;
     return true;
   };
   
