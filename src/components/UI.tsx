@@ -11,7 +11,7 @@ interface UIProps {
 export function UI({ gameState, profile }: UIProps) {
   const healthPercent = (gameState.player.hp / gameState.player.maxHp) * 100;
   const currentScore = Math.floor(gameState.time / 1000);
-  const highScore = profile?.bestSurvivalTime || 0;
+  const highScore = bolterData?.bestSurvivalTime || 0;
   const classConfig = CLASS_CONFIGS[gameState.player.classState.selectedClass];
   
   return (

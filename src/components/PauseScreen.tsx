@@ -4,10 +4,10 @@ interface PauseScreenProps {
   onResume: () => void;
   onUpgrade: () => void;
   onRestart: () => void;
-  onReturnToProfiles: () => void;
+  onReturnToMenu: () => void;
 }
 
-export function PauseScreen({ onResume, onUpgrade, onRestart, onReturnToProfiles }: PauseScreenProps) {
+export function PauseScreen({ onResume, onUpgrade, onRestart, onReturnToMenu }: PauseScreenProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
       <div className="bg-gray-900 p-8 rounded-lg max-w-md w-full mx-4 text-center">
@@ -36,10 +36,10 @@ export function PauseScreen({ onResume, onUpgrade, onRestart, onReturnToProfiles
           </button>
           
           <button
-            onClick={onReturnToProfiles}
+            onClick={onReturnToMenu}
             className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
           >
-            👤 Change Profile
+            🏠 Return to Menu
           </button>
         </div>
         

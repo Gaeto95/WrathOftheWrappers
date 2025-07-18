@@ -11,16 +11,16 @@ import { createInitialGameState, GameState } from '../utils/gameLogic';
 import { SkillInventory } from './SkillInventory';
 import { SkillDropNotification } from './SkillDropNotification';
 import { GAME_CONFIG } from '../utils/constants';
-import { PlayerProfile, PermanentUpgrades } from '../types/profile';
+import { BolterData, PermanentUpgrades } from '../types/bolter';
 import { PassiveSkill } from '../types/classes';
 
 interface GameProps {
-  profile: PlayerProfile;
-  profileSystem: any;
-  onReturnToProfiles: () => void;
+  bolterData: BolterData;
+  bolterSystem: any;
+  onReturnToMenu: () => void;
 }
 
-export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) {
+export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
@@ -58,7 +58,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, [audio, musicEnabled]);
 
   const [gameState, setGameState] = useState<GameState>(() => 
-    createInitialGameState(profile.permanentUpgrades, profile.selectedClass)
+    createInitialGameState(bolterData.permanentUpgrades, 'bolter')
   );
   const [sessionStats, setSessionStats] = useState({
     startTime: Date.now(),
@@ -72,7 +72,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   // Start game session
   useEffect(() => {
     if (!sessionEnded) {
-      profileSystem.startGameSession();
+      bolterSystem.startGameSession();
     }
   }, []); // Empty dependency array - only run once on mount
 
@@ -86,10 +86,10 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
       };
       
       console.log('Game ended, saving stats:', finalStats);
-      profileSystem.saveCurrentSessionStats(finalStats);
+      bolterSystem.saveCurrentSessionStats(finalStats);
       setSessionEnded(true);
     }
-  }, [gameState.gameStatus, gameState.gold, gameState.score, gameState.enemiesKilled, profileSystem, sessionEnded]);
+  }, [gameState.gameStatus, gameState.gold, gameState.score, gameState.enemiesKilled, bolterSystem, sessionEnded]);
 
   const handleRestart = useCallback(() => {
     // Save current session stats before restarting
@@ -100,26 +100,25 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         enemiesKilled: gameState.enemiesKilled || 0
       };
       console.log('Manual restart, saving stats:', finalStats);
-      profileSystem.saveCurrentSessionStats(finalStats);
+      bolterSystem.saveCurrentSessionStats(finalStats);
     }
     
-    const currentProfile = profileSystem.getCurrentProfile();
-    setGameState(createInitialGameState(currentProfile.permanentUpgrades, profile.selectedClass));
+    setGameState(createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter'));
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
     });
     setSessionEnded(false);
     // Start new session
-    profileSystem.startGameSession();
-  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profile.selectedClass]);
+    bolterSystem.startGameSession();
+  }, [bolterSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)
-    const totalGold = profileSystem.activeProfile.totalGold + gameState.gold;
+    const totalGold = bolterSystem.bolterData.totalGold + gameState.gold;
     if (totalGold < cost) return false;
     
-    const success = profileSystem.purchaseUpgrade(type, cost);
+    const success = bolterSystem.purchaseUpgrade(type, cost);
     
     // Deduct cost from session gold first, then profile if needed
     if (success) {
@@ -132,8 +131,8 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
       } else {
         // Deduct what we can from session, rest from profile
         const remainingCost = cost - gameState.gold;
-        profileSystem.updateProfile({
-          totalGold: profileSystem.activeProfile.totalGold - remainingCost
+        bolterSystem.updateBolterData({
+          totalGold: bolterSystem.bolterData.totalGold - remainingCost
         });
         setGameState(prev => ({
           ...prev,
@@ -143,7 +142,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     }
     
     return success;
-  }, [profileSystem, gameState.gold]);
+  }, [bolterSystem, gameState.gold]);
 
   const handleAcceptSkill = useCallback(() => {
     if (!gameState.pendingSkillDrop) return;
@@ -225,17 +224,12 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   const handleUpgradeScreenRestart = useCallback(() => {
     // This should only be called from the "Start New Game" button
     handleRestart();
-  }, [profileSystem]);
+  }, [handleRestart]);
 
-  const handleCloseUpgradesAndRestart = useCallback(() => {
-    // This should only restart if the session has ended (from death screen)
-    if (sessionEnded) {
-      handleRestart();
-    } else {
-      // Just close upgrades and resume current game
-      setGameState(prev => ({ ...prev, gameStatus: 'playing' }));
-    }
-  }, [profileSystem]);
+  const handleCloseUpgrades = useCallback(() => {
+    // Just close upgrades and resume current game - never restart
+    setGameState(prev => ({ ...prev, gameStatus: 'playing' }));
+  }, []);
 
   // Save stats when returning to profiles
   useEffect(() => {
@@ -248,10 +242,10 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
           enemiesKilled: gameState.enemiesKilled || 0
         };
         console.log('Component unmounting, saving stats:', finalStats);
-        profileSystem.saveCurrentSessionStats(finalStats);
+        bolterSystem.saveCurrentSessionStats(finalStats);
       }
     };
-  }, [gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profileSystem]);
+  }, [gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, bolterSystem]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">
@@ -274,7 +268,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         
         {gameState.gameStatus === 'playing' && (
           <>
-            <UI gameState={gameState} profile={profile} />
+            <UI gameState={gameState} bolterData={bolterData} />
             <SkillInventory 
               equippedSkills={gameState.player.classState.equippedSkills}
               onRemoveSkill={handleRemoveSkill}
@@ -294,13 +288,13 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
             onResume={handleResume}
             onUpgrade={handleShowUpgrades}
             onRestart={handleRestart}
-            onReturnToProfiles={onReturnToProfiles}
+            onReturnToMenu={onReturnToMenu}
           />
         )}
         
         {gameState.gameStatus === 'dead' && (
           <EnhancedDeathScreen
-            profile={profile}
+            bolterData={bolterData}
             sessionStats={{
               survivalTime: gameState.score,
               goldEarned: gameState.gold,
@@ -313,10 +307,10 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         
         {gameState.gameStatus === 'upgrading' && (
           <EnhancedUpgradeScreen
-            profile={profileSystem.activeProfile}
+            bolterData={bolterSystem.bolterData}
             currentSessionGold={gameState.gold}
             onUpgrade={handleUpgrade}
-            onClose={sessionEnded ? handleCloseUpgradesAndRestart : handleUpgradeScreenRestart}
+            onClose={handleCloseUpgrades}
           />
         )}
       </div>

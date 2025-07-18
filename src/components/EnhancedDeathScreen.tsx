@@ -1,9 +1,9 @@
 import React from 'react';
 import { Skull, TrendingUp, RotateCcw, Trophy } from 'lucide-react';
-import { PlayerProfile } from '../types/profile';
+import { BolterData } from '../types/bolter';
 
 interface EnhancedDeathScreenProps {
-  profile: PlayerProfile;
+  bolterData: BolterData;
   sessionStats: {
     survivalTime: number;
     goldEarned: number;
@@ -14,13 +14,13 @@ interface EnhancedDeathScreenProps {
 }
 
 export function EnhancedDeathScreen({ 
-  profile, 
+  bolterData, 
   sessionStats, 
   onUpgrade, 
   onRestart 
 }: EnhancedDeathScreenProps) {
-  const isNewRecord = sessionStats.survivalTime > profile.bestSurvivalTime;
-  const totalGoldAfterSession = profile.totalGold + sessionStats.goldEarned;
+  const isNewRecord = sessionStats.survivalTime > bolterData.bestSurvivalTime;
+  const totalGoldAfterSession = bolterData.totalGold + sessionStats.goldEarned;
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50">
@@ -41,7 +41,7 @@ export function EnhancedDeathScreen({
           )}
           
           <p className="text-gray-300">
-            {profile.name} has fallen in battle...
+            The Bolter has fallen in battle...
           </p>
         </div>
         
@@ -79,7 +79,7 @@ export function EnhancedDeathScreen({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">Previous Best:</span>
-              <span className="text-green-400">{Math.floor(profile.bestSurvivalTime)}s</span>
+              <span className="text-green-400">{Math.floor(bolterData.bestSurvivalTime)}s</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">This Run:</span>
@@ -89,11 +89,11 @@ export function EnhancedDeathScreen({
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Total Enemies:</span>
-              <span className="text-red-400">{(profile.totalEnemiesKilled + sessionStats.enemiesKilled).toLocaleString()}</span>
+              <span className="text-red-400">{(bolterData.totalEnemiesKilled + sessionStats.enemiesKilled).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Total Deaths:</span>
-              <span className="text-gray-300">{profile.totalDeaths + 1}</span>
+              <span className="text-gray-300">{bolterData.totalDeaths + 1}</span>
             </div>
           </div>
         </div>

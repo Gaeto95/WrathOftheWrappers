@@ -1,18 +1,18 @@
 import React from 'react';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
-import { PlayerProfile, PermanentUpgrades } from '../types/profile';
+import { BolterData, PermanentUpgrades } from '../types/bolter';
 import { GAME_CONFIG, UpgradeType, UPGRADE_TYPE_NAMES } from '../utils/constants';
 
 interface EnhancedUpgradeScreenProps {
-  profile: PlayerProfile;
+  bolterData: BolterData;
   currentSessionGold: number;
   onUpgrade: (type: keyof PermanentUpgrades, cost: number) => boolean;
   onClose: () => void;
 }
 
-export function EnhancedUpgradeScreen({ profile, currentSessionGold, onUpgrade, onClose }: EnhancedUpgradeScreenProps) {
+export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrade, onClose }: EnhancedUpgradeScreenProps) {
   // Calculate total available gold
-  const totalAvailableGold = profile.totalGold + currentSessionGold;
+  const totalAvailableGold = bolterData.totalGold + currentSessionGold;
 
   const upgradeDisplayNames: Record<keyof PermanentUpgrades, string> = {
     damage: 'Damage',
@@ -97,7 +97,7 @@ export function EnhancedUpgradeScreen({ profile, currentSessionGold, onUpgrade, 
                 <TrendingUp className="w-8 h-8 text-purple-400" />
                 Permanent Upgrades
               </h2>
-              <p className="text-gray-400">Enhance {profile.name}'s abilities</p>
+              <p className="text-gray-400">Enhance the Bolter's abilities</p>
             </div>
           </div>
           <div className="text-right">
@@ -108,7 +108,7 @@ export function EnhancedUpgradeScreen({ profile, currentSessionGold, onUpgrade, 
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {(Object.keys(upgradeDisplayNames) as Array<keyof PermanentUpgrades>).map(type => {
-            const currentLevel = profile.permanentUpgrades[type];
+            const currentLevel = bolterData.permanentUpgrades[type];
             const cost = getUpgradeCost(type, currentLevel);
             const canAfford = totalAvailableGold >= cost;
             const description = getUpgradeDescription(type);
@@ -159,22 +159,22 @@ export function EnhancedUpgradeScreen({ profile, currentSessionGold, onUpgrade, 
         </div>
 
         <div className="mt-8 bg-gray-800 rounded-xl p-6 border border-gray-700">
-          <h3 className="text-lg font-bold text-white mb-4">Profile Statistics</h3>
+          <h3 className="text-lg font-bold text-white mb-4">Bolter Statistics</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">{Math.floor(profile.bestSurvivalTime)}s</div>
+              <div className="text-2xl font-bold text-green-400">{Math.floor(bolterData.bestSurvivalTime)}s</div>
               <div className="text-gray-400">Best Survival</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-400">{profile.totalEnemiesKilled.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-red-400">{bolterData.totalEnemiesKilled.toLocaleString()}</div>
               <div className="text-gray-400">Enemies Killed</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{profile.totalDeaths}</div>
+              <div className="text-2xl font-bold text-blue-400">{bolterData.totalDeaths}</div>
               <div className="text-gray-400">Total Deaths</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-400">{Math.floor(profile.totalPlayTime / 60000)}m</div>
+              <div className="text-2xl font-bold text-purple-400">{Math.floor(bolterData.totalPlayTime / 60000)}m</div>
               <div className="text-gray-400">Play Time</div>
             </div>
           </div>
@@ -185,7 +185,7 @@ export function EnhancedUpgradeScreen({ profile, currentSessionGold, onUpgrade, 
             onClick={onClose}
             className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-lg font-bold text-lg transition-all duration-200 transform hover:scale-105"
           >
-            🎮 Continue Game
+            🎮 Resume Game
           </button>
         </div>
       </div>
