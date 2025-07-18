@@ -64,22 +64,46 @@ export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrad
   const getCurrentUpgradeValue = (type: keyof PermanentUpgrades, level: number): string => {
     switch (type) {
       case 'damage':
-        return `+${level * 10}`;
+        const damageBonus = Math.floor(((level * 0.15) / (1 + level * 0.02)) * 100);
+        return `+${damageBonus}%`;
       case 'speed':
-        return `+${level * 5}%`;
+        const speedBonus = Math.floor(((level * 0.08) / (1 + level * 0.015)) * 100);
+        return `+${speedBonus}%`;
       case 'health':
-        return `+${level * 20} HP`;
+        const healthBonus = Math.floor(((level * 0.25) / (1 + level * 0.02)) * 100);
+        return `+${healthBonus}%`;
       case 'fireRate':
-        return `-${(level * 0.05).toFixed(2)}s`;
+        const fireRateBonus = Math.floor(((level * 0.08) / (1 + level * 0.02)) * 100);
+        return `-${fireRateBonus}%`;
       case 'goldBonus':
-        return `+${level * 20}%`;
+        const goldBonus = Math.floor(((level * 0.25) / (1 + level * 0.02)) * 100);
+        return `+${goldBonus}%`;
       default:
         return '0';
     }
   };
 
   const getNextUpgradeValue = (type: keyof PermanentUpgrades, level: number): string => {
-    return getCurrentUpgradeValue(type, level + 1);
+    const nextLevel = level + 1;
+    switch (type) {
+      case 'damage':
+        const damageBonus = Math.floor(((nextLevel * 0.15) / (1 + nextLevel * 0.02)) * 100);
+        return `+${damageBonus}%`;
+      case 'speed':
+        const speedBonus = Math.floor(((nextLevel * 0.08) / (1 + nextLevel * 0.015)) * 100);
+        return `+${speedBonus}%`;
+      case 'health':
+        const healthBonus = Math.floor(((nextLevel * 0.25) / (1 + nextLevel * 0.02)) * 100);
+        return `+${healthBonus}%`;
+      case 'fireRate':
+        const fireRateBonus = Math.floor(((nextLevel * 0.08) / (1 + nextLevel * 0.02)) * 100);
+        return `-${fireRateBonus}%`;
+      case 'goldBonus':
+        const goldBonus = Math.floor(((nextLevel * 0.25) / (1 + nextLevel * 0.02)) * 100);
+        return `+${goldBonus}%`;
+      default:
+        return '0';
+    }
   };
 
   return (

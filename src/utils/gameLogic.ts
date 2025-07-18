@@ -100,17 +100,24 @@ export interface GameState {
 export function createInitialPlayer(upgrades: Upgrades, characterClass: CharacterClass): Player {
   const classConfig = CLASS_CONFIGS[characterClass];
   
+  // Calculate percentage-based upgrades with diminishing returns
+  const damageMultiplier = 1 + (upgrades.damage * 0.15) / (1 + upgrades.damage * 0.02);
+  const speedMultiplier = 1 + (upgrades.speed * 0.08) / (1 + upgrades.speed * 0.015);
+  const healthMultiplier = 1 + (upgrades.health * 0.25) / (1 + upgrades.health * 0.02);
+  const fireRateReduction = Math.min(0.85, (upgrades.fireRate * 0.08) / (1 + upgrades.fireRate * 0.02));
+  const goldMultiplier = 1 + (upgrades.goldBonus * 0.25) / (1 + upgrades.goldBonus * 0.02);
+  
   return {
     x: GAME_CONFIG.CANVAS_WIDTH / 2,
     y: GAME_CONFIG.CANVAS_HEIGHT / 2,
-    hp: Math.floor((GAME_CONFIG.PLAYER_MAX_HP + (upgrades.health * 20)) * classConfig.baseStats.healthModifier),
-    maxHp: Math.floor((GAME_CONFIG.PLAYER_MAX_HP + (upgrades.health * 20)) * classConfig.baseStats.healthModifier),
-    damage: Math.floor((GAME_CONFIG.PLAYER_DAMAGE + (upgrades.damage * 10)) * classConfig.baseStats.damageModifier),
-    speed: GAME_CONFIG.PLAYER_SPEED * (1 + upgrades.speed * 0.05) * classConfig.baseStats.speedModifier,
-    fireRate: Math.max(0.1, (GAME_CONFIG.PLAYER_FIRE_RATE - (upgrades.fireRate * 0.05)) * classConfig.baseStats.fireRateModifier),
+    hp: Math.floor(GAME_CONFIG.PLAYER_MAX_HP * healthMultiplier * classConfig.baseStats.healthModifier),
+    maxHp: Math.floor(GAME_CONFIG.PLAYER_MAX_HP * healthMultiplier * classConfig.baseStats.healthModifier),
+    damage: Math.floor(GAME_CONFIG.PLAYER_DAMAGE * damageMultiplier * classConfig.baseStats.damageModifier),
+    speed: GAME_CONFIG.PLAYER_SPEED * speedMultiplier * classConfig.baseStats.speedModifier,
+    fireRate: Math.max(0.08, GAME_CONFIG.PLAYER_FIRE_RATE * (1 - fireRateReduction) * classConfig.baseStats.fireRateModifier),
     lastShot: 0,
     invulnerableUntil: 0,
-    goldMultiplier: 1 + (upgrades.goldBonus * 0.2),
+    goldMultiplier: goldMultiplier,
     classState: {
       selectedClass: characterClass,
       equippedSkills: [],
@@ -262,15 +269,15 @@ export function canAffordUpgrade(gold: number, upgradeType: UpgradeType, current
 export function getUpgradeDescription(upgradeType: UpgradeType): string {
   switch (upgradeType) {
     case 'DAMAGE':
-      return 'Increase damage by 10';
+      return 'Increase damage by 15%';
     case 'SPEED':
-      return 'Increase movement speed by 5%';
+      return 'Increase movement speed by 8%';
     case 'HEALTH':
-      return 'Increase max health by 20';
+      return 'Increase max health by 25%';
     case 'FIRE_RATE':
-      return 'Decrease attack cooldown by 0.05s';
+      return 'Decrease attack cooldown by 8%';
     case 'GOLD_BONUS':
-      return 'Increase gold drops by 20%';
+      return 'Increase gold drops by 25%';
     default:
       return '';
   }

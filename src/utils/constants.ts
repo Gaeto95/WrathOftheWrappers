@@ -13,31 +13,31 @@ export const GAME_CONFIG = {
   PLAYER_INVINCIBILITY_TIME: 1000, // milliseconds
   
   // Enemy settings
-  ENEMY_SPAWN_RATE: 1200, // milliseconds - slower spawning for better balance
+  ENEMY_SPAWN_RATE: 1500, // milliseconds - even slower initial spawning
   ENEMY_TYPES: {
     GRUNT: {
-      hp: 20,
+      hp: 25,
       speed: 80,
-      damage: 20, // doubled damage
+      damage: 15, // reduced damage for longer survival
       size: 25,
       color: '#ff6b6b',
-      goldDrop: { min: 10, max: 20 }
+      goldDrop: { min: 15, max: 25 }
     },
     RUNNER: {
-      hp: 10,
+      hp: 12,
       speed: 150,
-      damage: 12, // more than doubled damage
+      damage: 8, // reduced damage
       size: 20,
       color: '#ff8787',
-      goldDrop: { min: 5, max: 15 }
+      goldDrop: { min: 8, max: 18 }
     },
     TANK: {
-      hp: 50,
+      hp: 60,
       speed: 50,
-      damage: 35, // much higher damage
+      damage: 25, // reduced damage
       size: 40,
       color: '#ff5252',
-      goldDrop: { min: 20, max: 30 }
+      goldDrop: { min: 30, max: 45 }
     }
   },
   
@@ -53,18 +53,18 @@ export const GAME_CONFIG = {
   
   // Upgrade costs (exponential scaling)
   UPGRADE_COSTS: {
-    DAMAGE: [50, 100, 200, 400, 800, 1600, 3200, 6400],
-    SPEED: [30, 60, 120, 240, 480, 960, 1920, 3840],
-    HEALTH: [40, 80, 160, 320, 640, 1280, 2560, 5120],
-    FIRE_RATE: [60, 120, 240, 480, 960, 1920, 3840, 7680],
-    GOLD_BONUS: [100, 200, 400, 800, 1600, 3200, 6400, 12800]
+    DAMAGE: [100, 250, 500, 1000, 2000, 4500, 9000, 18000, 36000, 72000],
+    SPEED: [80, 200, 400, 800, 1600, 3600, 7200, 14400, 28800, 57600],
+    HEALTH: [120, 300, 600, 1200, 2400, 5400, 10800, 21600, 43200, 86400],
+    FIRE_RATE: [150, 375, 750, 1500, 3000, 6750, 13500, 27000, 54000, 108000],
+    GOLD_BONUS: [200, 500, 1000, 2000, 4000, 9000, 18000, 36000, 72000, 144000]
   },
   
   // Difficulty scaling
-  DIFFICULTY_INCREASE_INTERVAL: 15000, // 15 seconds - even slower difficulty scaling
-  SPAWN_RATE_INCREASE: 0.3, // 30% faster spawning - less aggressive
-  ENEMY_HEALTH_INCREASE_INTERVAL: 45000, // 45 seconds - slower health scaling
-  ENEMY_HEALTH_INCREASE: 0.5, // 50% more health - much tankier enemies
+  DIFFICULTY_INCREASE_INTERVAL: 20000, // 20 seconds - slower scaling for longer games
+  SPAWN_RATE_INCREASE: 0.25, // 25% faster spawning - more gradual
+  ENEMY_HEALTH_INCREASE_INTERVAL: 60000, // 60 seconds - much slower health scaling
+  ENEMY_HEALTH_INCREASE: 0.4, // 40% more health - more manageable scaling
   
   // Visual effects
   PARTICLE_COUNT: 8,
