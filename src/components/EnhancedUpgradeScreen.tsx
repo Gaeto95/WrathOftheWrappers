@@ -182,7 +182,10 @@ export function EnhancedUpgradeScreen({ profile, currentSessionGold, onUpgrade, 
 
         <div className="mt-6 text-center">
           <button
-            onClick={onClose}
+            onClick={() => {
+              // Force a complete restart when clicking "Start New Game"
+              onClose();
+            }}
             className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-lg font-bold text-lg transition-all duration-200 transform hover:scale-105"
           >
             🎮 Start New Game

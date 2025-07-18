@@ -58,6 +58,11 @@ export function useProfileSystem() {
         ? { ...p, ...updates, lastPlayed: Date.now() }
         : p
     ));
+    
+    // Force a re-render by updating the active profile reference
+    if (activeProfileId) {
+      setActiveProfileId(activeProfileId);
+    }
   }, [activeProfile, setProfiles]);
 
   // Add method to get current profile with latest data
@@ -99,11 +104,12 @@ export function useProfileSystem() {
     enemiesKilled: number;
     survivalTime: number;
   }) => {
-    if (!currentSession || !activeProfile) return;
+    if (!currentSession) return;
 
-    const sessionDuration = Date.now() - currentSession.startTime;
     const currentProfile = getCurrentProfile();
     if (!currentProfile) return;
+
+    const sessionDuration = Date.now() - currentSession.startTime;
     
     updateProfile({
       totalGold: currentProfile.totalGold + finalStats.goldEarned,
@@ -124,7 +130,8 @@ export function useProfileSystem() {
     const currentProfile = getCurrentProfile();
     if (!currentProfile) return;
     
-    const sessionDuration = Date.now() - (currentSession?.startTime || Date.now());
+    // Only calculate session duration if we have a valid session
+    const sessionDuration = currentSession ? Date.now() - currentSession.startTime : 0;
     
     updateProfile({
       totalGold: currentProfile.totalGold + stats.goldEarned,
@@ -133,6 +140,9 @@ export function useProfileSystem() {
       totalEnemiesKilled: currentProfile.totalEnemiesKilled + stats.enemiesKilled,
       totalDeaths: currentProfile.totalDeaths + 1
     });
+    
+    // Clear the session after saving
+    setCurrentSession(null);
   }, [getCurrentProfile, updateProfile, currentSession]);
 
   // Auto-create first profile if none exist

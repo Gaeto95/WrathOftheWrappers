@@ -220,48 +220,38 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
-    // Save current session stats before restarting
-    if (!sessionEnded) {
-      const finalStats = {
-        survivalTime: gameState.score,
-        goldEarned: gameState.gold,
-        enemiesKilled: gameState.enemiesKilled || 0
-      };
-      profileSystem.endGameSession(finalStats);
-    }
+    // Get the most current profile data
+    const currentProfile = profileSystem.getCurrentProfile();
+    if (!currentProfile) return;
     
-    // Properly restart the game with fresh state
-    setGameState(createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass));
+    // Create completely fresh game state
+    setGameState(createInitialGameState(currentProfile.permanentUpgrades, currentProfile.selectedClass));
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
     });
     setSessionEnded(false);
-    // Start a new session
+    
+    // Start fresh session
     profileSystem.startGameSession();
-  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profile.selectedClass]);
+  }, [profileSystem]);
 
   const handleCloseUpgradesAndRestart = useCallback(() => {
-    // Save current session stats before restarting
-    if (!sessionEnded) {
-      const finalStats = {
-        survivalTime: gameState.score,
-        goldEarned: gameState.gold,
-        enemiesKilled: gameState.enemiesKilled || 0
-      };
-      profileSystem.endGameSession(finalStats);
-    }
+    // Get the most current profile data
+    const currentProfile = profileSystem.getCurrentProfile();
+    if (!currentProfile) return;
     
-    // When closing upgrades after death, start fresh game
-    setGameState(createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass));
+    // Create completely fresh game state
+    setGameState(createInitialGameState(currentProfile.permanentUpgrades, currentProfile.selectedClass));
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
     });
     setSessionEnded(false);
-    // Start a new session
+    
+    // Start fresh session
     profileSystem.startGameSession();
-  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profile.selectedClass]);
+  }, [profileSystem]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">
@@ -326,7 +316,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
             profile={profileSystem.activeProfile}
             currentSessionGold={gameState.gold}
             onUpgrade={handleUpgrade}
-            onClose={sessionEnded ? handleCloseUpgradesAndRestart : handleCloseUpgrades}
+            onClose={sessionEnded ? handleCloseUpgradesAndRestart : handleUpgradeScreenRestart}
           />
         )}
       </div>
