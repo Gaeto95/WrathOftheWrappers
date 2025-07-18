@@ -231,6 +231,13 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
               equippedSkills={gameState.player.classState.equippedSkills}
               onRemoveSkill={handleRemoveSkill}
             />
+            {gameState.pendingSkillDrop && (
+              <SkillDropNotification
+                skill={gameState.pendingSkillDrop}
+                onAccept={handleAcceptSkill}
+                onReject={handleRejectSkill}
+              />
+            )}
           </>
         )}
         
@@ -265,13 +272,6 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         )}
       </div>
       
-      {gameState.pendingSkillDrop && (
-        <SkillDropNotification
-          skill={gameState.pendingSkillDrop}
-          onAccept={handleAcceptSkill}
-          onReject={handleRejectSkill}
-        />
-      )}
     </div>
   );
 }
