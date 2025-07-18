@@ -238,8 +238,8 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   
   // Make attack animations match fire rate but with limits
   if (currentAnimation === 'normalAttack' && player.fireRate) {
-    // Always use 100ms for consistent animation speed
-    animSpeed = 100;
+    // Use faster animation speed for quicker attacks
+    animSpeed = 80;
   }
   
   // Update animation frame
