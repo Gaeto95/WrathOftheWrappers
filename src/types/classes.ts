@@ -116,10 +116,10 @@ export const PASSIVE_SKILLS: Record<string, Omit<PassiveSkill, 'id' | 'currentLe
   },
   battleFrenzy: {
     name: 'Battle Frenzy',
-    description: 'Attack speed increases over time',
+    description: 'Slightly increases attack speed',
     icon: '⚡',
     maxLevel: 10,
     rarity: 'rare',
-    effects: [{ type: 'fireRate', value: 2, isPercentage: true }]
+    effects: [{ type: 'fireRate', value: 0.5, isPercentage: true }] // Much smaller base value
   }
 };

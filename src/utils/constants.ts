@@ -13,11 +13,11 @@ export const GAME_CONFIG = {
   PLAYER_INVINCIBILITY_TIME: 1000, // milliseconds
   
   // Enemy settings
-  ENEMY_SPAWN_RATE: 1500, // milliseconds - even slower initial spawning
+  ENEMY_SPAWN_RATE: 800, // milliseconds - faster initial spawning for more action
   ENEMY_TYPES: {
     GRUNT: {
       hp: 25,
-      speed: 80,
+      speed: 120, // Faster movement
       damage: 15, // reduced damage for longer survival
       size: 25,
       color: '#ff6b6b',
@@ -25,7 +25,7 @@ export const GAME_CONFIG = {
     },
     RUNNER: {
       hp: 12,
-      speed: 150,
+      speed: 180, // Much faster
       damage: 8, // reduced damage
       size: 20,
       color: '#ff8787',
@@ -33,7 +33,7 @@ export const GAME_CONFIG = {
     },
     TANK: {
       hp: 60,
-      speed: 50,
+      speed: 70, // Slightly faster
       damage: 25, // reduced damage
       size: 40,
       color: '#ff5252',
@@ -61,8 +61,8 @@ export const GAME_CONFIG = {
   },
   
   // Difficulty scaling
-  DIFFICULTY_INCREASE_INTERVAL: 20000, // 20 seconds - slower scaling for longer games
-  SPAWN_RATE_INCREASE: 0.25, // 25% faster spawning - more gradual
+  DIFFICULTY_INCREASE_INTERVAL: 15000, // 15 seconds - back to faster scaling
+  SPAWN_RATE_INCREASE: 0.35, // 35% faster spawning - more aggressive
   ENEMY_HEALTH_INCREASE_INTERVAL: 60000, // 60 seconds - much slower health scaling
   ENEMY_HEALTH_INCREASE: 0.4, // 40% more health - more manageable scaling
   

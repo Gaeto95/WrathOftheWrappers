@@ -44,7 +44,7 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
           break;
           
         case 'fireRate':
-          fireRateBonus -= effectValue / 100;
+          fireRateBonus -= effectValue / 1000; // Much smaller effect: 0.2% per level instead of 2%
           break;
           
         case 'goldBonus':
