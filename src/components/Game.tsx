@@ -122,9 +122,11 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       gameOverAudio.pause();
       gameOverAudio.currentTime = 0;
     }
-    if (audio && musicEnabled) {
+    if (audio) {
       audio.currentTime = 0;
-      audio.play().catch(e => console.log('Background music restart failed:', e));
+      audio.play().then(() => {
+        setMusicEnabled(true);
+      }).catch(e => console.log('Background music restart failed:', e));
     }
     
     // Create completely fresh game state
@@ -287,9 +289,11 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       gameOverAudio.pause();
       gameOverAudio.currentTime = 0;
     }
-    if (audio && musicEnabled) {
+    if (audio) {
       audio.currentTime = 0;
-      audio.play().catch(e => console.log('Background music restart failed:', e));
+      audio.play().then(() => {
+        setMusicEnabled(true);
+      }).catch(e => console.log('Background music restart failed:', e));
     }
     
     // Create brand new game state with current upgrades
