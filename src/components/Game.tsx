@@ -182,9 +182,28 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
-    // Use the same logic as regular restart to ensure consistency
-    handleRestart();
-  }, [profileSystem.activeProfile.permanentUpgrades, profile.selectedClass]);
+    // Properly restart the game with fresh state
+    setGameState(createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass));
+    setSessionStats({
+      startTime: Date.now(),
+      enemiesKilled: 0
+    });
+    setSessionEnded(false);
+    // Start a new session
+    profileSystem.startGameSession();
+  }, [profileSystem]);
+
+  const handleCloseUpgradesAndRestart = useCallback(() => {
+    // When closing upgrades after death, start fresh game
+    setGameState(createInitialGameState(profileSystem.activeProfile.permanentUpgrades, profile.selectedClass));
+    setSessionStats({
+      startTime: Date.now(),
+      enemiesKilled: 0
+    });
+    setSessionEnded(false);
+    // Start a new session
+    profileSystem.startGameSession();
+  }, [profileSystem, profile.selectedClass]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">
@@ -241,7 +260,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
           <EnhancedUpgradeScreen
             profile={profile}
             onUpgrade={handleUpgrade}
-            onClose={gameState.gameStatus === 'dead' ? handleUpgradeScreenRestart : handleCloseUpgrades}
+            onClose={sessionEnded ? handleCloseUpgradesAndRestart : handleCloseUpgrades}
           />
         )}
       </div>
