@@ -109,10 +109,10 @@ export function EnhancedDeathScreen({
           
           <button
             onClick={onRestart}
-            className="w-full px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3"
+            className="w-full px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3"
           >
             <RotateCcw className="w-6 h-6" />
-            Restart Without Upgrading
+            Quick Restart (No Upgrades)
           </button>
         </div>
         

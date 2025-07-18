@@ -93,28 +93,18 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   )
 
   const handleRestart = useCallback(() => {
-    // Save current session stats before restarting only if we have an active session
-    if (!sessionEnded && bolterSystem.currentSession && (gameState.gold > 0 || gameState.enemiesKilled > 0)) {
-      const finalStats = {
-        survivalTime: gameState.score,
-        goldEarned: gameState.gold,
-        enemiesKilled: gameState.enemiesKilled || 0
-      };
-      console.log('Manual restart, saving stats:', finalStats);
-      bolterSystem.saveCurrentSessionStats(finalStats);
-      setSessionEnded(true);
-    }
+    console.log('Quick restart - creating fresh game without saving current session');
     
+    // Create completely fresh game state
     setGameState(createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter'));
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
     });
     setSessionEnded(false);
-    // Start new session
+    
+    // Start fresh session
     bolterSystem.startGameSession();
-  }
-  )
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)
@@ -223,16 +213,27 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
-    // Create completely fresh game state with current upgrades
-    setGameState(createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter'));
+    // Force a completely fresh restart without saving current session
+    console.log('Creating completely fresh game state');
+    
+    // Create brand new game state with current upgrades
+    const freshGameState = createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter');
+    console.log('Fresh game state created:', {
+      time: freshGameState.time,
+      enemies: freshGameState.enemies.length,
+      gold: freshGameState.gold
+    });
+    
+    setGameState(freshGameState);
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
     });
     setSessionEnded(false);
-    // Start new session
+    
+    // Start completely new session
     bolterSystem.startGameSession();
-  }, [handleRestart]);
+  }, [bolterSystem]);
 
   // Save stats when returning to profiles
   useEffect(() => {
