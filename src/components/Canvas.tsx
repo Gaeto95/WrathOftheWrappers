@@ -53,7 +53,8 @@ const monsterImages = new Map<string, HTMLImageElement>();
 const spriteImages = new Map<string, HTMLImageElement>();
 const coinImageCache = new Map<string, HTMLImageElement>();
 const potionImageCache = new Map<string, HTMLImageElement>();
-let spritesLoaded = false;
+let spritesLoaded = 0; // Track number of loaded sprites
+let totalSprites = 0; // Track total sprites to load
 let monstersLoaded = false;
 
 export function Canvas({ gameState, width, height, input }: CanvasProps) {
@@ -61,30 +62,25 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
 
   // Load all sprite images
   useEffect(() => {
-    if (spritesLoaded) return; // Prevent reloading
+    if (spritesLoaded >= totalSprites && totalSprites > 0) return; // Prevent reloading
     
-    const loadPromises: Promise<void>[] = [];
+    const animations = Object.entries(SPRITE_CONFIG.animations);
+    totalSprites = animations.length;
+    spritesLoaded = 0;
     
-    Object.entries(SPRITE_CONFIG.animations).forEach(([animName, config]) => {
+    animations.forEach(([animName, config]) => {
       const img = new Image();
       img.src = `/${config.file}`;
       
-      const loadPromise = new Promise<void>((resolve) => {
-        img.onload = () => {
-          spriteImages.set(animName, img);
-          resolve();
-        };
-        img.onerror = () => {
-          console.warn(`Failed to load sprite: ${config.file}`);
-          resolve(); // Still resolve to not block other sprites
-        };
-      });
+      img.onload = () => {
+        spriteImages.set(animName, img);
+        spritesLoaded++;
+      };
       
-      loadPromises.push(loadPromise);
-    });
-    
-    Promise.all(loadPromises).then(() => {
-      spritesLoaded = true;
+      img.onerror = () => {
+        console.warn(`Failed to load sprite: ${config.file}`);
+        spritesLoaded++; // Still count as "loaded" to not block
+      };
     });
   }, []); // Empty dependency array - only run once
 
@@ -229,8 +225,8 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     currentAnimation = 'running';
   }
   
-  // Check if sprites are available at all
-  const hasSprites = spriteImages && spriteImages.size > 0;
+  // Check if enough sprites are loaded (at least idle should be ready)
+  const hasSprites = spritesLoaded >= Math.min(3, totalSprites) && spriteImages.size > 0;
   
   // If no sprites are loaded yet, always use fallback
   if (!hasSprites) {
