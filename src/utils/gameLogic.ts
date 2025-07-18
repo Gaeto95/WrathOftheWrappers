@@ -83,7 +83,7 @@ export interface GameState {
   gold: number;
   time: number;
   score: number;
-  gameStatus: 'playing' | 'paused' | 'dead' | 'upgrading';
+  gameStatus: 'playing' | 'paused' | 'dead' | 'upgrading' | 'upgrading-dead';
   lastEnemySpawn: number;
   nextDifficultyIncrease: number;
   nextEnemyHealthIncrease: number;

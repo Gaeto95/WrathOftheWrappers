@@ -217,8 +217,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   }, []);
 
   const handleUpgradeAndRestart = useCallback(() => {
-    // Show upgrade screen first
-    setGameState(prev => ({ ...prev, gameStatus: 'upgrading' }));
+    // Show upgrade screen for dead state
+    setGameState(prev => ({ ...prev, gameStatus: 'upgrading-dead' }));
   }, []);
 
   const handleUpgradeScreenRestart = useCallback(() => {
@@ -306,6 +306,16 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
             currentSessionGold={gameState.gold}
             onUpgrade={handleUpgrade}
             onClose={handleCloseUpgrades}
+          />
+        )}
+        
+        {gameState.gameStatus === 'upgrading-dead' && (
+          <EnhancedUpgradeScreen
+            bolterData={bolterSystem.bolterData}
+            currentSessionGold={gameState.gold}
+            onUpgrade={handleUpgrade}
+            onClose={handleUpgradeScreenRestart}
+            isDead={true}
           />
         )}
       </div>

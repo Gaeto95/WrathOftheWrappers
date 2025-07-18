@@ -8,9 +8,10 @@ interface EnhancedUpgradeScreenProps {
   currentSessionGold: number;
   onUpgrade: (type: keyof PermanentUpgrades, cost: number) => boolean;
   onClose: () => void;
+  isDead?: boolean;
 }
 
-export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrade, onClose }: EnhancedUpgradeScreenProps) {
+export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrade, onClose, isDead = false }: EnhancedUpgradeScreenProps) {
   // Calculate total available gold
   const totalAvailableGold = bolterData.totalGold + currentSessionGold;
 
@@ -183,9 +184,13 @@ export function EnhancedUpgradeScreen({ bolterData, currentSessionGold, onUpgrad
         <div className="mt-6 text-center">
           <button
             onClick={onClose}
-            className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-lg font-bold text-lg transition-all duration-200 transform hover:scale-105"
+            className={`px-8 py-4 rounded-lg font-bold text-lg transition-all duration-200 transform hover:scale-105 ${
+              isDead 
+                ? 'bg-gradient-to-r from-purple-600 to-red-600 hover:from-purple-700 hover:to-red-700 text-white'
+                : 'bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white'
+            }`}
           >
-            🎮 Resume Game
+            {isDead ? '🔄 Start New Game' : '🎮 Resume Game'}
           </button>
         </div>
       </div>
