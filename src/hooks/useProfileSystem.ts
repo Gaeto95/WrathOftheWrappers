@@ -61,8 +61,7 @@ export function useProfileSystem() {
         ? updatedProfile
         : p
     ));
-  }
-  )
+  }, [activeProfile, setProfiles]);
 
   // Add method to get current profile with latest data
   const getCurrentProfile = useCallback(() => {
