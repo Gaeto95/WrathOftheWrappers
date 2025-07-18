@@ -1,0 +1,16 @@
+# This file keeps the public folder in git
+# Add your archer sprite assets here:
+# - coin.png
+# - potion.png  
+# - background-music.mp3
+# 
+# Archer Sprite Files (each contains 10 frames horizontally):
+# - Idle.png
+# - Running.png
+# - Jumping.png
+# - Normal Attack.png
+# - Low attack.png
+# - High Attack.png
+# - crouch.png
+# - Dash.png
+# - death.png
