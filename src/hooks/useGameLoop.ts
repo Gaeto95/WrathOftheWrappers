@@ -15,22 +15,24 @@ export function useGameLoop(
   const animationFrameRef = useRef<number>();
 
   const gameLoop = useCallback((currentTime: number) => {
+    // Only update deltaTime if game is actually playing
+    if (gameState.gameStatus !== 'playing') {
+      lastTimeRef.current = currentTime;
+      animationFrameRef.current = requestAnimationFrame(gameLoop);
+      return;
+    }
+
     const deltaTime = currentTime - lastTimeRef.current;
     lastTimeRef.current = currentTime;
 
-    if (gameState.gameStatus === 'playing') {
-      setGameState(prevState => updateGameState(prevState, deltaTime, input));
-    }
+    setGameState(prevState => updateGameState(prevState, deltaTime, input));
 
     animationFrameRef.current = requestAnimationFrame(gameLoop);
   }, [gameState.gameStatus, setGameState, input]);
 
   useEffect(() => {
-    if (gameState.gameStatus === 'playing') {
-      animationFrameRef.current = requestAnimationFrame(gameLoop);
-    } else if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
+    // Always run the game loop, but it will only update when status is 'playing'
+    animationFrameRef.current = requestAnimationFrame(gameLoop);
 
     return () => {
       if (animationFrameRef.current) {
@@ -235,6 +237,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
         player.hp -= enemy.damage;
         player.invulnerableUntil = newTime + GAME_CONFIG.PLAYER_INVINCIBILITY_TIME;
         screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION;
+        
+        // Play damage sound effect
+        const damageAudio = new Audio('/damage-sound.mp3');
+        damageAudio.volume = 0.2; // 20% volume
+        damageAudio.play().catch(e => console.log('Damage sound failed to play:', e));
         
         // Create hit particles
         particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));

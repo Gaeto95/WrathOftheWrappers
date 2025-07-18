@@ -116,10 +116,10 @@ export const PASSIVE_SKILLS: Record<string, Omit<PassiveSkill, 'id' | 'currentLe
   },
   battleFrenzy: {
     name: 'Battle Frenzy',
-    description: 'Reduces attack cooldown by 0.5% per level',
+    description: 'Reduces attack cooldown by 0.01s per level',
     icon: '⚡',
     maxLevel: 10,
     rarity: 'rare',
-    effects: [{ type: 'fireRate', value: 0.5, isPercentage: false }] // Flat 0.5% reduction per level
+    effects: [{ type: 'fireRate', value: 0.01, isPercentage: false }] // Flat 0.01s reduction per level
   }
 };
