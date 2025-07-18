@@ -110,7 +110,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start new session
     profileSystem.startGameSession();
-  }, [profile.permanentUpgrades, profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
+  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profile.selectedClass]);
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)
@@ -239,8 +239,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start a new session
     profileSystem.startGameSession();
-  }
-  )
+  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profile.selectedClass]);
 
   const handleCloseUpgradesAndRestart = useCallback(() => {
     // Save current session stats before restarting
@@ -262,8 +261,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
     setSessionEnded(false);
     // Start a new session
     profileSystem.startGameSession();
-  }
-  )
+  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded, profile.selectedClass]);
 
   return (
     <div className="relative w-full h-screen bg-gray-900 flex items-center justify-center">

@@ -6,8 +6,18 @@ import { useProfileSystem } from './hooks/useProfileSystem';
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameKey, setGameKey] = useState(0); // Force new game instance
   const profileSystem = useProfileSystem();
 
+  const handleStartGame = () => {
+    setGameStarted(true);
+    setGameKey(prev => prev + 1); // Force new game instance
+  };
+
+  const handleReturnToProfiles = () => {
+    setGameStarted(false);
+    setGameKey(prev => prev + 1); // Force new game instance when returning
+  };
   if (!gameStarted || !profileSystem.activeProfile) {
     return (
       <ProfileSelector
@@ -16,16 +26,17 @@ function App() {
         onSelectProfile={profileSystem.selectProfile}
         onCreateProfile={profileSystem.createProfile}
         onDeleteProfile={profileSystem.deleteProfile}
-        onStartGame={() => setGameStarted(true)}
+        onStartGame={handleStartGame}
       />
     );
   }
 
   return (
     <Game 
+      key={gameKey}
       profile={profileSystem.activeProfile}
       profileSystem={profileSystem}
-      onReturnToProfiles={() => setGameStarted(false)}
+      onReturnToProfiles={handleReturnToProfiles}
     />
   );
 }
