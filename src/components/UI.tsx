@@ -88,7 +88,7 @@ export function UI({ gameState, profile }: UIProps) {
         <div className="text-sm space-y-1">
           <div><strong>WASD:</strong> Move</div>
           <div><strong>ESC:</strong> Pause</div>
-          <div><strong>Auto-Attack:</strong> {classConfig.name}</div>
+          <div><strong>Auto-Bolt:</strong> {classConfig.name}</div>
         </div>
       </div>
       

@@ -1,16 +1,18 @@
-# ⚔️ Mystic Grind
+# ⚔️ Wrath of the Wrappers
 *Complete Survival Action RPG - Built for Web*
+
+**🎮 [Try the Live Demo](https://wrathofthewrappers.netlify.app)**
 
 ![Game Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Tech Stack](https://img.shields.io/badge/Tech-React%20%7C%20TypeScript%20%7C%20Canvas-blue)
 
 ## 🎮 Game Overview
 
-**Mystic Grind** is a fast-paced survival action RPG where players control a skilled archer to survive endless waves of enemies while collecting gold and upgrading their abilities. Built entirely in the browser using modern web technologies with beautiful sprite animations.
+**Wrath of the Wrappers** is a fast-paced survival action RPG where players control a skilled bolter to survive endless waves of enemies while collecting gold and upgrading their abilities. Built entirely in the browser using modern web technologies with beautiful sprite animations.
 
 ### 🎯 Core Gameplay Loop
 1. **Survive** - Navigate through endless enemy waves using WASD controls
-2. **Combat** - Auto-targeting projectile system with piercing arrows
+2. **Combat** - Auto-targeting projectile system with piercing bolts
 3. **Collect** - Gather gold and health potions from defeated enemies
 4. **Upgrade** - Spend gold on permanent character improvements
 5. **Progress** - Face increasingly challenging enemies and survive longer
@@ -24,9 +26,9 @@
 - **Persistent Progression** - Gold and upgrades carry over between runs
 - **Multiple Enemy Types** - Grunts, Runners, and Tanks with unique behaviors
 - **Visual Feedback** - Screen shake, particle effects, and damage flashing
-- **Animated Archer Sprites** - 9 different animations with 10 frames each
+- **Animated Bolter Sprites** - 9 different animations with 10 frames each
 
-### 🏹 Archer Character System
+### 🏹 Bolter Character System
 - **Professional Sprite Animations** - High-quality 64x64 pixel art sprites
 - **9 Animation States**: Idle, Running, Jumping, Normal Attack, Low Attack, High Attack, Crouch, Dash, Death
 - **Dynamic Animation Speed** - Attack animations scale with fire rate upgrades
@@ -56,10 +58,10 @@
 | **Fire Rate** | -0.05s attack cooldown | 60 Gold | Exponential |
 | **Gold Bonus** | +20% gold drops | 100 Gold | Exponential |
 
-## 🏹 Archer Class Features
+## 🏹 Bolter Class Features
 
 ### 🎯 Combat Abilities
-- **Piercing Arrows** - Projectiles pass through multiple enemies
+- **Piercing Bolts** - Projectiles pass through multiple enemies
 - **High Mobility** - 20% increased movement speed
 - **Rapid Fire** - 40% faster attack rate than base
 - **Eagle Eye** - Increased projectile speed and range
@@ -83,7 +85,7 @@
 ```css
 Player: #4dabf7 (Bright Blue)
 Enemies: #ff6b6b, #ff8787, #ff5252 (Red Variants)
-Projectiles: #22c55e (Green Arrows)
+Projectiles: #22c55e (Green Bolts)
 Gold: #ffd93d (Golden Yellow)
 Health: #51cf66 (Vibrant Green)
 UI: #ffffff on rgba(0,0,0,0.7) (High Contrast)
@@ -173,8 +175,8 @@ Place these files in the `public/` folder:
 ## 🎯 Game Balance
 
 ### 📈 Difficulty Scaling
-- **Spawn Rate Increase** - 25% faster enemy spawning every 15 seconds
-- **Health Scaling** - 30% more enemy HP every 30 seconds
+- **Spawn Rate Increase** - 30% faster enemy spawning every 15 seconds
+- **Health Scaling** - 50% more enemy HP every 45 seconds
 - **Progressive Challenge** - Maintains engagement without overwhelming players
 
 ### ⚖️ Economy Balance
@@ -189,7 +191,7 @@ Place these files in the `public/` folder:
 - **Veteran Fighter** - Survive 60 seconds  
 - **Elite Warrior** - Survive 120 seconds
 - **Legendary Hero** - Survive 300 seconds
-- **Mystic Master** - Survive 600 seconds
+- **Wrapper Master** - Survive 600 seconds
 
 ### 💰 Economic Goals
 - **First Fortune** - Earn 1,000 total gold
@@ -253,6 +255,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for the web gaming community**
+**Built with ❤️ for Bolt**
 
-*Master the bow. Survive the endless waves. Become the ultimate archer champion.*
+*Master the bolt. Survive the endless waves. Become the ultimate wrapper champion.*
+
+---
+
+**Built with Bolt** - Please don't take this the wrong way, it was built with Bolt!

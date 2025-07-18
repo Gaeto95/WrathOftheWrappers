@@ -57,7 +57,7 @@ export function ProfileSelector({
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
             <User className="w-10 h-10 text-purple-400" />
-            ⚔️ Mystic Grind
+            ⚔️ Wrath of the Wrappers
           </h1>
           <p className="text-gray-400">Select your character profile</p>
         </div>

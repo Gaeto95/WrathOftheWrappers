@@ -16,11 +16,11 @@ export function useClassAbility(
   enemies: Enemy[], 
   currentTime: number
 ): AbilityResult | null {
-  // Only archer class remains, no special abilities needed
+  // Only bolter class remains, no special abilities needed
   return null;
 }
 
 export function regenerateMana(player: Player, deltaTime: number): Player {
-  // No mana system needed for archer only
+  // No mana system needed for bolter only
   return player;
 }

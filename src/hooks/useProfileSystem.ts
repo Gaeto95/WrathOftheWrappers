@@ -112,7 +112,7 @@ export function useProfileSystem() {
   // Auto-create first profile if none exist
   useEffect(() => {
     if (profiles.length === 0) {
-      createProfile('Player 1', 'archer');
+      createProfile('Player 1', 'bolter');
     }
   }, [profiles.length, createProfile]);
 

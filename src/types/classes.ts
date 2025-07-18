@@ -1,4 +1,4 @@
-export type CharacterClass = 'archer';
+export type CharacterClass = 'bolter';
 
 export interface ClassConfig {
   name: string;
@@ -58,9 +58,9 @@ export interface PlayerClassState {
 }
 
 export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
-  archer: {
-    name: 'Archer',
-    description: 'Swift and precise. High mobility with piercing projectiles.',
+  bolter: {
+    name: 'Bolter',
+    description: 'Swift and precise. High mobility with piercing bolts.',
     icon: '🏹',
     baseStats: {
       healthModifier: 0.8,   // 20% less health
@@ -70,13 +70,13 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
     },
     abilities: {
       primary: {
-        name: 'Piercing Shot',
-        description: 'Arrows pierce through multiple enemies',
+        name: 'Piercing Bolt',
+        description: 'Bolts pierce through multiple enemies',
         icon: '🎯'
       },
       passive: {
         name: 'Eagle Eye',
-        description: 'Increased projectile speed and range',
+        description: 'Increased bolt speed and range',
         icon: '👁️'
       }
     },
