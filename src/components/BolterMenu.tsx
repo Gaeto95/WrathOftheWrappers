@@ -33,6 +33,20 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
+        {/* Corner decorations - moved to outer background */}
+        <div className="absolute -top-2 -left-2 animate-bounce" style={{ animationDelay: '0s' }}>
+          <Sword className="w-6 h-6 text-yellow-400 drop-shadow-lg" />
+        </div>
+        <div className="absolute -top-2 -right-2 animate-bounce" style={{ animationDelay: '0.5s' }}>
+          <Shield className="w-6 h-6 text-blue-400 drop-shadow-lg" />
+        </div>
+        <div className="absolute -bottom-2 -left-2 animate-bounce" style={{ animationDelay: '1s' }}>
+          <Zap className="w-6 h-6 text-purple-400 drop-shadow-lg" />
+        </div>
+        <div className="absolute -bottom-2 -right-2 animate-bounce" style={{ animationDelay: '1.5s' }}>
+          <Target className="w-6 h-6 text-green-400 drop-shadow-lg" />
+        </div>
+        
         {/* Larger glowing orbs */}
         {Array.from({ length: 4 }).map((_, i) => (
           <div
@@ -55,20 +69,6 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
           {/* Card glow effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10 rounded-3xl animate-pulse" />
           
-          {/* Floating icons around the card */}
-          <div className="absolute -top-2 -left-2 animate-bounce" style={{ animationDelay: '0s' }}>
-            <Sword className="w-6 h-6 text-yellow-400 drop-shadow-lg" />
-          </div>
-          <div className="absolute -top-2 -right-2 animate-bounce" style={{ animationDelay: '0.5s' }}>
-            <Shield className="w-6 h-6 text-blue-400 drop-shadow-lg" />
-          </div>
-          <div className="absolute -bottom-2 -left-2 animate-bounce" style={{ animationDelay: '1s' }}>
-            <Zap className="w-6 h-6 text-purple-400 drop-shadow-lg" />
-          </div>
-          <div className="absolute -bottom-2 -right-2 animate-bounce" style={{ animationDelay: '1.5s' }}>
-            <Target className="w-6 h-6 text-green-400 drop-shadow-lg" />
-          </div>
-
           <div className="relative z-10">
             {/* Title Section */}
             <div className="text-center mb-4">
