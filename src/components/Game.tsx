@@ -92,8 +92,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   }, [gameState.gameStatus, gameState.gold, gameState.score, gameState.enemiesKilled, bolterSystem, sessionEnded]);
 
   const handleRestart = useCallback(() => {
-    // Save current session stats before restarting
-    if (!sessionEnded) {
+    // Save current session stats before restarting only if we have gold to save
+    if (!sessionEnded && gameState.gold > 0) {
       const finalStats = {
         survivalTime: gameState.score,
         goldEarned: gameState.gold,
@@ -230,7 +230,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   useEffect(() => {
     return () => {
       // Cleanup function - save stats when component unmounts
-      if (!sessionEnded && gameState.gold > 0) {
+      if (!sessionEnded && gameState.gold > 0 && gameState.gameStatus !== 'dead') {
         const finalStats = {
           survivalTime: gameState.score,
           goldEarned: gameState.gold,

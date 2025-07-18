@@ -77,6 +77,12 @@ export function useBolterSystem() {
       survivalTime: stats.survivalTime
     });
     
+    // Prevent duplicate gold addition - check if this session was already saved
+    if (stats.goldEarned === 0) {
+      console.log('No gold to save, skipping gold update');
+      return;
+    }
+    
     const updatedData = {
       totalGold: bolterData.totalGold + stats.goldEarned,
       totalPlayTime: bolterData.totalPlayTime + sessionDuration,
