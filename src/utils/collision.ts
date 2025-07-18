@@ -45,7 +45,7 @@ export function isOffScreen(point: Point, width: number, height: number, margin:
 
 export function getRandomSpawnPosition(screenWidth: number, screenHeight: number): Point {
   const side = Math.floor(Math.random() * 4);
-  const margin = 100; // Spawn further off-screen to avoid visibility when zoomed out
+  const margin = 200; // Much further off-screen to prevent spawning inside visible area
   
   switch (side) {
     case 0: // Top
