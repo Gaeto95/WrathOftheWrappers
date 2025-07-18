@@ -105,6 +105,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     
     // Start fresh session
     bolterSystem.startGameSession();
+  }
+  )
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)
