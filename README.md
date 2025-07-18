@@ -1,5 +1,8 @@
 # ⚔️ Wrath of the Wrappers
-*Complete Survival Action RPG - Built for Web*
+Complete Survival Action RPG - Built for Web
+
+⚡ Bolt, please don't take this the wrong way. I love Bolt.
+This project was built entirely with it — any resemblance to real platforms, judges, or AI entities is purely coincidental. 😉
 
 **🎮 [Try the Live Demo](https://wrathofthewrappers.netlify.app)**
 
@@ -256,9 +259,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Built with ❤️ for Bolt**
-
-*Master the bolt. Survive the endless waves. Become the ultimate wrapper champion.*
-
----
-
-**Built with Bolt** - Please don't take this the wrong way, it was built with Bolt!
