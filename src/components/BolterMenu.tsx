@@ -33,20 +33,6 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        {/* Corner decorations - moved to outer background */}
-        <div className="absolute -top-2 -left-2 animate-bounce" style={{ animationDelay: '0s' }}>
-          <Sword className="w-6 h-6 text-yellow-400 drop-shadow-lg" />
-        </div>
-        <div className="absolute -top-2 -right-2 animate-bounce" style={{ animationDelay: '0.5s' }}>
-          <Shield className="w-6 h-6 text-blue-400 drop-shadow-lg" />
-        </div>
-        <div className="absolute -bottom-2 -left-2 animate-bounce" style={{ animationDelay: '1s' }}>
-          <Zap className="w-6 h-6 text-purple-400 drop-shadow-lg" />
-        </div>
-        <div className="absolute -bottom-2 -right-2 animate-bounce" style={{ animationDelay: '1.5s' }}>
-          <Target className="w-6 h-6 text-green-400 drop-shadow-lg" />
-        </div>
-        
         {/* Larger glowing orbs */}
         {Array.from({ length: 4 }).map((_, i) => (
           <div
