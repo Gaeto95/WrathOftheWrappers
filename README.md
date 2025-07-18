@@ -255,7 +255,7 @@ Place these files in the `public/` folder:
 We welcome contributions! Here's how you can help:
 
 ### 🐛 Bug Reports
-- Use the [Issues](https://github.com/yourusername/wrath-of-the-wrappers/issues) tab
+- Use the [Issues](https://github.com/gaeto95/wrath-of-the-wrappers/issues) tab
 - Include browser version, OS, and steps to reproduce
 - Screenshots or videos are helpful
 
