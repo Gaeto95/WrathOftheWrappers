@@ -27,9 +27,9 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
   // Create a copy to avoid mutations
   let modifiedPlayer = { ...player };
   
-  // Apply simple additive bonuses only
+  // Calculate total bonuses from all skills
   let damageBonus = 0;
-  let fireRateBonus = 0;
+  let fireRateReduction = 0;
   let goldBonus = 0;
   let magnetRadius = 0;
   
@@ -44,7 +44,7 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
           break;
           
         case 'fireRate':
-          fireRateBonus += effectValue; // Flat reduction: 0.01s per level
+          fireRateReduction += effectValue; // Flat reduction: 0.01s per level
           break;
           
         case 'goldBonus':
@@ -58,9 +58,9 @@ export function applySkillEffects(player: Player, skills: PassiveSkill[]): Playe
     });
   });
   
-  // Apply simple bonuses
+  // Apply bonuses to base stats (not cumulative)
   modifiedPlayer.damage = player.damage + damageBonus;
-  modifiedPlayer.fireRate = Math.max(0.1, player.fireRate + fireRateBonus);
+  modifiedPlayer.fireRate = Math.max(0.05, player.fireRate - fireRateReduction);
   modifiedPlayer.goldMultiplier = player.goldMultiplier + goldBonus;
   
   // Store magnet radius for use in collision detection

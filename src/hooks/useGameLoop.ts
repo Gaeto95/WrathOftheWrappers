@@ -58,9 +58,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   // Update player
   let player = { ...state.player };
   
-  // Apply skill effects to player stats
-  player = applySkillEffects(player, player.classState.equippedSkills);
-  
   // Update player position
   let dx = 0;
   let dy = 0;

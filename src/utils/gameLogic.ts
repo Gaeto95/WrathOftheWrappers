@@ -107,7 +107,7 @@ export function createInitialPlayer(upgrades: Upgrades, characterClass: Characte
   const fireRateReduction = Math.min(0.85, (upgrades.fireRate * 0.08) / (1 + upgrades.fireRate * 0.02));
   const goldMultiplier = 1 + (upgrades.goldBonus * 0.25) / (1 + upgrades.goldBonus * 0.02);
   
-  return {
+  const basePlayer = {
     x: GAME_CONFIG.CANVAS_WIDTH / 2,
     y: GAME_CONFIG.CANVAS_HEIGHT / 2,
     hp: Math.floor(GAME_CONFIG.PLAYER_MAX_HP * healthMultiplier * classConfig.baseStats.healthModifier),
@@ -124,6 +124,9 @@ export function createInitialPlayer(upgrades: Upgrades, characterClass: Characte
       lastAbilityUse: 0
     }
   };
+  
+  // Apply initial skill effects if any skills are equipped
+  return applySkillEffects(basePlayer, basePlayer.classState.equippedSkills);
 }
 
 export function createInitialGameState(upgrades: Upgrades, characterClass: CharacterClass): GameState {
