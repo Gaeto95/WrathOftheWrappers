@@ -10,6 +10,12 @@ interface EnhancedUpgradeScreenProps {
 }
 
 export function EnhancedUpgradeScreen({ profile, onUpgrade, onClose }: EnhancedUpgradeScreenProps) {
+  // Get the current total gold (profile gold + current session gold)
+  const getCurrentTotalGold = () => {
+    // This will be passed from the Game component
+    return profile.totalGold;
+  };
+
   const upgradeDisplayNames: Record<keyof PermanentUpgrades, string> = {
     damage: 'Damage',
     speed: 'Speed',

@@ -60,16 +60,22 @@ export function useProfileSystem() {
     ));
   }, [activeProfile, setProfiles]);
 
+  // Add method to get current profile with latest data
+  const getCurrentProfile = useCallback(() => {
+    return profiles.find(p => p.id === activeProfileId) || null;
+  }, [profiles, activeProfileId]);
+
   const purchaseUpgrade = useCallback((upgradeType: keyof PermanentUpgrades, cost: number) => {
-    if (!activeProfile || activeProfile.totalGold < cost) return false;
+    const currentProfile = getCurrentProfile();
+    if (!currentProfile || currentProfile.totalGold < cost) return false;
 
     const newUpgrades = {
-      ...activeProfile.permanentUpgrades,
-      [upgradeType]: activeProfile.permanentUpgrades[upgradeType] + 1
+      ...currentProfile.permanentUpgrades,
+      [upgradeType]: currentProfile.permanentUpgrades[upgradeType] + 1
     };
 
     updateProfile({
-      totalGold: activeProfile.totalGold - cost,
+      totalGold: currentProfile.totalGold - cost,
       permanentUpgrades: newUpgrades
     });
 
@@ -97,17 +103,18 @@ export function useProfileSystem() {
     if (!currentSession || !activeProfile) return;
 
     const sessionDuration = Date.now() - currentSession.startTime;
+    const currentProfile = getCurrentProfile();
+    if (!currentProfile) return;
     
     updateProfile({
-      totalGold: activeProfile.totalGold + finalStats.goldEarned,
-      totalPlayTime: activeProfile.totalPlayTime + sessionDuration,
-      bestSurvivalTime: Math.max(activeProfile.bestSurvivalTime, finalStats.survivalTime),
-      totalEnemiesKilled: activeProfile.totalEnemiesKilled + finalStats.enemiesKilled,
-      totalDeaths: activeProfile.totalDeaths + 1
+      totalGold: currentProfile.totalGold + finalStats.goldEarned,
+      totalPlayTime: currentProfile.totalPlayTime + sessionDuration,
+      bestSurvivalTime: Math.max(currentProfile.bestSurvivalTime, finalStats.survivalTime),
+      totalEnemiesKilled: currentProfile.totalEnemiesKilled + finalStats.enemiesKilled,
+      totalDeaths: currentProfile.totalDeaths + 1
     });
 
     setCurrentSession(null);
-  }, [currentSession, activeProfile, updateProfile]);
 
   // Auto-create first profile if none exist
   useEffect(() => {
@@ -118,7 +125,7 @@ export function useProfileSystem() {
 
   return {
     profiles,
-    activeProfile,
+    activeProfile: getCurrentProfile(),
     currentSession,
     createProfile,
     selectProfile,
@@ -126,6 +133,7 @@ export function useProfileSystem() {
     updateProfile,
     purchaseUpgrade,
     startGameSession,
-    endGameSession
+    endGameSession,
+    getCurrentProfile
   };
 }

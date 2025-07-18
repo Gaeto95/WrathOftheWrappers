@@ -79,6 +79,11 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   // Handle death
   useEffect(() => {
     if (gameState.gameStatus === 'dead' && !sessionEnded) {
+      // Update profile with current session gold before ending
+      profileSystem.updateProfile({
+        totalGold: profileSystem.activeProfile.totalGold + gameState.gold
+      });
+      
       const finalStats = {
         survivalTime: gameState.score,
         goldEarned: gameState.gold,
@@ -113,6 +118,15 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     const success = profileSystem.purchaseUpgrade(type, cost);
+    
+    // Update current game gold immediately when upgrade is purchased
+    if (success) {
+      setGameState(prev => ({
+        ...prev,
+        gold: prev.gold - cost
+      }));
+    }
+    
     // Don't auto-restart, just return success status
     return success;
   }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
@@ -299,7 +313,10 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         
         {gameState.gameStatus === 'upgrading' && (
           <EnhancedUpgradeScreen
-            profile={profile}
+            profile={{
+              ...profileSystem.activeProfile,
+              totalGold: profileSystem.activeProfile.totalGold + gameState.gold
+            }}
             onUpgrade={handleUpgrade}
             onClose={sessionEnded ? handleCloseUpgradesAndRestart : handleCloseUpgrades}
           />
