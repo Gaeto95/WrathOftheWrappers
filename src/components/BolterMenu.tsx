@@ -222,7 +222,6 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-pink-500/20 to-transparent rounded-bl-full" />
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-tr-full" />
       <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-purple-500/20 to-transparent rounded-tl-full" />
-    </div>
     </>
   );
 }
