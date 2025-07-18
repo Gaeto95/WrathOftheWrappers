@@ -53,6 +53,8 @@ This project was built entirely with it — any resemblance to real platforms, j
 | **Grunt** | 25 HP | Medium | 15 DMG | Balanced approach | 15-25 Gold |
 | **Runner** | 12 HP | Fast | 8 DMG | Quick, aggressive | 8-18 Gold |
 | **Tank** | 60 HP | Slow | 25 DMG | High damage, tanky | 30-45 Gold |
+| **Heavy Tank** | 120 HP | Fast | 35 DMG | Elite tank variant | 60-90 Gold |
+| **Boss** | 300 HP | Very Slow | 40 DMG | Massive threat | 150-225 Gold |
 
 ### 💰 Upgrade System
 | Upgrade | Effect | Base Cost | Scaling |
@@ -92,11 +94,12 @@ Random skill drops enhance gameplay:
 - **Minimalist Geometry** - Clean shapes with strategic visual complexity
 - **Dynamic Lighting** - Radial gradients and glow effects for all game objects
 - **Particle Systems** - Impact feedback and collection animations
+- **Monster Sprites** - Custom sprites for different enemy types with directional facing
 
 ### 🎨 Color Palette
 ```css
 Player: #4dabf7 (Bright Blue)
-Enemies: #ff6b6b, #ff8787, #ff5252 (Red Variants)
+Enemies: #ff6b6b, #ff8787, #ff5252, #cc0000, #800080 (Red to Purple Variants)
 Projectiles: #22c55e (Green Bolts)
 Gold: #ffd93d (Golden Yellow)
 Health: #51cf66 (Vibrant Green)
@@ -191,6 +194,8 @@ Place these files in the `public/` folder:
 - `potion.png` - Health potion sprite
 - `big-monster.png` - Large enemy sprite (for Tank enemies)
 - `small-monster.png` - Small enemy sprite (for Grunt and Runner enemies)
+- `heavy-tank-monster.png` - Elite heavy tank sprite
+- `boss-monster.png` - Boss enemy sprite
 - `background-music.mp3` - Background music
 
 ## 🎯 Game Balance
@@ -198,12 +203,16 @@ Place these files in the `public/` folder:
 ### 📈 Difficulty Scaling
 - **Spawn Rate Increase** - 35% faster enemy spawning every 15 seconds
 - **Health Scaling** - 40% more enemy HP every 60 seconds
+- **Elite Enemies** - Heavy Tanks spawn 5% of the time with double health and speed
+- **Boss Encounters** - Massive bosses spawn every 60 seconds
 - **Progressive Challenge** - Maintains engagement without overwhelming players
 
 ### ⚖️ Economy Balance
 - **Gold Drop Rates** - 80% chance from enemies, 10% health potion chance
 - **Upgrade Costs** - Exponential scaling prevents overpowered builds
 - **Risk/Reward** - Higher difficulty enemies drop more valuable rewards
+- **Elite Rewards** - Heavy Tanks and Bosses provide significantly more gold
+- **Spawn Distribution** - 95% normal enemies, 5% Heavy Tanks for balanced challenge
 
 ## 🏆 Achievements & Milestones
 
