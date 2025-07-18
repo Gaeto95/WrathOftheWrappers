@@ -290,10 +290,37 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   
   // Spawn enemies
   let lastEnemySpawn = state.lastEnemySpawn;
+  let lastBossSpawn = state.lastBossSpawn;
   const spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
+  
+  // Regular enemy spawning
   if (newTime - lastEnemySpawn > spawnRate) {
     aliveEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
+  }
+  
+  // Boss spawning every 60 seconds
+  if (newTime - lastBossSpawn > 60000) { // 60 seconds
+    const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
+    const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
+    
+    const boss = {
+      id: `boss_${newTime}_${Math.random()}`,
+      type: 'BOSS' as EnemyType,
+      x: spawnPos.x,
+      y: spawnPos.y,
+      hp: bossConfig.hp * state.enemyHealthMultiplier,
+      maxHp: bossConfig.hp * state.enemyHealthMultiplier,
+      speed: bossConfig.speed,
+      damage: bossConfig.damage,
+      size: bossConfig.size,
+      color: bossConfig.color,
+      flashUntil: 0,
+      goldDrop: bossConfig.goldDrop
+    };
+    
+    aliveEnemies.push(boss);
+    lastBossSpawn = newTime;
   }
   
   // Update difficulty
@@ -333,6 +360,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
     gold,
     time: newTime,
     lastEnemySpawn,
+    lastBossSpawn,
     nextDifficultyIncrease,
     nextEnemyHealthIncrease,
     difficultyMultiplier,

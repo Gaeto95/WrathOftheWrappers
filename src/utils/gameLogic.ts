@@ -1,4 +1,5 @@
 import { GAME_CONFIG, EnemyType, UpgradeType, ENEMY_TYPE_NAMES } from './constants';
+import { HEAVY_TANK_SPAWN_CHANCE } from './constants';
 import { Point, getDistance, normalize, getRandomSpawnPosition } from './collision';
 import { CharacterClass, CLASS_CONFIGS, PassiveSkill, PlayerClassState } from '../types/classes';
 import { calculateFinalStats, generateRandomSkill, shouldDropSkill } from './skillSystem';
@@ -95,6 +96,7 @@ export interface GameState {
   pendingSkillDrop: PassiveSkill | null;
   screenScale: number;
   enemiesKilled: number;
+  lastBossSpawn: number;
 }
 
 export function createInitialPlayer(upgrades: Upgrades, characterClass: CharacterClass): Player {
@@ -150,12 +152,20 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     camera: { x: 0, y: 0 },
     pendingSkillDrop: null,
     screenScale: 1,
-    enemiesKilled: 0
+    enemiesKilled: 0,
+    lastBossSpawn: 0
   };
 }
 
 export function createEnemy(gameState: GameState): Enemy {
-  const type = ENEMY_TYPE_NAMES[Math.floor(Math.random() * ENEMY_TYPE_NAMES.length)];
+  // 5% chance for Heavy Tank, otherwise normal distribution
+  let type: EnemyType;
+  if (Math.random() < HEAVY_TANK_SPAWN_CHANCE) {
+    type = 'HEAVY_TANK';
+  } else {
+    type = ENEMY_TYPE_NAMES[Math.floor(Math.random() * ENEMY_TYPE_NAMES.length)];
+  }
+  
   const config = GAME_CONFIG.ENEMY_TYPES[type];
   const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
   

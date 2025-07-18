@@ -38,6 +38,22 @@ export const GAME_CONFIG = {
       size: 40,
       color: '#ff5252',
       goldDrop: { min: 30, max: 45 }
+    },
+    HEAVY_TANK: {
+      hp: 120, // 2x tank HP
+      speed: 140, // 2x tank speed
+      damage: 50, // 2x tank damage
+      size: 40, // Same size as tank
+      color: '#cc0000', // Darker red
+      goldDrop: { min: 60, max: 90 } // 2x tank gold
+    },
+    BOSS: {
+      hp: 600, // 10x tank HP
+      speed: 700, // 10x tank speed
+      damage: 250, // 10x tank damage
+      size: 60, // Bigger than tank
+      color: '#800080', // Purple for boss
+      goldDrop: { min: 300, max: 450 } // 10x tank gold
     }
   },
   
@@ -89,4 +105,5 @@ export type EnemyType = keyof typeof GAME_CONFIG.ENEMY_TYPES;
 export type UpgradeType = keyof typeof GAME_CONFIG.UPGRADE_COSTS;
 
 export const ENEMY_TYPE_NAMES: EnemyType[] = ['GRUNT', 'RUNNER', 'TANK'];
+export const HEAVY_TANK_SPAWN_CHANCE = 0.05; // 5% chance
 export const UPGRADE_TYPE_NAMES: UpgradeType[] = ['DAMAGE', 'SPEED', 'HEALTH', 'FIRE_RATE', 'GOLD_BONUS'];
