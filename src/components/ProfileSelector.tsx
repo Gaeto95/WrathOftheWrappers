@@ -51,6 +51,14 @@ export function ProfileSelector({
     }
   };
 
+  // Debug logging
+  console.log('ProfileSelector render - profiles:', profiles.map(p => ({
+    name: p.name,
+    gold: p.totalGold,
+    enemies: p.totalEnemiesKilled,
+    playTime: p.totalPlayTime
+  })));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-xl shadow-2xl p-8 max-w-4xl w-full">

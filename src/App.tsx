@@ -18,12 +18,21 @@ function App() {
     setGameStarted(false);
     setGameKey(prev => prev + 1); // Force new game instance when returning
   };
+
+  const handleProfileChange = () => {
+    // Force new game instance when profile changes
+    setGameKey(prev => prev + 1);
+  };
+
   if (!gameStarted || !profileSystem.activeProfile) {
     return (
       <ProfileSelector
         profiles={profileSystem.profiles}
         activeProfile={profileSystem.activeProfile}
-        onSelectProfile={profileSystem.selectProfile}
+        onSelectProfile={(profileId) => {
+          profileSystem.selectProfile(profileId);
+          handleProfileChange();
+        }}
         onCreateProfile={profileSystem.createProfile}
         onDeleteProfile={profileSystem.deleteProfile}
         onStartGame={handleStartGame}

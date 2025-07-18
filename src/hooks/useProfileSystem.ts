@@ -53,17 +53,14 @@ export function useProfileSystem() {
   const updateProfile = useCallback((updates: Partial<PlayerProfile>) => {
     if (!activeProfile) return;
 
+    const updatedProfile = { ...activeProfile, ...updates, lastPlayed: Date.now() };
+    console.log('Updating profile:', updatedProfile.name, 'New gold:', updatedProfile.totalGold);
+    
     setProfiles(prev => prev.map(p => 
       p.id === activeProfile.id 
-        ? { ...p, ...updates, lastPlayed: Date.now() }
+        ? updatedProfile
         : p
     ));
-    
-    // Force a re-render by updating the active profile reference
-    if (activeProfileId) {
-      setActiveProfileId(activeProfileId);
-    }
-  }, [activeProfile, setProfiles]);
 
   // Add method to get current profile with latest data
   const getCurrentProfile = useCallback(() => {
@@ -74,6 +71,8 @@ export function useProfileSystem() {
     const currentProfile = getCurrentProfile();
     if (!currentProfile) return false;
 
+    console.log('Purchasing upgrade:', upgradeType, 'Cost:', cost, 'Current gold:', currentProfile.totalGold);
+    
     const newUpgrades = {
       ...currentProfile.permanentUpgrades,
       [upgradeType]: currentProfile.permanentUpgrades[upgradeType] + 1
@@ -132,6 +131,14 @@ export function useProfileSystem() {
     
     // Only calculate session duration if we have a valid session
     const sessionDuration = currentSession ? Date.now() - currentSession.startTime : 0;
+    
+    console.log('Saving session stats:', {
+      currentGold: currentProfile.totalGold,
+      goldEarned: stats.goldEarned,
+      newTotal: currentProfile.totalGold + stats.goldEarned,
+      enemiesKilled: stats.enemiesKilled,
+      survivalTime: stats.survivalTime
+    });
     
     updateProfile({
       totalGold: currentProfile.totalGold + stats.goldEarned,

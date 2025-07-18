@@ -85,6 +85,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         enemiesKilled: gameState.enemiesKilled || 0
       };
       
+      console.log('Game ended, saving stats:', finalStats);
       profileSystem.saveCurrentSessionStats(finalStats);
       setSessionEnded(true);
     }
@@ -98,6 +99,7 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         goldEarned: gameState.gold,
         enemiesKilled: gameState.enemiesKilled || 0
       };
+      console.log('Manual restart, saving stats:', finalStats);
       profileSystem.saveCurrentSessionStats(finalStats);
     }
     
