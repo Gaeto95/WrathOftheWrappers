@@ -49,8 +49,8 @@ export const GAME_CONFIG = {
     },
     BOSS: {
       hp: 600, // 10x tank HP
-      speed: 700, // 10x tank speed
-      damage: 250, // 10x tank damage
+      speed: 50, // Slower than tank
+      damage: 40, // Lower damage
       size: 60, // Bigger than tank
       color: '#800080', // Purple for boss
       goldDrop: { min: 300, max: 450 } // 10x tank gold

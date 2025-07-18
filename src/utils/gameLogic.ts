@@ -163,8 +163,8 @@ export function createEnemy(gameState: GameState): Enemy {
   if (Math.random() < HEAVY_TANK_SPAWN_CHANCE) {
     type = 'HEAVY_TANK';
   } else {
-    // Only spawn from normal enemy types (excluding HEAVY_TANK and BOSS)
-    const normalEnemies = ENEMY_TYPE_NAMES.filter(name => name !== 'HEAVY_TANK' && name !== 'BOSS');
+    // Only spawn from normal enemy types (GRUNT, RUNNER, TANK only)
+    const normalEnemies: EnemyType[] = ['GRUNT', 'RUNNER', 'TANK'];
     type = normalEnemies[Math.floor(Math.random() * normalEnemies.length)];
   }
   
