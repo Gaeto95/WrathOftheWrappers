@@ -9,7 +9,7 @@ export const GAME_CONFIG = {
   PLAYER_SPEED: 200, // pixels per second
   PLAYER_MAX_HP: 100,
   PLAYER_DAMAGE: 25,
-  PLAYER_FIRE_RATE: 0.3, // seconds between shots - faster starting fire rate
+  PLAYER_FIRE_RATE: 0.5, // seconds between shots
   PLAYER_INVINCIBILITY_TIME: 1000, // milliseconds
   
   // Enemy settings
