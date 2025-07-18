@@ -67,7 +67,7 @@ export function useProfileSystem() {
 
   const purchaseUpgrade = useCallback((upgradeType: keyof PermanentUpgrades, cost: number) => {
     const currentProfile = getCurrentProfile();
-    if (!currentProfile || currentProfile.totalGold < cost) return false;
+    if (!currentProfile) return false;
 
     const newUpgrades = {
       ...currentProfile.permanentUpgrades,
@@ -75,12 +75,11 @@ export function useProfileSystem() {
     };
 
     updateProfile({
-      totalGold: currentProfile.totalGold - cost,
       permanentUpgrades: newUpgrades
     });
 
     return true;
-  }, [activeProfile, updateProfile]);
+  }, [getCurrentProfile, updateProfile]);
 
   const startGameSession = useCallback(() => {
     if (currentSession) return; // Prevent starting multiple sessions

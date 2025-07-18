@@ -5,16 +5,14 @@ import { GAME_CONFIG, UpgradeType, UPGRADE_TYPE_NAMES } from '../utils/constants
 
 interface EnhancedUpgradeScreenProps {
   profile: PlayerProfile;
+  currentSessionGold: number;
   onUpgrade: (type: keyof PermanentUpgrades, cost: number) => boolean;
   onClose: () => void;
 }
 
-export function EnhancedUpgradeScreen({ profile, onUpgrade, onClose }: EnhancedUpgradeScreenProps) {
-  // Get the current total gold (profile gold + current session gold)
-  const getCurrentTotalGold = () => {
-    // This will be passed from the Game component
-    return profile.totalGold;
-  };
+export function EnhancedUpgradeScreen({ profile, currentSessionGold, onUpgrade, onClose }: EnhancedUpgradeScreenProps) {
+  // Calculate total available gold
+  const totalAvailableGold = profile.totalGold + currentSessionGold;
 
   const upgradeDisplayNames: Record<keyof PermanentUpgrades, string> = {
     damage: 'Damage',
@@ -103,7 +101,7 @@ export function EnhancedUpgradeScreen({ profile, onUpgrade, onClose }: EnhancedU
             </div>
           </div>
           <div className="text-right">
-            <div className="text-yellow-400 text-2xl font-bold">{profile.totalGold.toLocaleString()} Gold</div>
+            <div className="text-yellow-400 text-2xl font-bold">{totalAvailableGold.toLocaleString()} Gold</div>
             <div className="text-sm text-gray-400">Available to spend</div>
           </div>
         </div>
@@ -112,7 +110,7 @@ export function EnhancedUpgradeScreen({ profile, onUpgrade, onClose }: EnhancedU
           {(Object.keys(upgradeDisplayNames) as Array<keyof PermanentUpgrades>).map(type => {
             const currentLevel = profile.permanentUpgrades[type];
             const cost = getUpgradeCost(type, currentLevel);
-            const canAfford = profile.totalGold >= cost;
+            const canAfford = totalAvailableGold >= cost;
             const description = getUpgradeDescription(type);
             const currentValue = getCurrentUpgradeValue(type, currentLevel);
             const nextValue = getNextUpgradeValue(type, currentLevel);

@@ -117,19 +117,35 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
   }, [profile.permanentUpgrades, profileSystem]);
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
+    // Check if we have enough total gold (profile + session)
+    const totalGold = profileSystem.activeProfile.totalGold + gameState.gold;
+    if (totalGold < cost) return false;
+    
     const success = profileSystem.purchaseUpgrade(type, cost);
     
-    // Update current game gold immediately when upgrade is purchased
+    // Deduct cost from session gold first, then profile if needed
     if (success) {
-      setGameState(prev => ({
-        ...prev,
-        gold: prev.gold - cost
-      }));
+      if (gameState.gold >= cost) {
+        // Deduct from session gold only
+        setGameState(prev => ({
+          ...prev,
+          gold: prev.gold - cost
+        }));
+      } else {
+        // Deduct what we can from session, rest from profile
+        const remainingCost = cost - gameState.gold;
+        profileSystem.updateProfile({
+          totalGold: profileSystem.activeProfile.totalGold - remainingCost
+        });
+        setGameState(prev => ({
+          ...prev,
+          gold: 0
+        }));
+      }
     }
     
-    // Don't auto-restart, just return success status
     return success;
-  }, [profileSystem, gameState.score, gameState.gold, gameState.enemiesKilled, sessionEnded]);
+  }, [profileSystem, gameState.gold]);
 
   const handleAcceptSkill = useCallback(() => {
     if (!gameState.pendingSkillDrop) return;
@@ -313,10 +329,8 @@ export function Game({ profile, profileSystem, onReturnToProfiles }: GameProps) 
         
         {gameState.gameStatus === 'upgrading' && (
           <EnhancedUpgradeScreen
-            profile={{
-              ...profileSystem.activeProfile,
-              totalGold: profileSystem.activeProfile.totalGold + gameState.gold
-            }}
+            profile={profileSystem.activeProfile}
+            currentSessionGold={gameState.gold}
             onUpgrade={handleUpgrade}
             onClose={sessionEnded ? handleCloseUpgradesAndRestart : handleCloseUpgrades}
           />
