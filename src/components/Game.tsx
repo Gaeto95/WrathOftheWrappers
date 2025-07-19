@@ -16,6 +16,12 @@ import { PassiveSkill } from '../types/classes';
 import { createInitialPlayer } from '../utils/gameLogic';
 import { calculateFinalStats } from '../utils/skillSystem';
 
+interface PhaseTransition {
+  active: boolean;
+  timeLeft: number;
+  blinkCount: number;
+}
+
 interface GameProps {
   bolterData: BolterData;
   bolterSystem: any;
@@ -76,8 +82,14 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   });
   const [sessionEnded, setSessionEnded] = useState(false);
   
+  const [phaseTransition, setPhaseTransition] = useState<PhaseTransition>({
+    active: false,
+    timeLeft: 0,
+    blinkCount: 0
+  });
+  
   const input = useInput();
-  useGameLoop(gameState, setGameState, input);
+  useGameLoop(gameState, setGameState, input, phaseTransition, setPhaseTransition);
 
   // Start game session
   useEffect(() => {
@@ -345,6 +357,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       <div className="relative">
         <Canvas
           gameState={gameState}
+          phaseTransition={phaseTransition}
           width={GAME_CONFIG.CANVAS_WIDTH}
           height={GAME_CONFIG.CANVAS_HEIGHT}
           input={input}
