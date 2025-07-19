@@ -97,6 +97,7 @@ export interface GameState {
   screenScale: number;
   enemiesKilled: number;
   lastBossSpawn: number;
+  bossPhaseActive: boolean;
 }
 
 export function createInitialPlayer(upgrades: Upgrades, characterClass: CharacterClass): Player {
@@ -153,7 +154,8 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     pendingSkillDrop: null,
     screenScale: 1,
     enemiesKilled: 0,
-    lastBossSpawn: 0
+    lastBossSpawn: 0,
+    bossPhaseActive: false
   };
 }
 

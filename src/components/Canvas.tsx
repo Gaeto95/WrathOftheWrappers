@@ -43,6 +43,7 @@ const SPRITE_CONFIG = {
 
 interface CanvasProps {
   gameState: GameState;
+  phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number };
   width: number;
   height: number;
   input?: any;
@@ -56,7 +57,7 @@ const potionImageCache = new Map<string, HTMLImageElement>();
 let spritesInitialized = false; // Track if sprites have been initialized
 let monstersLoaded = false;
 
-export function Canvas({ gameState, width, height, input }: CanvasProps) {
+export function Canvas({ gameState, phaseTransition, width, height, input }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Load all sprite images
@@ -120,12 +121,20 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
     // Apply camera shake and screen scaling
     ctx.save();
     
+    // Apply additional zoom during phase transition for dramatic effect
+    let effectiveScale = gameState.screenScale;
+    if (phaseTransition?.active) {
+      // Gradually zoom out during transition
+      const progress = 1 - (phaseTransition.timeLeft / 3000);
+      effectiveScale = 1 - (progress * 0.3); // Zoom out more dramatically during transition
+    }
+    
     // Apply screen scaling from center
-    if (gameState.screenScale !== 1) {
+    if (effectiveScale !== 1) {
       const centerX = width / 2;
       const centerY = height / 2;
       ctx.translate(centerX, centerY);
-      ctx.scale(gameState.screenScale, gameState.screenScale);
+      ctx.scale(effectiveScale, effectiveScale);
       ctx.translate(-centerX, -centerY);
       
       // Improve rendering quality when scaled

@@ -9,7 +9,9 @@ import { useClassAbility, regenerateMana } from '../utils/classAbilities';
 export function useGameLoop(
   gameState: GameState,
   setGameState: (updater: (prev: GameState) => GameState) => void,
-  input: InputState
+  input: InputState,
+  phaseTransition: { active: boolean; timeLeft: number; blinkCount: number },
+  setPhaseTransition: (transition: { active: boolean; timeLeft: number; blinkCount: number }) => void
 ) {
   const lastTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>();
@@ -25,10 +27,10 @@ export function useGameLoop(
     const deltaTime = currentTime - lastTimeRef.current;
     lastTimeRef.current = currentTime;
 
-    setGameState(prevState => updateGameState(prevState, deltaTime, input));
+    setGameState(prevState => updateGameState(prevState, deltaTime, input, phaseTransition, setPhaseTransition));
 
     animationFrameRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState.gameStatus, setGameState, input]);
+  }, [gameState.gameStatus, setGameState, input, phaseTransition, setPhaseTransition]);
 
   useEffect(() => {
     // Always run the game loop, but it will only update when status is 'playing'
@@ -49,7 +51,7 @@ export function useGameLoop(
   }, [input.escape, gameState.gameStatus, setGameState]);
 }
 
-function updateGameState(state: GameState, deltaTime: number, input: InputState): GameState {
+function updateGameState(state: GameState, deltaTime: number, input: InputState, phaseTransition: any, setPhaseTransition: any): GameState {
   const dt = deltaTime / 1000; // Convert to seconds
   
   // Update time
@@ -301,6 +303,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   
   // Boss spawning every 60 seconds
   if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL) {
+    // Clear all existing enemies before boss spawn
+    aliveEnemies.length = 0;
+    
     const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
     const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     
@@ -346,8 +351,34 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   
   // Screen scaling at 60 seconds
   let screenScale = state.screenScale;
-  if (newTime >= 60000 && screenScale === 1) { // 60 seconds
-    screenScale = 0.8; // Zoom out to show 25% more area - less blur
+  if (newTime >= 60000 && screenScale === 1 && !phaseTransition.active) { // 60 seconds
+    // Start phase transition
+    setPhaseTransition({
+      active: true,
+      timeLeft: 3000, // 3 seconds
+      blinkCount: 0
+    });
+    screenScale = 0.8; // Zoom out to show 25% more area
+  }
+  
+  // Handle phase transition
+  if (phaseTransition.active) {
+    const newTimeLeft = phaseTransition.timeLeft - deltaTime;
+    const newBlinkCount = Math.floor((3000 - newTimeLeft) / 300); // Blink every 300ms
+    
+    if (newTimeLeft <= 0) {
+      setPhaseTransition({
+        active: false,
+        timeLeft: 0,
+        blinkCount: 0
+      });
+    } else {
+      setPhaseTransition({
+        active: true,
+        timeLeft: newTimeLeft,
+        blinkCount: newBlinkCount
+      });
+    }
   }
   
   return {
