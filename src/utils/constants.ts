@@ -99,7 +99,7 @@ export const GAME_CONFIG = {
   
   // Boss spawning
   BOSS_SPAWN_INTERVAL: 60000, // 60 seconds between boss spawns
-  BOSS_DEFEAT_PAUSE: 8000, // 8 seconds pause after boss defeat for immersion
+  BOSS_DEFEAT_PAUSE: 3000, // 3 seconds pause after boss defeat for immersion
   
   // Boss settings
   BOSS_ATTACK_INTERVAL: 3000, // Boss shoots every 3 seconds (slightly slower)

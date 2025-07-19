@@ -109,7 +109,10 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   );
   
   // Update enemies
-  let enemies = state.enemies.map(enemy => {
+  let enemies = [...state.enemies];
+  let bossProjectilesToAdd: any[] = [];
+  
+  enemies = enemies.map(enemy => {
     const direction = normalize({ x: player.x - enemy.x, y: player.y - enemy.y });
     const updatedEnemy = {
       ...enemy,
@@ -121,7 +124,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     
     // Boss attacks
     if (enemy.type === 'BOSS' && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
-      // Create boss projectiles
+      console.log('Boss attacking!', newTime, updatedEnemy.lastAttack);
       const baseAngle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
       const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
       const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
@@ -138,7 +141,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         );
         bossProjectile.isBossProjectile = true;
         bossProjectile.size = 8; // Larger boss projectiles
-        projectiles.push(bossProjectile);
+        bossProjectilesToAdd.push(bossProjectile);
       }
       
       updatedEnemy.lastAttack = newTime;
@@ -146,6 +149,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     
     return updatedEnemy;
   });
+  
+  // Add boss projectiles to the main projectiles array
+  projectiles.push(...bossProjectilesToAdd);
   
   // Update particles
   const particles = state.particles
