@@ -65,7 +65,8 @@ const monsterImages = new Map<string, HTMLImageElement>();
 const spriteImages = new Map<string, HTMLImageElement>();
 const coinImageCache = new Map<string, HTMLImageElement>();
 const potionImageCache = new Map<string, HTMLImageElement>();
-let spritesInitialized = false; // Track if sprites have been initialized
+let spritesInitialized = false;
+let spritesFullyLoaded = false; // Track if all sprites are actually loaded
 let monstersLoaded = false;
 
 export function Canvas({ gameState, phaseTransition, width, height, input, backgroundTexture = 'default' }: CanvasProps) {
@@ -77,6 +78,8 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     
     const animations = Object.entries(SPRITE_CONFIG.animations);
     spritesInitialized = true;
+    let loadedCount = 0;
+    const totalSprites = animations.length;
     
     animations.forEach(([animName, config]) => {
       const img = new Image();
@@ -84,10 +87,19 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
       
       img.onload = () => {
         spriteImages.set(animName, img);
+        loadedCount++;
+        if (loadedCount === totalSprites) {
+          spritesFullyLoaded = true;
+          console.log('All player sprites loaded successfully');
+        }
       };
       
       img.onerror = () => {
         console.warn(`Failed to load sprite: ${config.file}`);
+        loadedCount++;
+        if (loadedCount === totalSprites) {
+          spritesFullyLoaded = true;
+        }
       };
     });
   }, []); // Empty dependency array - only run once
@@ -366,8 +378,8 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     playerAnimationState.lastFrameTime = time;
   }
   
-  // Always try to get sprites, but be more defensive
-  if (!spriteImages || spriteImages.size === 0) {
+  // Use fallback during initial loading period or if sprites aren't ready
+  if (!spriteImages || spriteImages.size === 0 || !spritesFullyLoaded) {
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
   }
@@ -376,11 +388,22 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   let finalAnimation = currentAnimation;
   let spriteImage = spriteImages?.get(finalAnimation);
   
-  // More thorough sprite validation - especially during transitions
+  // Thorough sprite validation
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
     if (!img) return false;
     if (!img.complete) return false;
     if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
+    // Additional check for actual image data
+    try {
+      // This will throw if image failed to load properly
+      const canvas = document.createElement('canvas');
+      const testCtx = canvas.getContext('2d');
+      if (testCtx) {
+        testCtx.drawImage(img, 0, 0, 1, 1);
+      }
+    } catch (e) {
+      return false;
+    }
     return true;
   };
   
@@ -505,6 +528,14 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   const isFlashing = time < enemy.flashUntil;
   const color = isFlashing ? '#ffffff' : enemy.color;
   
+  // Helper function to check if monster sprite is ready
+  const isMonsterSpriteReady = (img: HTMLImageElement | undefined) => {
+    if (!img) return false;
+    if (!img.complete) return false;
+    if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
+    return true;
+  };
+  
   // Determine which sprite to use based on enemy type
   let monsterSprite = null;
   if (enemy.type === 'HEAVY_TANK') {
@@ -516,12 +547,12 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       monsterImages.set('heavy-tank', heavyTankMonster);
     }
     
-    if (heavyTankMonster && heavyTankMonster.complete && heavyTankMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(heavyTankMonster)) {
       monsterSprite = heavyTankMonster;
     } else {
       // Fallback to big monster sprite
       const bigMonster = monsterImages.get('big');
-      if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+      if (isMonsterSpriteReady(bigMonster)) {
         monsterSprite = bigMonster;
       }
     }
@@ -534,19 +565,19 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       monsterImages.set('speeder', speederMonster);
     }
     
-    if (speederMonster && speederMonster.complete && speederMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(speederMonster)) {
       monsterSprite = speederMonster;
     } else {
       // Fallback to small monster sprite
       const smallMonster = monsterImages.get('small');
-      if (smallMonster && smallMonster.complete && smallMonster.naturalWidth > 0) {
+      if (isMonsterSpriteReady(smallMonster)) {
         monsterSprite = smallMonster;
       }
     }
   } else if (enemy.type === 'TANK') {
     // Regular Tank uses big monster sprite
     const bigMonster = monsterImages.get('big');
-    if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(bigMonster)) {
       monsterSprite = bigMonster;
     }
   } else if (enemy.type === 'BOSS') {
@@ -558,18 +589,18 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       monsterImages.set('boss', bossMonster);
     }
     
-    if (bossMonster && bossMonster.complete && bossMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(bossMonster)) {
       monsterSprite = bossMonster;
     } else {
       // Fallback to big monster sprite
       const bigMonster = monsterImages.get('big');
-      if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+      if (isMonsterSpriteReady(bigMonster)) {
         monsterSprite = bigMonster;
       }
     }
   } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER' || enemy.type === 'SPEEDER') {
     const smallMonster = monsterImages.get('small');
-    if (smallMonster && smallMonster.complete && smallMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(smallMonster)) {
       monsterSprite = smallMonster;
     }
   }
