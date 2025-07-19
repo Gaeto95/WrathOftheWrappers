@@ -126,8 +126,38 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Auto-attack
   const nearestEnemy = findNearestEnemy(player, enemies);
   if (nearestEnemy && newTime - player.lastShot > player.fireRate * 1000) {
-    const newProjectile = createProjectile(player, nearestEnemy, player.damage, player);
-    projectiles.push(newProjectile);
+    // Create main projectile
+    const mainProjectile = createProjectile(player, nearestEnemy, player.damage, player);
+    projectiles.push(mainProjectile);
+    
+    // Create additional projectiles for multi-shot
+    const multiShotCount = (player as any).multiShot || 0;
+    if (multiShotCount > 0 && nearestEnemy) {
+      // Calculate base angle to target
+      const baseAngle = Math.atan2(nearestEnemy.y - player.y, nearestEnemy.x - player.x);
+      
+      // Create cone of projectiles
+      for (let i = 1; i <= multiShotCount; i++) {
+        // Alternate left and right, with increasing angle
+        const side = i % 2 === 1 ? 1 : -1; // 1 for right, -1 for left
+        const angleOffset = (Math.ceil(i / 2) * 0.3) * side; // 0.3 radians = ~17 degrees per step
+        const shotAngle = baseAngle + angleOffset;
+        
+        // Calculate target position for this angle
+        const range = 300; // Range for the cone shot
+        const targetX = player.x + Math.cos(shotAngle) * range;
+        const targetY = player.y + Math.sin(shotAngle) * range;
+        
+        const coneProjectile = createProjectile(
+          player, 
+          { x: targetX, y: targetY }, 
+          player.damage, 
+          player
+        );
+        projectiles.push(coneProjectile);
+      }
+    }
+    
     player.lastShot = newTime;
   }
   

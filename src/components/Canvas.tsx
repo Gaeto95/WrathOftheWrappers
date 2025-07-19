@@ -257,20 +257,20 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     }
     
     if (bgImage.complete && bgImage.naturalWidth > 0) {
-      // Create repeating pattern and tile it
-      const pattern = ctx.createPattern(bgImage, 'repeat');
-      if (pattern) {
-        ctx.fillStyle = pattern;
-        // Cover larger area to account for camera shake and zoom
-        ctx.fillRect(-400, -400, width + 800, height + 800);
-      } else {
-        console.warn(`Failed to create pattern for ${backgroundTexture}`);
-        // Fallback to manual tiling
-        const tileSize = Math.min(bgImage.naturalWidth || 64, bgImage.naturalHeight || 64);
-        for (let x = -tileSize; x < width + tileSize; x += tileSize) {
-          for (let y = -tileSize; y < height + tileSize; y += tileSize) {
-            ctx.drawImage(bgImage, x, y, tileSize, tileSize);
-          }
+      // Manual tiling with small tile size (30x30)
+      const tileSize = 30; // Small tileset as requested
+      const margin = 200; // Extra coverage for camera shake and zoom
+      
+      // Calculate how many tiles we need
+      const startX = Math.floor(-margin / tileSize) * tileSize;
+      const endX = Math.ceil((width + margin) / tileSize) * tileSize;
+      const startY = Math.floor(-margin / tileSize) * tileSize;
+      const endY = Math.ceil((height + margin) / tileSize) * tileSize;
+      
+      // Draw tiles
+      for (let x = startX; x < endX; x += tileSize) {
+        for (let y = startY; y < endY; y += tileSize) {
+          ctx.drawImage(bgImage, x, y, tileSize, tileSize);
         }
       }
     } else {
