@@ -125,23 +125,24 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     // Boss attacks
     if (enemy.type === 'BOSS' && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
       console.log('Boss attacking!', newTime, updatedEnemy.lastAttack);
-      const baseAngle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+      const baseAngle = Math.atan2(player.y - updatedEnemy.y, player.x - updatedEnemy.x);
       const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
       const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
       
       for (let i = 0; i < GAME_CONFIG.BOSS_PROJECTILE_COUNT; i++) {
         const angle = startAngle + (i * spreadStep);
-        const targetX = enemy.x + Math.cos(angle) * 500;
-        const targetY = enemy.y + Math.sin(angle) * 500;
+        const targetX = updatedEnemy.x + Math.cos(angle) * 500;
+        const targetY = updatedEnemy.y + Math.sin(angle) * 500;
         
         const bossProjectile = createProjectile(
-          { x: enemy.x, y: enemy.y },
+          { x: updatedEnemy.x, y: updatedEnemy.y },
           { x: targetX, y: targetY },
-          enemy.damage
+          updatedEnemy.damage
         );
         bossProjectile.isBossProjectile = true;
         bossProjectile.size = 8; // Larger boss projectiles
         bossProjectilesToAdd.push(bossProjectile);
+        console.log('Created boss projectile', i, 'at angle', angle);
       }
       
       updatedEnemy.lastAttack = newTime;
