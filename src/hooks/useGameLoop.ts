@@ -255,37 +255,52 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Check player-enemy collisions
   let screenShake = Math.max(0, state.screenShake - deltaTime);
-  if (newTime > player.invulnerableUntil) {
-    for (const enemy of aliveEnemies) {
-      const collision = circleToCircle(
-        { x: player.x, y: player.y, radius: GAME_CONFIG.PLAYER_SIZE / 2 },
-        { x: enemy.x, y: enemy.y, radius: enemy.size }
-      );
-      
-      if (collision) {
-        player.hp -= enemy.damage;
-        player.invulnerableUntil = newTime + GAME_CONFIG.PLAYER_INVINCIBILITY_TIME;
-        screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION;
-        
-        // Play damage sound effect
-        const damageAudio = new Audio('/damage-sound.mp3');
-        damageAudio.volume = 0.06; // 6% volume (70% lower than 20%)
-        damageAudio.play().catch(e => console.log('Damage sound failed to play:', e));
-        
-        // Create hit particles
-        particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));
-        
-        if (player.hp <= 0) {
-          return {
-            ...state,
-            player,
-            gameStatus: 'dead',
-            score: Math.floor(newTime / 1000)
-          };
-        }
-        break;
-      }
+  
+  // Check collisions with all enemies (no invincibility frames)
+  let totalDamage = 0;
+  const collidingEnemies = [];
+  
+  for (const enemy of aliveEnemies) {
+    const collision = circleToCircle(
+      { x: player.x, y: player.y, radius: GAME_CONFIG.PLAYER_SIZE / 2 },
+      { x: enemy.x, y: enemy.y, radius: enemy.size }
+    );
+    
+    if (collision) {
+      totalDamage += enemy.damage;
+      collidingEnemies.push(enemy);
     }
+  }
+  
+  // Apply all damage at once if any collisions occurred
+  if (totalDamage > 0) {
+    player.hp -= totalDamage;
+    screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION;
+    
+    // Play damage sound effect
+    const damageAudio = new Audio('/damage-sound.mp3');
+    damageAudio.volume = 0.06;
+    damageAudio.play().catch(e => console.log('Damage sound failed to play:', e));
+    
+    // Create hit particles
+    particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));
+    
+    if (player.hp <= 0) {
+      return {
+        ...state,
+        player,
+        gameStatus: 'dead',
+        score: Math.floor(newTime / 1000)
+      };
+    }
+  }
+  
+  // Remove invulnerability system - player can always take damage
+  if (newTime > player.invulnerableUntil) {
+    // Only used for visual flashing effect now
+    if (totalDamage > 0) {
+      player.invulnerableUntil = newTime + 200; // Very short flash effect only
+      }
   }
   
   // Check player-item collisions
