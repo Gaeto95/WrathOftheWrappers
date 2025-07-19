@@ -564,7 +564,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     pendingSkillDrop,
     screenScale,
     enemiesKilled,
-    megaBoltFlash: finalMegaBoltFlash
+    megaBoltFlash: finalMegaBoltFlash,
     lastBossDefeat
   };
 }
