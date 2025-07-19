@@ -47,6 +47,7 @@ export interface Projectile {
   piercing?: boolean;
   piercedEnemies?: Set<string>;
   isBossProjectile?: boolean;
+  sourceEnemyId?: string;
 }
 
 export interface Item {

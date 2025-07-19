@@ -916,35 +916,36 @@ function drawMegaBoltFlash(ctx: CanvasRenderingContext2D, flashTime: number, wid
   const progress = 1 - (flashTime / GAME_CONFIG.MEGA_BOLT_FLASH_DURATION);
   const intensity = flashTime / GAME_CONFIG.MEGA_BOLT_FLASH_DURATION;
   
-  // Create expanding circle effect
-  const maxRadius = Math.max(width, height) * 1.5;
-  const currentRadius = maxRadius * progress;
+  ctx.save();
   
-  // Create radial gradient for explosion effect
+  // Full screen flash effect with transparency
+  const alpha = intensity * 0.7; // Strong but not blinding
+  
+  // Create gradient from center outward for more dramatic effect
   const centerX = width / 2;
   const centerY = height / 2;
+  const maxDimension = Math.max(width, height);
   
   const gradient = ctx.createRadialGradient(
     centerX, centerY, 0,
-    centerX, centerY, currentRadius
+    centerX, centerY, maxDimension
   );
   
-  const alpha = intensity * 0.9; // Increased opacity for more dramatic effect
-  gradient.addColorStop(0, `rgba(0, 255, 255, ${alpha})`);
-  gradient.addColorStop(0.3, `rgba(0, 200, 255, ${alpha * 0.8})`);
-  gradient.addColorStop(0.6, `rgba(0, 150, 255, ${alpha * 0.4})`);
-  gradient.addColorStop(1, 'rgba(0, 100, 255, 0)');
+  // Cyan to white gradient for mega bolt effect
+  gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+  gradient.addColorStop(0.3, `rgba(0, 255, 255, ${alpha * 0.8})`);
+  gradient.addColorStop(0.6, `rgba(0, 200, 255, ${alpha * 0.5})`);
+  gradient.addColorStop(1, `rgba(0, 150, 255, ${alpha * 0.2})`);
   
-  ctx.save();
   ctx.fillStyle = gradient;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.fillRect(0, 0, width, height);
   
-  // Add additional glow effect
-  ctx.globalAlpha = alpha * 0.3;
+  // Add pulsing edge effect
+  const pulseAlpha = intensity * 0.3 * (1 + Math.sin(flashTime * 0.01));
+  ctx.globalAlpha = pulseAlpha;
   ctx.fillStyle = GAME_CONFIG.COLORS.MEGA_BOLT;
   ctx.fillRect(0, 0, width, height);
+  
   ctx.restore();
 }
 

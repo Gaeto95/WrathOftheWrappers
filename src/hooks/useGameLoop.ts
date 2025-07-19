@@ -141,6 +141,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         );
         bossProjectile.isBossProjectile = true;
         bossProjectile.size = 8; // Larger boss projectiles
+        bossProjectile.sourceEnemyId = updatedEnemy.id; // Track which enemy fired this
         newBossProjectiles.push(bossProjectile);
         console.log('Created boss projectile', i, 'at angle', angle);
       }
@@ -225,6 +226,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     let shouldRemoveProjectile = false;
     
     for (const enemy of enemies) {
+      // Skip collision if this projectile was fired by this enemy
+      if (projectile.isBossProjectile && projectile.sourceEnemyId === enemy.id) {
+        continue;
+      }
+      
       // Skip if enemy already hit by non-piercing projectile
       if (!projectile.piercing && hitEnemies.has(enemy.id)) continue;
       
