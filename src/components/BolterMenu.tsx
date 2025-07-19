@@ -189,7 +189,7 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
                 <div className="relative z-10 flex items-center gap-4">
                   <Play className="w-6 h-6" />
                   <span>Start Game</span>
-            <div className="mt-2 text-purple-300 text-sm font-light animate-pulse drop-shadow-lg">
+                </div>
               </button>
             </div>
             
