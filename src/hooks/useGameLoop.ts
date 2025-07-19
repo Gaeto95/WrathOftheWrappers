@@ -487,38 +487,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const timeSinceLastBossDefeat = newTime - lastBossDefeat;
   const inBossDefeatPause = timeSinceLastBossDefeat < GAME_CONFIG.BOSS_DEFEAT_PAUSE;
   
-  if (newTime - lastEnemySpawn > spawnRate && !inBossDefeatPause && !bossAlive) {
+  if (newTime - lastEnemySpawn > spawnRate && !inBossDefeatPause && !bossAlive && !phaseTransition.active) {
     aliveEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
   }
   
-  // Boss spawning every 60 seconds
-  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL && !phaseTransition.active && !inBossDefeatPause && !bossAlive) {
-    // Clear all existing enemies before boss spawn
-    finalEnemies.length = 0;
-    
-    const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
-    const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT, state.screenScale);
-    
-    const boss = {
-      id: `boss_${newTime}_${Math.random()}`,
-      type: 'BOSS' as EnemyType,
-      x: spawnPos.x,
-      y: spawnPos.y,
-      hp: bossConfig.hp * state.enemyHealthMultiplier,
-      maxHp: bossConfig.hp * state.enemyHealthMultiplier,
-      speed: bossConfig.speed,
-      damage: bossConfig.damage,
-      size: bossConfig.size,
-      color: bossConfig.color,
-      flashUntil: 0,
-      goldDrop: bossConfig.goldDrop,
-      lastAttack: 0 // Make boss attack immediately
-    };
-    
-    finalEnemies.push(boss);
-    lastBossSpawn = newTime;
-  }
   
   // Update difficulty
   let difficultyMultiplier = state.difficultyMultiplier;
@@ -548,6 +521,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Check if we've entered a new phase
   if (currentPhase > expectedPhase && !phaseTransition.active) {
+    // Clear all enemies when phase transition starts
+    finalEnemies.length = 0;
+    
     // Start phase transition
     setPhaseTransition({
       active: true,
@@ -571,6 +547,31 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     // Smooth interpolation from stored start scale to target scale
     const startScale = phaseTransition.startScale || state.screenScale;
     screenScale = startScale + (targetScale - startScale) * transitionProgress;
+    
+    // Spawn boss after 4 seconds (when 1 second left in transition)
+    if (phaseTransition.timeLeft <= 1000 && !finalEnemies.some(enemy => enemy.type === 'BOSS')) {
+      const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
+      const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT, screenScale);
+      
+      const boss = {
+        id: `boss_${newTime}_${Math.random()}`,
+        type: 'BOSS' as EnemyType,
+        x: spawnPos.x,
+        y: spawnPos.y,
+        hp: bossConfig.hp * state.enemyHealthMultiplier,
+        maxHp: bossConfig.hp * state.enemyHealthMultiplier,
+        speed: bossConfig.speed,
+        damage: bossConfig.damage,
+        size: bossConfig.size,
+        color: bossConfig.color,
+        flashUntil: 0,
+        goldDrop: bossConfig.goldDrop,
+        lastAttack: newTime // Start with fresh attack timer
+      };
+      
+      finalEnemies.push(boss);
+      lastBossSpawn = newTime; // Update boss spawn timer
+    }
   } else {
     // Apply final scale when not in transition
     if (currentPhase === 2) screenScale = 0.85;
