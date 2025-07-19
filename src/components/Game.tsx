@@ -358,8 +358,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       </button>
 
       {/* Background Texture Controls */}
-      {/* Background Texture Dropdown - Positioned above canvas */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 z-50">
+      {/* Background Texture Dropdown - Positioned above canvas with proper spacing */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
         <div className="bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-3 border border-gray-600">
           <div className="text-white text-sm mb-2 font-medium text-center">Background:</div>
           <div className="flex gap-2">

@@ -14,8 +14,8 @@ export function generateRandomSkill(): PassiveSkill {
 }
 
 export function shouldDropSkill(enemiesKilled: number): boolean {
-  // 3% base chance, increases very slightly with more enemies killed
-  const baseChance = 0.03;
+  // 8% base chance, increases very slightly with more enemies killed
+  const baseChance = 0.08;
   const bonusChance = Math.min(0.02, enemiesKilled * 0.0002);
   return Math.random() < (baseChance + bonusChance);
 }
