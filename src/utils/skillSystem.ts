@@ -111,6 +111,7 @@ export function calculateFinalStats(basePlayer: Player, skills: PassiveSkill[]):
   
   // Store magnet radius for collision detection
   (finalPlayer as any).magnetRadius = totalMagnetRadius;
+  (finalPlayer as any).multiShot = totalMultiShot;
   
   return finalPlayer;
 }
