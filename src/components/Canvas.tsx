@@ -361,11 +361,13 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   let finalAnimation = currentAnimation;
   let spriteImage = spriteImages.get(finalAnimation);
   
-  // More thorough sprite validation
+  // More thorough sprite validation - especially during transitions
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
     if (!img) return false;
     if (!img.complete) return false;
     if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
+    // Additional check during phase transitions
+    if (phaseTransition?.active && img.naturalWidth < 32) return false;
     return true;
   };
   
@@ -415,6 +417,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   
   // More robust sprite drawing with better error handling
   try {
+    // Extra validation before drawing during transitions
+    if (!spriteImage || !spriteImage.complete || spriteImage.naturalWidth === 0) {
+      throw new Error('Sprite not ready during transition');
+    }
+    
     // Handle flipping for left direction
     if (facingLeft) {
       ctx.scale(-1, 1);
@@ -431,7 +438,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
       );
     }
   } catch (error) {
-    console.error('Error drawing sprite during transition:', error);
+    console.warn('Sprite drawing failed, using fallback:', error.message);
     // Restore context before fallback
     ctx.restore();
     drawPlayerFallback(ctx, player, alpha, facingLeft);
