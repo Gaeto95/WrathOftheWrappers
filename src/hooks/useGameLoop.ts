@@ -301,8 +301,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   if (phaseTransition.active) {
     spawnRate = Infinity; // Prevent spawning during transition
   } else {
-    // Reduce spawn rate by 25% to make it less overwhelming
-    spawnRate *= 1.25;
+    // Reduce spawn rate by 50% to make it much less overwhelming
+    spawnRate *= 1.5;
   }
   
   // Regular enemy spawning
@@ -369,12 +369,12 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     // Start phase transition
     setPhaseTransition({
       active: true,
-      timeLeft: 8000, // 8 seconds for better breathing room
+      timeLeft: 5000, // 5 seconds - better balance
       blinkCount: 0,
       phase: currentPhase
     });
     
-    // Progressive zoom out for each phase
+    // Progressive zoom out for each phase - calculate from current scale
     if (currentPhase === 2) screenScale = 0.85; // Phase 1: 15% zoom out
     else if (currentPhase === 3) screenScale = 0.75; // Phase 2: 25% zoom out  
     else if (currentPhase >= 4) screenScale = 0.7; // Phase 3+: 30% zoom out
@@ -383,7 +383,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Handle phase transition
   if (phaseTransition.active) {
     const newTimeLeft = phaseTransition.timeLeft - deltaTime;
-    const newBlinkCount = Math.floor((8000 - newTimeLeft) / 400); // Blink every 400ms
+    const newBlinkCount = Math.floor((5000 - newTimeLeft) / 400); // Blink every 400ms
     
     if (newTimeLeft <= 0) {
       setPhaseTransition({

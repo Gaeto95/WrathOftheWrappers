@@ -47,6 +47,7 @@ interface CanvasProps {
   width: number;
   height: number;
   input?: any;
+  backgroundTexture?: string;
 }
 
 // Monster sprite images cache
@@ -57,7 +58,7 @@ const potionImageCache = new Map<string, HTMLImageElement>();
 let spritesInitialized = false; // Track if sprites have been initialized
 let monstersLoaded = false;
 
-export function Canvas({ gameState, phaseTransition, width, height, input }: CanvasProps) {
+export function Canvas({ gameState, phaseTransition, width, height, input, backgroundTexture = 'default' }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Load all sprite images
@@ -145,7 +146,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input }: Can
     ctx.translate(gameState.camera.x, gameState.camera.y);
 
     // Draw background pattern
-    drawBackgroundPattern(ctx, width, height);
+    drawBackgroundPattern(ctx, width, height, backgroundTexture);
 
     // Draw items
     gameState.items.forEach(item => {
@@ -188,26 +189,58 @@ export function Canvas({ gameState, phaseTransition, width, height, input }: Can
   );
 }
 
-function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, height: number) {
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-  ctx.lineWidth = 1;
-  
-  const gridSize = 100; // Larger grid to account for zoom out
-  
-  // Draw vertical lines
-  for (let x = -gridSize; x <= width + gridSize; x += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height + gridSize);
-    ctx.stroke();
-  }
-  
-  // Draw horizontal lines
-  for (let y = -gridSize; y <= height + gridSize; y += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(-gridSize, y);
-    ctx.lineTo(width + gridSize, y);
-    ctx.stroke();
+// Background texture cache
+const backgroundImages = new Map<string, HTMLImageElement>();
+
+function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, height: number, backgroundTexture: string = 'default') {
+  if (backgroundTexture === 'default') {
+    // Original grid pattern
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    
+    const gridSize = 100; // Larger grid to account for zoom out
+    
+    // Draw vertical lines
+    for (let x = -gridSize; x <= width + gridSize; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height + gridSize);
+      ctx.stroke();
+    }
+    
+    // Draw horizontal lines
+    for (let y = -gridSize; y <= height + gridSize; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(-gridSize, y);
+      ctx.lineTo(width + gridSize, y);
+      ctx.stroke();
+    }
+  } else {
+    // Try to load and draw texture
+    let bgImage = backgroundImages.get(backgroundTexture);
+    if (!bgImage) {
+      bgImage = new Image();
+      bgImage.src = `/${backgroundTexture}.png`;
+      backgroundImages.set(backgroundTexture, bgImage);
+    }
+    
+    if (bgImage.complete && bgImage.naturalWidth > 0) {
+      // Tile the background image
+      const pattern = ctx.createPattern(bgImage, 'repeat');
+      if (pattern) {
+        ctx.fillStyle = pattern;
+        ctx.fillRect(-200, -200, width + 400, height + 400);
+      }
+    } else {
+      // Fallback to colored background while loading
+      let fallbackColor = '#0a0a0a';
+      if (backgroundTexture === 'desert') fallbackColor = '#8B4513';
+      else if (backgroundTexture === 'grassland') fallbackColor = '#228B22';
+      else if (backgroundTexture === 'stone') fallbackColor = '#696969';
+      
+      ctx.fillStyle = fallbackColor;
+      ctx.fillRect(-200, -200, width + 400, height + 400);
+    }
   }
 }
 

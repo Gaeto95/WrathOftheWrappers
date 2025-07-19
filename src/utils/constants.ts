@@ -77,8 +77,8 @@ export const GAME_CONFIG = {
   },
   
   // Difficulty scaling
-  DIFFICULTY_INCREASE_INTERVAL: 15000, // 15 seconds - back to faster scaling
-  SPAWN_RATE_INCREASE: 0.35, // 35% faster spawning - more aggressive
+  DIFFICULTY_INCREASE_INTERVAL: 20000, // 20 seconds - slower scaling
+  SPAWN_RATE_INCREASE: 0.25, // 25% faster spawning - less aggressive
   ENEMY_HEALTH_INCREASE_INTERVAL: 60000, // 60 seconds - much slower health scaling
   ENEMY_HEALTH_INCREASE: 0.4, // 40% more health - more manageable scaling
   
