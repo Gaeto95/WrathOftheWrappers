@@ -147,12 +147,14 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     // Apply additional zoom during phase transition for dramatic effect
     let effectiveScale = gameState.screenScale;
     if (phaseTransition?.active) {
-      // Gradually zoom out during transition
-      const progress = 1 - (phaseTransition.timeLeft / 8000);
-      // Use current scale as base, don't reset to 1
-      const targetScale = gameState.screenScale;
-      const startScale = Math.min(1.0, targetScale + 0.1); // Start slightly zoomed in
-      effectiveScale = startScale - (progress * 0.1); // Zoom to target
+      // Smooth zoom transition without jumping
+      const progress = (5000 - phaseTransition.timeLeft) / 5000;
+      if (progress > 0.2 && progress < 0.8) {
+        // Only apply smooth zoom in middle 60% of transition
+        const zoomProgress = (progress - 0.2) / 0.6; // Normalize to 0-1
+        const currentScale = gameState.screenScale;
+        effectiveScale = currentScale + (0.05 * Math.sin(zoomProgress * Math.PI)); // Subtle zoom effect
+      }
     }
     
     // Apply screen scaling from center

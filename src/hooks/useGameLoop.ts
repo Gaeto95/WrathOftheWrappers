@@ -431,12 +431,23 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let finalMegaBoltFlash = megaBoltFlash;
   
   if (activateMegaBolt) {
-    // Clear all enemies and create massive particle explosion
-    finalEnemies = [];
+    // Clear all enemies except bosses and create massive particle explosion
+    const survivingEnemies = [];
+    const destroyedEnemies = [];
+    
+    aliveEnemies.forEach(enemy => {
+      if (enemy.type === 'BOSS') {
+        survivingEnemies.push(enemy);
+      } else {
+        destroyedEnemies.push(enemy);
+      }
+    });
+    
+    finalEnemies = survivingEnemies;
     finalMegaBoltFlash = GAME_CONFIG.MEGA_BOLT_FLASH_DURATION;
     
-    // Create particles for each destroyed enemy
-    aliveEnemies.forEach(enemy => {
+    // Create particles for each destroyed enemy (excluding bosses)
+    destroyedEnemies.forEach(enemy => {
       particles.push(...createParticles({ x: enemy.x, y: enemy.y }, enemy.color, 12));
       // Add gold for each destroyed enemy
       const goldAmount = Math.floor(
@@ -544,11 +555,17 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       blinkCount: 0,
       phase: currentPhase
     });
-    
-    // Progressive zoom out for each phase - calculate from current scale
-    if (currentPhase === 2) screenScale = 0.85; // Phase 1: 15% zoom out
-    else if (currentPhase === 3) screenScale = 0.75; // Phase 2: 25% zoom out  
-    else if (currentPhase >= 4) screenScale = 0.7; // Phase 3+: 30% zoom out
+  }
+  
+  // Apply screen scale changes during transition (not at start)
+  if (phaseTransition.active && phaseTransition.timeLeft < 4000) {
+    // Apply zoom during the middle of transition to avoid jump
+    const transitionProgress = (5000 - phaseTransition.timeLeft) / 5000;
+    if (transitionProgress > 0.2) { // Start zoom after 20% of transition
+      if (currentPhase === 2) screenScale = 0.85; // Phase 1: 15% zoom out
+      else if (currentPhase === 3) screenScale = 0.75; // Phase 2: 25% zoom out  
+      else if (currentPhase >= 4) screenScale = 0.7; // Phase 3+: 30% zoom out
+    }
   }
   
   // Handle phase transition
