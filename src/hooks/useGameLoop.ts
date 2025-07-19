@@ -114,8 +114,46 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let newBossProjectiles: any[] = [];
   let newSideProjectiles: any[] = [];
   
-  // Check if there's a boss alive for side projectiles
-  const bossPresent = enemies.some(enemy => enemy.type === 'BOSS');
+  enemies = enemies.map(enemy => {
+    const direction = normalize({ x: player.x - enemy.x, y: player.y - enemy.y });
+    const updatedEnemy = {
+      ...enemy,
+      x: enemy.x + direction.x * enemy.speed * dt,
+      y: enemy.y + direction.y * enemy.speed * dt,
+      flashUntil: Math.max(0, enemy.flashUntil - deltaTime),
+      lastAttack: enemy.lastAttack || 0
+    };
+    
+    // Boss attacks - only if boss is alive
+    if (enemy.type === 'BOSS' && updatedEnemy.hp > 0 && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
+      const baseAngle = Math.atan2(player.y - updatedEnemy.y, player.x - updatedEnemy.x);
+      const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
+      const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
+      
+      for (let i = 0; i < GAME_CONFIG.BOSS_PROJECTILE_COUNT; i++) {
+        const angle = startAngle + (i * spreadStep);
+        const targetX = updatedEnemy.x + Math.cos(angle) * 500;
+        const targetY = updatedEnemy.y + Math.sin(angle) * 500;
+        
+        const bossProjectile = createProjectile(
+          { x: updatedEnemy.x, y: updatedEnemy.y },
+          { x: targetX, y: targetY },
+          Math.floor(updatedEnemy.damage * state.difficultyMultiplier) // Scale with difficulty
+        );
+        bossProjectile.isBossProjectile = true;
+        bossProjectile.size = 8; // Larger boss projectiles
+        bossProjectile.sourceEnemyId = updatedEnemy.id; // Track which enemy fired this
+        newBossProjectiles.push(bossProjectile);
+      }
+      
+      updatedEnemy.lastAttack = newTime;
+    }
+    
+    return updatedEnemy;
+  });
+  
+  // Check if there's a boss alive for side projectiles (use updated enemies array)
+  const bossPresent = enemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
   const sideProjectilePhase = Math.floor(newTime / 60000) + 1;
   
   // Spawn side projectiles during boss fights
@@ -175,47 +213,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     
     lastSideProjectiles = newTime;
   }
-  
-  enemies = enemies.map(enemy => {
-    const direction = normalize({ x: player.x - enemy.x, y: player.y - enemy.y });
-    const updatedEnemy = {
-      ...enemy,
-      x: enemy.x + direction.x * enemy.speed * dt,
-      y: enemy.y + direction.y * enemy.speed * dt,
-      flashUntil: Math.max(0, enemy.flashUntil - deltaTime),
-      lastAttack: enemy.lastAttack || 0
-    };
-    
-    // Boss attacks - only if boss is alive
-    if (enemy.type === 'BOSS' && updatedEnemy.hp > 0 && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
-      console.log('Boss attacking!', newTime, updatedEnemy.lastAttack);
-      const baseAngle = Math.atan2(player.y - updatedEnemy.y, player.x - updatedEnemy.x);
-      const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
-      const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
-      
-      for (let i = 0; i < GAME_CONFIG.BOSS_PROJECTILE_COUNT; i++) {
-        const angle = startAngle + (i * spreadStep);
-        const targetX = updatedEnemy.x + Math.cos(angle) * 500;
-        const targetY = updatedEnemy.y + Math.sin(angle) * 500;
-        
-        const bossProjectile = createProjectile(
-          { x: updatedEnemy.x, y: updatedEnemy.y },
-          { x: targetX, y: targetY },
-          Math.floor(updatedEnemy.damage * state.difficultyMultiplier) // Scale with difficulty
-        );
-        bossProjectile.isBossProjectile = true;
-        bossProjectile.size = 8; // Larger boss projectiles
-        bossProjectile.sourceEnemyId = updatedEnemy.id; // Track which enemy fired this
-        newBossProjectiles.push(bossProjectile);
-        console.log('Created boss projectile', i, 'at angle', angle);
-      }
-      
-      updatedEnemy.lastAttack = newTime;
-    }
-    
-    return updatedEnemy;
-  });
-  
   
   // Update particles
   const particles = state.particles
@@ -420,7 +417,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   }
   
   if (newTime > player.invulnerableUntil) {
-    for (const enemy of aliveEnemies) {
+    for (const enemy of enemies) {
       const collision = circleToCircle(
         { x: player.x, y: player.y, radius: GAME_CONFIG.PLAYER_SIZE / 2 },
         { x: enemy.x, y: enemy.y, radius: enemy.size }
@@ -554,8 +551,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const timeSinceLastBossDefeat = newTime - lastBossDefeat;
   const inBossDefeatPause = timeSinceLastBossDefeat < GAME_CONFIG.BOSS_DEFEAT_PAUSE;
   
-  if (newTime - lastEnemySpawn > spawnRate && !inBossDefeatPause && !bossAlive && !phaseTransition.active) {
-    aliveEnemies.push(createEnemy(state));
+  // Check if there's currently a boss alive (use filtered enemies)
+    finalEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
   }
   
