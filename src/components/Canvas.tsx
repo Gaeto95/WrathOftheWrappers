@@ -386,7 +386,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   
   // Try to get the sprite for current animation
   let finalAnimation = currentAnimation;
-  let spriteImage = spriteImages?.get(finalAnimation);
   
   // Enhanced sprite validation - more defensive
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
