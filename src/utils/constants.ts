@@ -107,6 +107,11 @@ export const GAME_CONFIG = {
   BOSS_PROJECTILE_SPREAD: 0.8, // Spread angle in radians
   BOSS_AURA_SIZE: 200, // Boss aura radius - increased for visibility
   
+  // Side projectile settings
+  SIDE_PROJECTILE_INTERVAL: 2000, // Side projectiles every 2 seconds
+  SIDE_PROJECTILE_SPEED: 200, // Speed of side projectiles
+  SIDE_PROJECTILE_SIZE: 6, // Size of side projectiles
+  
   // Mega Bolt settings
   MEGA_BOLT_FLASH_DURATION: 1000, // 1 second flash
   MEGA_BOLT_DAMAGE_RADIUS: 800, // Damage all enemies within this radius

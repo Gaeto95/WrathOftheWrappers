@@ -743,7 +743,12 @@ function drawBossAura(ctx: CanvasRenderingContext2D, boss: any, time: number) {
 function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any, megaBoltFlash: number = 0) {
   let color, glowColor;
   
-  if (projectile.isBossProjectile) {
+  if (projectile.isBossProjectile && projectile.sourceEnemyId === 'side_spawner') {
+    // Side projectiles - purple/magenta
+    color = '#ff00ff';
+    glowColor = '#ff44ff';
+  } else if (projectile.isBossProjectile) {
+    // Boss projectiles - red
     color = '#ff0000';
     glowColor = '#ff4444';
   } else if (projectile.isFireball) {

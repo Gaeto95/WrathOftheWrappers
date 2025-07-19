@@ -104,6 +104,7 @@ export interface GameState {
   bossPhaseActive: boolean;
   megaBoltFlash: number; // Flash effect timer
   lastBossDefeat: number; // Track when last boss was defeated
+  lastSideProjectiles: number; // Track when side projectiles were last spawned
 }
 
 export function createInitialPlayer(upgrades: Upgrades, characterClass: CharacterClass): Player {
@@ -163,7 +164,8 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     lastBossSpawn: 0,
     bossPhaseActive: false,
     megaBoltFlash: 0,
-    lastBossDefeat: 0
+    lastBossDefeat: 0,
+    lastSideProjectiles: 0
   };
 }
 
