@@ -172,7 +172,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     });
 
     // Draw player
-    drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages);
+    drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages, phaseTransition);
 
     // Draw phase transition text
     if (phaseTransition?.active) {
@@ -310,7 +310,7 @@ function drawGridPattern(ctx: CanvasRenderingContext2D, width: number, height: n
   }
 }
 
-function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, input?: any, spriteImages?: Map<string, HTMLImageElement>) {
+function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, input?: any, spriteImages?: Map<string, HTMLImageElement>, phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number; phase: number }) {
   const isInvulnerable = time < player.invulnerableUntil;
   const alpha = isInvulnerable && Math.sin(time * 0.02) > 0 ? 0.5 : 1;
   
