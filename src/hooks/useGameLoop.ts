@@ -115,7 +115,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let newSideProjectiles: any[] = [];
   
   // Check if there's a boss alive for side projectiles
-  const bossPresent = enemies.some(enemy => enemy.type === 'BOSS');
+  const bossPresent = aliveEnemies.some(enemy => enemy.type === 'BOSS');
   const sideProjectilePhase = Math.floor(newTime / 60000) + 1;
   
   // Spawn side projectiles during boss fights
@@ -427,7 +427,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       );
       
       if (collision) {
-        player.hp -= enemy.damage;
+        // Scale enemy contact damage with difficulty to counter high HP builds
+        const scaledDamage = Math.floor(enemy.damage * state.difficultyMultiplier);
+        player.hp -= scaledDamage;
         player.invulnerableUntil = newTime + GAME_CONFIG.PLAYER_INVINCIBILITY_TIME;
         screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION;
         
@@ -534,7 +536,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let lastBossSpawn = state.lastBossSpawn;
   
   // Check if there's currently a boss alive
-  const bossAlive = enemies.some(enemy => enemy.type === 'BOSS');
+  const bossAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS');
   
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
