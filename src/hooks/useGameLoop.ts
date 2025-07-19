@@ -313,11 +313,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   });
   
   // Check if there's a boss alive for side projectiles (use aliveEnemies array)
-  const bossPresent = aliveEnemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
+  const bossAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
   const sideProjectilePhase = Math.floor(state.time / 60000);
   
   // Spawn side projectiles during boss fights
-  if (bossPresent && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
+  if (bossAlive && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
     // Number of side projectiles increases with each phase
     const sideProjectileCount = Math.min((sideProjectilePhase + 1) * 2, 8); // Phase 1: 2, Phase 2: 4, Phase 3: 6, Phase 4: 8
     
@@ -372,6 +372,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     }
     
     lastSideProjectiles = newTime;
+    console.log('Side projectiles spawned:', sideProjectileCount, 'Boss alive:', bossAlive, 'Phase:', sideProjectilePhase);
   }
   
   // Update last boss defeat time if a boss was defeated
