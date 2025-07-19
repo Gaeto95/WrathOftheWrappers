@@ -10,7 +10,7 @@ export const GAME_CONFIG = {
   PLAYER_MAX_HP: 100,
   PLAYER_DAMAGE: 25,
   PLAYER_FIRE_RATE: 0.5, // seconds between shots
-  PLAYER_INVINCIBILITY_TIME: 1000, // milliseconds
+  PLAYER_INVINCIBILITY_TIME: 500, // milliseconds
   
   // Enemy settings
   ENEMY_SPAWN_RATE: 800, // milliseconds - faster initial spawning for more action
