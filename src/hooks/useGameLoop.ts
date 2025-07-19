@@ -60,6 +60,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Update mega bolt flash
   const megaBoltFlash = Math.max(0, state.megaBoltFlash - deltaTime);
   
+  // Initialize variables that will be used throughout the function
+  let lastBossDefeat = state.lastBossDefeat || 0;
+  
   // Initialize projectiles array early so it can be used throughout the function
   let projectiles = state.projectiles
     .map(projectile => ({
@@ -429,7 +432,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Spawn enemies
   let lastEnemySpawn = state.lastEnemySpawn;
   let lastBossSpawn = state.lastBossSpawn;
-  let lastBossDefeat = state.lastBossDefeat || 0;
   
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
