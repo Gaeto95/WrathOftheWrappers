@@ -102,7 +102,7 @@ export const GAME_CONFIG = {
   BOSS_DEFEAT_PAUSE: 3000, // 3 seconds pause after boss defeat for immersion
   
   // Boss settings
-  BOSS_ATTACK_INTERVAL: 3000, // Boss shoots every 3 seconds (slightly slower)
+  BOSS_ATTACK_INTERVAL: 1500, // Boss shoots every 1.5 seconds (faster)
   BOSS_PROJECTILE_COUNT: 5, // Number of projectiles per attack
   BOSS_PROJECTILE_SPREAD: 0.8, // Spread angle in radians
   BOSS_AURA_SIZE: 150, // Boss aura radius

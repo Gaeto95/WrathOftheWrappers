@@ -196,17 +196,17 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     // Draw player
     drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages, phaseTransition);
     
-    // Draw mega bolt flash effect
-    if (gameState.megaBoltFlash > 0) {
-      drawMegaBoltFlash(ctx, gameState.megaBoltFlash, width, height);
-    }
-
     // Draw phase transition text
     if (phaseTransition?.active) {
       drawPhaseTransitionText(ctx, phaseTransition, width, height);
     }
 
     ctx.restore();
+    
+    // Draw mega bolt flash effect AFTER restore to cover entire canvas
+    if (gameState.megaBoltFlash > 0) {
+      drawMegaBoltFlash(ctx, gameState.megaBoltFlash, width, height);
+    }
   }, [gameState, width, height, input]);
 
   return (
