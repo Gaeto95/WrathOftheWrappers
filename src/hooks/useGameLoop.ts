@@ -154,7 +154,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Check if there's a boss alive for side projectiles (use updated enemies array)
   const bossPresent = enemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
-  const sideProjectilePhase = Math.floor(newTime / 60000);
+  const sideProjectilePhase = Math.floor(state.time / 60000);
   
   // Spawn side projectiles during boss fights
   if (bossPresent && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
