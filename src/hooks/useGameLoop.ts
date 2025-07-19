@@ -122,8 +122,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       lastAttack: enemy.lastAttack || 0
     };
     
-    // Boss attacks
-    if (enemy.type === 'BOSS' && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
+    // Boss attacks - only if boss is alive
+    if (enemy.type === 'BOSS' && updatedEnemy.hp > 0 && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
       console.log('Boss attacking!', newTime, updatedEnemy.lastAttack);
       const baseAngle = Math.atan2(player.y - updatedEnemy.y, player.x - updatedEnemy.x);
       const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
