@@ -568,11 +568,6 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   const isFlashing = time < enemy.flashUntil;
   const color = isFlashing ? '#ffffff' : enemy.color;
   
-  // Draw boss aura
-  if (enemy.type === 'BOSS') {
-    drawBossAura(ctx, enemy, time);
-  }
-  
   // Helper function to check if monster sprite is ready
   const isMonsterSpriteReady = (img: HTMLImageElement | undefined) => {
     if (!img) return false;
@@ -727,18 +722,24 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   
   ctx.fillStyle = GAME_CONFIG.COLORS.HEALTH_BAR;
   ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+  
+  // Draw boss aura AFTER the boss sprite so it's visible on top
+  if (enemy.type === 'BOSS') {
+    drawBossAura(ctx, enemy, time);
+  }
 }
 
 function drawBossAura(ctx: CanvasRenderingContext2D, boss: any, time: number) {
   // Pulsing red aura
-  const pulseIntensity = 0.3 + 0.2 * Math.sin(time * 0.005);
+  const pulseIntensity = 0.5 + 0.3 * Math.sin(time * 0.005); // Increased base intensity
   
   const gradient = ctx.createRadialGradient(
     boss.x, boss.y, 0,
     boss.x, boss.y, GAME_CONFIG.BOSS_AURA_SIZE
   );
-  gradient.addColorStop(0, `rgba(255, 0, 0, ${pulseIntensity * 0.3})`);
-  gradient.addColorStop(0.7, `rgba(255, 0, 0, ${pulseIntensity * 0.1})`);
+  gradient.addColorStop(0, `rgba(255, 0, 0, ${pulseIntensity * 0.4})`); // More visible center
+  gradient.addColorStop(0.5, `rgba(255, 0, 0, ${pulseIntensity * 0.2})`); // Visible mid-range
+  gradient.addColorStop(0.8, `rgba(255, 0, 0, ${pulseIntensity * 0.1})`); // Softer edge
   gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
   
   ctx.fillStyle = gradient;

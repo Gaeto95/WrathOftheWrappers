@@ -105,7 +105,7 @@ export const GAME_CONFIG = {
   BOSS_ATTACK_INTERVAL: 1500, // Boss shoots every 1.5 seconds (faster)
   BOSS_PROJECTILE_COUNT: 5, // Number of projectiles per attack
   BOSS_PROJECTILE_SPREAD: 0.8, // Spread angle in radians
-  BOSS_AURA_SIZE: 150, // Boss aura radius
+  BOSS_AURA_SIZE: 200, // Boss aura radius - increased for visibility
   
   // Mega Bolt settings
   MEGA_BOLT_FLASH_DURATION: 1000, // 1 second flash
