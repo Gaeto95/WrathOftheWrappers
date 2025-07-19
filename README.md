@@ -27,11 +27,13 @@ This project was built entirely with it — any resemblance to real platforms, j
 ### 🎮 Gameplay Mechanics
 - **Fluid Movement System** - Smooth WASD controls with diagonal movement normalization
 - **Auto-Combat System** - Intelligent targeting that automatically shoots at nearest enemies
+- **Multi-Shot System** - Cone-shaped projectile spread for area coverage
 - **Progressive Difficulty** - Dynamic enemy spawning and health scaling over time
 - **Persistent Progression** - Gold and upgrades carry over between runs
 - **Multiple Enemy Types** - Grunts, Runners, and Tanks with unique behaviors
 - **Visual Feedback** - Screen shake, particle effects, and damage flashing
 - **Animated Bolter Sprites** - 9 different animations with 8 frames each
+- **Background Texture Selection** - Choose from multiple tiled environments during gameplay
 
 ### 🏹 Bolter Character System
 - **Professional Sprite Animations** - High-quality 64x64 pixel art sprites
@@ -84,13 +86,21 @@ Random skill drops enhance gameplay:
 - **Critical Strike** - Chance to deal double damage
 - **Gold Magnet** - Increased pickup radius for items
 - **Explosive Impact** - Projectiles explode on impact
+- **Multi Shot** - Fire additional projectiles in a cone pattern
 - **Battle Frenzy** - Flat fire rate reduction (0.5% per level)
 
 ## 🎨 Visual Design
 
+### 🌍 Environment System
+- **Multiple Backgrounds** - Desert, Grassland, Stone, and Grid patterns
+- **Infinite Tiling** - 64x64 seamless texture tiles that work at any zoom level
+- **Real-time Switching** - Change backgrounds during gameplay
+- **Phase-Compatible** - Textures remain consistent during screen scaling phases
+
 ### 🎭 Art Style
 - **Professional Pixel Art** - High-quality 64x64 sprite animations
 - **Neon Cyberpunk Aesthetic** - Glowing effects and vibrant colors
+- **Dynamic Background Textures** - Multiple tileable environments (Desert, Grassland, Stone)
 - **Minimalist Geometry** - Clean shapes with strategic visual complexity
 - **Dynamic Lighting** - Radial gradients and glow effects for all game objects
 - **Particle Systems** - Impact feedback and collection animations
@@ -274,7 +284,7 @@ Place these files in the `public/` folder:
 ## 🎮 Skill System
 
 ### 🎯 Passive Skills
-- **Random Drops** - Skills drop with 3% base chance after enemy kills
+- **Random Drops** - Skills drop with 8% base chance after enemy kills (increased for better progression)
 - **Level Progression** - Skills can be upgraded up to level 10
 - **Inventory Management** - Up to 5 skills can be equipped
 - **Keyboard Shortcuts** - C to accept, V to reject skill drops
@@ -283,6 +293,7 @@ Place these files in the `public/` folder:
 - **Critical Strike** (Epic) - Chance to deal double damage
 - **Gold Magnet** (Common) - Increased item pickup radius
 - **Explosive Impact** (Legendary) - Projectiles explode on impact
+- **Multi Shot** (Rare) - Fire additional projectiles in a cone pattern
 - **Battle Frenzy** (Rare) - Flat fire rate reduction
 
 ## 🤝 Contributing

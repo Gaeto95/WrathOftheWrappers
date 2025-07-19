@@ -14,8 +14,8 @@ export function generateRandomSkill(): PassiveSkill {
 }
 
 export function shouldDropSkill(enemiesKilled: number): boolean {
-  // 3% base chance, increases very slightly with more enemies killed
-  const baseChance = 0.03;
+  // 8% base chance, increases very slightly with more enemies killed
+  const baseChance = 0.08;
   const bonusChance = Math.min(0.02, enemiesKilled * 0.0002);
   return Math.random() < (baseChance + bonusChance);
 }
@@ -78,6 +78,7 @@ export function calculateFinalStats(basePlayer: Player, skills: PassiveSkill[]):
   let totalFireRateReduction = 0;
   let totalGoldBonus = 0;
   let totalMagnetRadius = 0;
+  let totalMultiShot = 0;
   
   skills.forEach(skill => {
     skill.effects.forEach(effect => {
@@ -100,6 +101,10 @@ export function calculateFinalStats(basePlayer: Player, skills: PassiveSkill[]):
         case 'magnet':
           totalMagnetRadius += effectValue;
           break;
+          
+        case 'multiShot':
+          totalMultiShot += effectValue;
+          break;
       }
     });
   });
@@ -111,6 +116,7 @@ export function calculateFinalStats(basePlayer: Player, skills: PassiveSkill[]):
   
   // Store magnet radius for collision detection
   (finalPlayer as any).magnetRadius = totalMagnetRadius;
+  (finalPlayer as any).multiShot = totalMultiShot;
   
   return finalPlayer;
 }

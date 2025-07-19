@@ -43,9 +43,11 @@ const SPRITE_CONFIG = {
 
 interface CanvasProps {
   gameState: GameState;
+  phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number; phase: number };
   width: number;
   height: number;
   input?: any;
+  backgroundTexture?: string;
 }
 
 // Monster sprite images cache
@@ -56,7 +58,7 @@ const potionImageCache = new Map<string, HTMLImageElement>();
 let spritesInitialized = false; // Track if sprites have been initialized
 let monstersLoaded = false;
 
-export function Canvas({ gameState, width, height, input }: CanvasProps) {
+export function Canvas({ gameState, phaseTransition, width, height, input, backgroundTexture = 'default' }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Load all sprite images
@@ -120,15 +122,26 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
     // Apply camera shake and screen scaling
     ctx.save();
     
+    // Apply additional zoom during phase transition for dramatic effect
+    let effectiveScale = gameState.screenScale;
+    if (phaseTransition?.active) {
+      // Gradually zoom out during transition
+      const progress = 1 - (phaseTransition.timeLeft / 8000);
+      // Use current scale as base, don't reset to 1
+      const targetScale = gameState.screenScale;
+      const startScale = Math.min(1.0, targetScale + 0.1); // Start slightly zoomed in
+      effectiveScale = startScale - (progress * 0.1); // Zoom to target
+    }
+    
     // Apply screen scaling from center
-    if (gameState.screenScale !== 1) {
+    if (effectiveScale !== 1) {
       const centerX = width / 2;
       const centerY = height / 2;
       ctx.translate(centerX, centerY);
-      ctx.scale(gameState.screenScale, gameState.screenScale);
+      ctx.scale(effectiveScale, effectiveScale);
       ctx.translate(-centerX, -centerY);
       
-      // Improve rendering quality when scaled
+      // Improve rendering quality when scaled - especially important during transitions
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
     }
@@ -136,7 +149,7 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
     ctx.translate(gameState.camera.x, gameState.camera.y);
 
     // Draw background pattern
-    drawBackgroundPattern(ctx, width, height);
+    drawBackgroundPattern(ctx, width, height, backgroundTexture);
 
     // Draw items
     gameState.items.forEach(item => {
@@ -159,7 +172,12 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
     });
 
     // Draw player
-    drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages);
+    drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages, phaseTransition);
+
+    // Draw phase transition text
+    if (phaseTransition?.active) {
+      drawPhaseTransitionText(ctx, phaseTransition, width, height);
+    }
 
     ctx.restore();
   }, [gameState, width, height, input]);
@@ -174,11 +192,105 @@ export function Canvas({ gameState, width, height, input }: CanvasProps) {
   );
 }
 
-function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, height: number) {
+// Background texture cache
+const backgroundImages = new Map<string, HTMLImageElement>();
+let textureLoadAttempts = new Map<string, number>();
+let texturesInitialized = false;
+
+function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, height: number, backgroundTexture: string = 'default') {
+  if (backgroundTexture === 'default') {
+    // Original grid pattern
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    
+    const gridSize = 100; // Larger grid to account for zoom out
+    
+    // Draw vertical lines
+    for (let x = -gridSize; x <= width + gridSize; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height + gridSize);
+      ctx.stroke();
+    }
+    
+    // Draw horizontal lines
+    for (let y = -gridSize; y <= height + gridSize; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(-gridSize, y);
+      ctx.lineTo(width + gridSize, y);
+      ctx.stroke();
+    }
+  } else {
+    // Initialize textures only once
+    if (!texturesInitialized) {
+      initializeTextures();
+      texturesInitialized = true;
+    }
+    
+    let bgImage = backgroundImages.get(backgroundTexture);
+    
+    if (bgImage.complete && bgImage.naturalWidth > 0) {
+      // Manual infinite tiling system
+      const tileSize = 64; // Fixed tile size
+      const margin = 200; // Extra margin for camera shake and zoom
+      
+      // Calculate how many tiles we need to cover the screen plus margin
+      const startX = Math.floor(-margin / tileSize) * tileSize;
+      const endX = Math.ceil((width + margin) / tileSize) * tileSize;
+      const startY = Math.floor(-margin / tileSize) * tileSize;
+      const endY = Math.ceil((height + margin) / tileSize) * tileSize;
+      
+      // Draw tiles in a grid pattern
+      for (let x = startX; x < endX; x += tileSize) {
+        for (let y = startY; y < endY; y += tileSize) {
+          ctx.drawImage(bgImage, x, y, tileSize, tileSize);
+        }
+      }
+    } else {
+      drawGridPattern(ctx, width, height);
+    }
+  }
+}
+
+function initializeTextures() {
+  const textures = ['desert', 'grassland', 'stone'];
+  
+  textures.forEach(textureName => {
+    if (backgroundImages.has(textureName)) return;
+    
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      console.log(`Background texture loaded: ${textureName}`);
+    };
+    
+    img.onerror = () => {
+      console.warn(`Failed to load background texture: ${textureName}.png, trying .jpg`);
+      const fallbackImg = new Image();
+      fallbackImg.crossOrigin = 'anonymous';
+      fallbackImg.src = `/${textureName}.jpg`;
+      
+      fallbackImg.onload = () => {
+        backgroundImages.set(textureName, fallbackImg);
+      };
+      
+      fallbackImg.onerror = () => {
+        console.warn(`Failed to load ${textureName} texture completely`);
+      };
+    };
+    
+    img.src = `/${textureName}.png`;
+    backgroundImages.set(textureName, img);
+  });
+}
+
+function drawGridPattern(ctx: CanvasRenderingContext2D, width: number, height: number) {
+  // Original grid pattern as fallback
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
   ctx.lineWidth = 1;
   
-  const gridSize = 100; // Larger grid to account for zoom out
+  const gridSize = 100;
   
   // Draw vertical lines
   for (let x = -gridSize; x <= width + gridSize; x += gridSize) {
@@ -197,7 +309,7 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
   }
 }
 
-function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, input?: any, spriteImages?: Map<string, HTMLImageElement>) {
+function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, input?: any, spriteImages?: Map<string, HTMLImageElement>, phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number; phase: number }) {
   const isInvulnerable = time < player.invulnerableUntil;
   const alpha = isInvulnerable && Math.sin(time * 0.02) > 0 ? 0.5 : 1;
   
@@ -248,7 +360,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   let finalAnimation = currentAnimation;
   let spriteImage = spriteImages.get(finalAnimation);
   
-  // More thorough sprite validation
+  // More thorough sprite validation - especially during transitions
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
     if (!img) return false;
     if (!img.complete) return false;
@@ -293,41 +405,34 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   // Validate frame coordinates don't exceed sprite bounds
   if (frameX >= spriteImage!.naturalWidth) {
     console.warn('Frame X exceeds sprite width:', frameX, spriteImage!.naturalWidth);
-    drawPlayerFallback(ctx, player, alpha, facingLeft);
-    ctx.restore();
-    return;
+    frameX = 0; // Reset to first frame instead of fallback
   }
   
   const renderSize = GAME_CONFIG.PLAYER_SIZE * 3; // Even larger to stay visible when zoomed out
   
-  // Handle flipping for left direction
-  if (facingLeft) {
-    ctx.scale(-1, 1);
-    try {
+  // More robust sprite drawing with better error handling
+  try {
+    // Handle flipping for left direction
+    if (facingLeft) {
+      ctx.scale(-1, 1);
       ctx.drawImage(
         spriteImage!,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         -player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
-    } catch (error) {
-      console.error('Error drawing flipped sprite:', error);
-      ctx.restore();
-      drawPlayerFallback(ctx, player, alpha, facingLeft);
-      return;
-    }
-  } else {
-    try {
+    } else {
       ctx.drawImage(
         spriteImage!,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
-    } catch (error) {
-      console.error('Error drawing sprite:', error);
-      ctx.restore();
-      drawPlayerFallback(ctx, player, alpha, facingLeft);
-      return;
     }
+  } catch (error) {
+    console.warn('Sprite drawing failed, using fallback:', error.message);
+    // Restore context before fallback
+    ctx.restore();
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
   }
   
   ctx.restore();
@@ -633,6 +738,47 @@ function drawParticle(ctx: CanvasRenderingContext2D, particle: any) {
   ctx.beginPath();
   ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
   ctx.fill();
+  
+  ctx.restore();
+}
+
+function drawPhaseTransitionText(
+  ctx: CanvasRenderingContext2D, 
+  phaseTransition: { active: boolean; timeLeft: number; blinkCount: number; phase: number },
+  width: number,
+  height: number
+) {
+  // Calculate blink opacity
+  const blinkInterval = 400; // 400ms per blink
+  const currentBlink = Math.floor((5000 - phaseTransition.timeLeft) / blinkInterval);
+  const blinkProgress = ((5000 - phaseTransition.timeLeft) % blinkInterval) / blinkInterval;
+  const opacity = Math.sin(blinkProgress * Math.PI) * 0.5 + 0.5; // Smooth blink
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  
+  // Set up text style
+  ctx.font = 'bold 72px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  const centerX = width / 2;
+  const centerY = height / 2;
+  
+  // Draw text shadow/glow
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  
+  // Draw main text
+  ctx.fillStyle = '#ff0000';
+  ctx.fillText(`PHASE ${phaseTransition.phase}`, centerX, centerY);
+  
+  // Draw additional glow
+  ctx.shadowBlur = 40;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(`PHASE ${phaseTransition.phase}`, centerX, centerY);
   
   ctx.restore();
 }

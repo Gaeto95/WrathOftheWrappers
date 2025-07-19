@@ -9,7 +9,9 @@ import { useClassAbility, regenerateMana } from '../utils/classAbilities';
 export function useGameLoop(
   gameState: GameState,
   setGameState: (updater: (prev: GameState) => GameState) => void,
-  input: InputState
+  input: InputState,
+  phaseTransition: { active: boolean; timeLeft: number; blinkCount: number },
+  setPhaseTransition: (transition: { active: boolean; timeLeft: number; blinkCount: number }) => void
 ) {
   const lastTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>();
@@ -25,10 +27,10 @@ export function useGameLoop(
     const deltaTime = currentTime - lastTimeRef.current;
     lastTimeRef.current = currentTime;
 
-    setGameState(prevState => updateGameState(prevState, deltaTime, input));
+    setGameState(prevState => updateGameState(prevState, deltaTime, input, phaseTransition, setPhaseTransition));
 
     animationFrameRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState.gameStatus, setGameState, input]);
+  }, [gameState.gameStatus, setGameState, input, phaseTransition, setPhaseTransition]);
 
   useEffect(() => {
     // Always run the game loop, but it will only update when status is 'playing'
@@ -49,7 +51,7 @@ export function useGameLoop(
   }, [input.escape, gameState.gameStatus, setGameState]);
 }
 
-function updateGameState(state: GameState, deltaTime: number, input: InputState): GameState {
+function updateGameState(state: GameState, deltaTime: number, input: InputState, phaseTransition: any, setPhaseTransition: any): GameState {
   const dt = deltaTime / 1000; // Convert to seconds
   
   // Update time
@@ -124,8 +126,38 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   // Auto-attack
   const nearestEnemy = findNearestEnemy(player, enemies);
   if (nearestEnemy && newTime - player.lastShot > player.fireRate * 1000) {
-    const newProjectile = createProjectile(player, nearestEnemy, player.damage, player);
-    projectiles.push(newProjectile);
+    // Create main projectile
+    const mainProjectile = createProjectile(player, nearestEnemy, player.damage, player);
+    projectiles.push(mainProjectile);
+    
+    // Create additional projectiles for multi-shot
+    const multiShotCount = (player as any).multiShot || 0;
+    if (multiShotCount > 0 && nearestEnemy) {
+      // Calculate base angle to target
+      const baseAngle = Math.atan2(nearestEnemy.y - player.y, nearestEnemy.x - player.x);
+      
+      // Create cone of projectiles
+      for (let i = 1; i <= multiShotCount; i++) {
+        // Alternate left and right, with increasing angle
+        const side = i % 2 === 1 ? 1 : -1; // 1 for right, -1 for left
+        const angleOffset = (Math.ceil(i / 2) * 0.3) * side; // 0.3 radians = ~17 degrees per step
+        const shotAngle = baseAngle + angleOffset;
+        
+        // Calculate target position for this angle
+        const range = 300; // Range for the cone shot
+        const targetX = player.x + Math.cos(shotAngle) * range;
+        const targetY = player.y + Math.sin(shotAngle) * range;
+        
+        const coneProjectile = createProjectile(
+          player, 
+          { x: targetX, y: targetY }, 
+          player.damage, 
+          player
+        );
+        projectiles.push(coneProjectile);
+      }
+    }
+    
     player.lastShot = newTime;
   }
   
@@ -291,7 +323,17 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   // Spawn enemies
   let lastEnemySpawn = state.lastEnemySpawn;
   let lastBossSpawn = state.lastBossSpawn;
-  const spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
+  
+  // Reduce spawn rate during phase transitions and overall
+  let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
+  
+  // Don't spawn enemies during phase transitions
+  if (phaseTransition.active) {
+    spawnRate = Infinity; // Prevent spawning during transition
+  } else {
+    // Reduce spawn rate by 50% to make it much less overwhelming
+    spawnRate *= 1.5;
+  }
   
   // Regular enemy spawning
   if (newTime - lastEnemySpawn > spawnRate) {
@@ -300,7 +342,10 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   }
   
   // Boss spawning every 60 seconds
-  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL) {
+  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL && !phaseTransition.active) {
+    // Clear all existing enemies before boss spawn
+    aliveEnemies.length = 0;
+    
     const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
     const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
     
@@ -346,8 +391,45 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState)
   
   // Screen scaling at 60 seconds
   let screenScale = state.screenScale;
-  if (newTime >= 60000 && screenScale === 1) { // 60 seconds
-    screenScale = 0.8; // Zoom out to show 25% more area - less blur
+  let currentPhase = Math.floor(newTime / 60000) + 1; // Phase 1 at 60s, Phase 2 at 120s, etc.
+  let expectedPhase = Math.floor(state.time / 60000) + 1;
+  
+  // Check if we've entered a new phase
+  if (currentPhase > expectedPhase && !phaseTransition.active) {
+    // Start phase transition
+    setPhaseTransition({
+      active: true,
+      timeLeft: 5000, // 5 seconds - better balance
+      blinkCount: 0,
+      phase: currentPhase
+    });
+    
+    // Progressive zoom out for each phase - calculate from current scale
+    if (currentPhase === 2) screenScale = 0.85; // Phase 1: 15% zoom out
+    else if (currentPhase === 3) screenScale = 0.75; // Phase 2: 25% zoom out  
+    else if (currentPhase >= 4) screenScale = 0.7; // Phase 3+: 30% zoom out
+  }
+  
+  // Handle phase transition
+  if (phaseTransition.active) {
+    const newTimeLeft = phaseTransition.timeLeft - deltaTime;
+    const newBlinkCount = Math.floor((5000 - newTimeLeft) / 400); // Blink every 400ms
+    
+    if (newTimeLeft <= 0) {
+      setPhaseTransition({
+        active: false,
+        timeLeft: 0,
+        blinkCount: 0,
+        phase: 1
+      });
+    } else {
+      setPhaseTransition({
+        active: true,
+        timeLeft: newTimeLeft,
+        blinkCount: newBlinkCount,
+        phase: phaseTransition.phase || 1
+      });
+    }
   }
   
   return {

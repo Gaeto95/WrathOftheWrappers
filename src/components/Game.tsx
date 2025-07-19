@@ -16,6 +16,13 @@ import { PassiveSkill } from '../types/classes';
 import { createInitialPlayer } from '../utils/gameLogic';
 import { calculateFinalStats } from '../utils/skillSystem';
 
+interface PhaseTransition {
+  active: boolean;
+  timeLeft: number;
+  blinkCount: number;
+  phase: number;
+}
+
 interface GameProps {
   bolterData: BolterData;
   bolterSystem: any;
@@ -26,6 +33,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [gameOverAudio, setGameOverAudio] = useState<HTMLAudioElement | null>(null);
+  const [backgroundTexture, setBackgroundTexture] = useState<string>('default');
 
   // Background music setup
   useEffect(() => {
@@ -76,8 +84,15 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   });
   const [sessionEnded, setSessionEnded] = useState(false);
   
+  const [phaseTransition, setPhaseTransition] = useState<PhaseTransition>({
+    active: false,
+    timeLeft: 0,
+    blinkCount: 0,
+    phase: 1
+  });
+  
   const input = useInput();
-  useGameLoop(gameState, setGameState, input);
+  useGameLoop(gameState, setGameState, input, phaseTransition, setPhaseTransition);
 
   // Start game session
   useEffect(() => {
@@ -342,12 +357,64 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         {musicEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
       </button>
 
-      <div className="relative">
+      {/* Background Texture Controls */}
+      {/* Background Texture Dropdown - Positioned above canvas with proper spacing */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 mb-8">
+        <div className="bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-3 border border-gray-600">
+          <div className="text-white text-sm mb-2 font-medium text-center">Background:</div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setBackgroundTexture('default')}
+              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                backgroundTexture === 'default' 
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              }`}
+            >
+              Grid
+            </button>
+            <button
+              onClick={() => setBackgroundTexture('desert')}
+              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                backgroundTexture === 'desert' 
+                  ? 'bg-yellow-600 text-white' 
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              }`}
+            >
+              Desert
+            </button>
+            <button
+              onClick={() => setBackgroundTexture('grassland')}
+              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                backgroundTexture === 'grassland' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              }`}
+            >
+              Grassland
+            </button>
+            <button
+              onClick={() => setBackgroundTexture('stone')}
+              className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+                backgroundTexture === 'stone' 
+                  ? 'bg-gray-500 text-white' 
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              }`}
+            >
+              Stone
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative mt-20">
         <Canvas
           gameState={gameState}
+          phaseTransition={phaseTransition}
           width={GAME_CONFIG.CANVAS_WIDTH}
           height={GAME_CONFIG.CANVAS_HEIGHT}
           input={input}
+          backgroundTexture={backgroundTexture}
         />
         
         {gameState.gameStatus === 'playing' && (

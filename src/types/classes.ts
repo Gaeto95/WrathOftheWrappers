@@ -44,7 +44,7 @@ export interface PassiveSkill {
 }
 
 export interface SkillEffect {
-  type: 'damage' | 'speed' | 'health' | 'fireRate' | 'goldBonus' | 'piercing' | 'vampirism' | 'critical' | 'aoe' | 'magnet';
+  type: 'damage' | 'speed' | 'health' | 'fireRate' | 'goldBonus' | 'piercing' | 'vampirism' | 'critical' | 'aoe' | 'magnet' | 'multiShot';
   value: number;
   isPercentage: boolean;
 }
@@ -113,6 +113,14 @@ export const PASSIVE_SKILLS: Record<string, Omit<PassiveSkill, 'id' | 'currentLe
     maxLevel: 5,
     rarity: 'legendary',
     effects: [{ type: 'aoe', value: 20, isPercentage: false }]
+  },
+  multiShot: {
+    name: 'Multi Shot',
+    description: 'Fire additional projectiles in a cone',
+    icon: '🎯',
+    maxLevel: 10,
+    rarity: 'rare',
+    effects: [{ type: 'multiShot', value: 1, isPercentage: false }]
   },
   battleFrenzy: {
     name: 'Battle Frenzy',
