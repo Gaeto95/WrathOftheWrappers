@@ -180,12 +180,12 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
 
     // Draw enemies
     gameState.enemies.forEach(enemy => {
-      drawEnemy(ctx, enemy, gameState.time, gameState.player);
+      drawEnemy(ctx, enemy, gameState.time, gameState.player, gameState.megaBoltFlash);
     });
 
     // Draw projectiles
     gameState.projectiles.forEach(projectile => {
-      drawProjectile(ctx, projectile);
+      drawProjectile(ctx, projectile, gameState.megaBoltFlash);
     });
 
     // Draw particles
@@ -195,6 +195,11 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
 
     // Draw player
     drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages, phaseTransition);
+    
+    // Draw mega bolt flash effect
+    if (gameState.megaBoltFlash > 0) {
+      drawMegaBoltFlash(ctx, gameState.megaBoltFlash, width, height);
+    }
 
     // Draw phase transition text
     if (phaseTransition?.active) {
@@ -550,9 +555,14 @@ function drawPlayerFallback(ctx: CanvasRenderingContext2D, player: any, alpha: n
   
   ctx.restore();
 }
-function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, player: any) {
+function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, player: any, megaBoltFlash: number = 0) {
   const isFlashing = time < enemy.flashUntil;
   const color = isFlashing ? '#ffffff' : enemy.color;
+  
+  // Draw boss aura
+  if (enemy.type === 'BOSS') {
+    drawBossAura(ctx, enemy, time);
+  }
   
   // Helper function to check if monster sprite is ready
   const isMonsterSpriteReady = (img: HTMLImageElement | undefined) => {
@@ -710,9 +720,37 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
 }
 
-function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any) {
-  const color = projectile.isFireball ? '#f59e0b' : GAME_CONFIG.PROJECTILE_COLOR;
-  const glowColor = projectile.isFireball ? '#fbbf24' : GAME_CONFIG.PROJECTILE_COLOR;
+function drawBossAura(ctx: CanvasRenderingContext2D, boss: any, time: number) {
+  // Pulsing red aura
+  const pulseIntensity = 0.3 + 0.2 * Math.sin(time * 0.005);
+  
+  const gradient = ctx.createRadialGradient(
+    boss.x, boss.y, 0,
+    boss.x, boss.y, GAME_CONFIG.BOSS_AURA_SIZE
+  );
+  gradient.addColorStop(0, `rgba(255, 0, 0, ${pulseIntensity * 0.3})`);
+  gradient.addColorStop(0.7, `rgba(255, 0, 0, ${pulseIntensity * 0.1})`);
+  gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+  
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(boss.x, boss.y, GAME_CONFIG.BOSS_AURA_SIZE, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any, megaBoltFlash: number = 0) {
+  let color, glowColor;
+  
+  if (projectile.isBossProjectile) {
+    color = '#ff0000';
+    glowColor = '#ff4444';
+  } else if (projectile.isFireball) {
+    color = '#f59e0b';
+    glowColor = '#fbbf24';
+  } else {
+    color = GAME_CONFIG.PROJECTILE_COLOR;
+    glowColor = GAME_CONFIG.PROJECTILE_COLOR;
+  }
   
   // Draw projectile glow
   const gradient = ctx.createRadialGradient(
@@ -735,7 +773,7 @@ function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any) {
 }
 
 function drawItem(ctx: CanvasRenderingContext2D, item: any) {
-  if (item.type === 'gold') {
+  if (item.type === 'gold' && !item.isMegaBolt) {
     let coinImage = coinImageCache.get('coin');
     if (!coinImage) {
       coinImage = new Image();
@@ -778,6 +816,43 @@ function drawItem(ctx: CanvasRenderingContext2D, item: any) {
       ctx.arc(item.x, item.y, size, 0, Math.PI * 2);
       ctx.stroke();
     }
+  } else if (item.isMegaBolt) {
+    // Mega Bolt - special cyan glowing effect
+    const size = 20;
+    const pulseIntensity = 0.5 + 0.5 * Math.sin(Date.now() * 0.01);
+    
+    // Draw mega bolt glow
+    const gradient = ctx.createRadialGradient(
+      item.x, item.y, 0,
+      item.x, item.y, size * 2
+    );
+    gradient.addColorStop(0, `rgba(0, 255, 255, ${pulseIntensity})`);
+    gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, size * 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw mega bolt body
+    ctx.fillStyle = GAME_CONFIG.COLORS.MEGA_BOLT;
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, size, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw lightning bolt symbol
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚡', item.x, item.y);
+    
+    // Draw mega bolt border
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, size, 0, Math.PI * 2);
+    ctx.stroke();
   } else {
     let potionImage = potionImageCache.get('potion');
     if (!potionImage) {
@@ -834,6 +909,17 @@ function drawParticle(ctx: CanvasRenderingContext2D, particle: any) {
   ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
   ctx.fill();
   
+  ctx.restore();
+}
+
+function drawMegaBoltFlash(ctx: CanvasRenderingContext2D, flashTime: number, width: number, height: number) {
+  const intensity = flashTime / GAME_CONFIG.MEGA_BOLT_FLASH_DURATION;
+  const alpha = intensity * 0.8; // Max 80% opacity
+  
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = GAME_CONFIG.COLORS.MEGA_BOLT;
+  ctx.fillRect(0, 0, width, height);
   ctx.restore();
 }
 
