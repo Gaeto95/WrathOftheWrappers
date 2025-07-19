@@ -189,8 +189,23 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
                 <div className="relative z-10 flex items-center gap-4">
                   <Play className="w-6 h-6" />
                   <span>Start Game</span>
-                </div>
+            <div className="mt-2 text-purple-300 text-sm font-light animate-pulse drop-shadow-lg">
               </button>
+            </div>
+            
+            {/* Enhanced "Powered by Bolt" with stronger glow */}
+            <div className="mt-4 text-center">
+              <div className="relative inline-block">
+                <div className="text-xs text-purple-400 font-medium animate-pulse drop-shadow-2xl">
+                  ⚡ Powered by Bolt
+                </div>
+                <div className="absolute inset-0 text-xs text-purple-400 font-medium blur-sm animate-pulse opacity-75">
+                  ⚡ Powered by Bolt
+                </div>
+                <div className="absolute inset-0 text-xs text-purple-400 font-medium blur-md animate-pulse opacity-50">
+                  ⚡ Powered by Bolt
+                </div>
+              </div>
             </div>
           </div>
         </div>

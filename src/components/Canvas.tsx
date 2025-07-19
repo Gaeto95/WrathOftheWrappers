@@ -913,11 +913,36 @@ function drawParticle(ctx: CanvasRenderingContext2D, particle: any) {
 }
 
 function drawMegaBoltFlash(ctx: CanvasRenderingContext2D, flashTime: number, width: number, height: number) {
+  const progress = 1 - (flashTime / GAME_CONFIG.MEGA_BOLT_FLASH_DURATION);
   const intensity = flashTime / GAME_CONFIG.MEGA_BOLT_FLASH_DURATION;
-  const alpha = intensity * 0.8; // Max 80% opacity
+  
+  // Create expanding circle effect
+  const maxRadius = Math.max(width, height) * 1.5;
+  const currentRadius = maxRadius * progress;
+  
+  // Create radial gradient for explosion effect
+  const centerX = width / 2;
+  const centerY = height / 2;
+  
+  const gradient = ctx.createRadialGradient(
+    centerX, centerY, 0,
+    centerX, centerY, currentRadius
+  );
+  
+  const alpha = intensity * 0.9; // Increased opacity for more dramatic effect
+  gradient.addColorStop(0, `rgba(0, 255, 255, ${alpha})`);
+  gradient.addColorStop(0.3, `rgba(0, 200, 255, ${alpha * 0.8})`);
+  gradient.addColorStop(0.6, `rgba(0, 150, 255, ${alpha * 0.4})`);
+  gradient.addColorStop(1, 'rgba(0, 100, 255, 0)');
   
   ctx.save();
-  ctx.globalAlpha = alpha;
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Add additional glow effect
+  ctx.globalAlpha = alpha * 0.3;
   ctx.fillStyle = GAME_CONFIG.COLORS.MEGA_BOLT;
   ctx.fillRect(0, 0, width, height);
   ctx.restore();
