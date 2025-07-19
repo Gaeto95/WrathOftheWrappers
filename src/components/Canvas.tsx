@@ -126,7 +126,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input }: Can
     if (phaseTransition?.active) {
       // Gradually zoom out during transition
       const progress = 1 - (phaseTransition.timeLeft / 3000);
-      effectiveScale = 1 - (progress * 0.3); // Zoom out more dramatically during transition
+      effectiveScale = 1 - (progress * 0.1); // Gentler zoom during transition
     }
     
     // Apply screen scaling from center
@@ -169,6 +169,11 @@ export function Canvas({ gameState, phaseTransition, width, height, input }: Can
 
     // Draw player
     drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages);
+
+    // Draw phase transition text
+    if (phaseTransition?.active) {
+      drawPhaseTransitionText(ctx, phaseTransition, width, height);
+    }
 
     ctx.restore();
   }, [gameState, width, height, input]);
@@ -642,6 +647,47 @@ function drawParticle(ctx: CanvasRenderingContext2D, particle: any) {
   ctx.beginPath();
   ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
   ctx.fill();
+  
+  ctx.restore();
+}
+
+function drawPhaseTransitionText(
+  ctx: CanvasRenderingContext2D, 
+  phaseTransition: { active: boolean; timeLeft: number; blinkCount: number },
+  width: number,
+  height: number
+) {
+  // Calculate blink opacity
+  const blinkInterval = 300; // 300ms per blink
+  const currentBlink = Math.floor((3000 - phaseTransition.timeLeft) / blinkInterval);
+  const blinkProgress = ((3000 - phaseTransition.timeLeft) % blinkInterval) / blinkInterval;
+  const opacity = Math.sin(blinkProgress * Math.PI) * 0.5 + 0.5; // Smooth blink
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  
+  // Set up text style
+  ctx.font = 'bold 72px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  const centerX = width / 2;
+  const centerY = height / 2;
+  
+  // Draw text shadow/glow
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  
+  // Draw main text
+  ctx.fillStyle = '#ff0000';
+  ctx.fillText('PHASE 1', centerX, centerY);
+  
+  // Draw additional glow
+  ctx.shadowBlur = 40;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('PHASE 1', centerX, centerY);
   
   ctx.restore();
 }

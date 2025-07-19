@@ -358,7 +358,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       timeLeft: 3000, // 3 seconds
       blinkCount: 0
     });
-    screenScale = 0.8; // Zoom out to show 25% more area
+    screenScale = 0.85; // Gentler zoom out to show 15% more area
   }
   
   // Handle phase transition
