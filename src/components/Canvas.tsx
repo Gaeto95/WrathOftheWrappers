@@ -230,13 +230,21 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     let bgImage = backgroundImages.get(backgroundTexture);
     
     if (bgImage.complete && bgImage.naturalWidth > 0) {
-      // Simple pattern repeat
-      const pattern = ctx.createPattern(bgImage, 'repeat');
-      if (pattern) {
-        ctx.fillStyle = pattern;
-        ctx.fillRect(-100, -100, width + 200, height + 200);
-      } else {
-        drawGridPattern(ctx, width, height);
+      // Manual infinite tiling system
+      const tileSize = 64; // Fixed tile size
+      const margin = 200; // Extra margin for camera shake and zoom
+      
+      // Calculate how many tiles we need to cover the screen plus margin
+      const startX = Math.floor(-margin / tileSize) * tileSize;
+      const endX = Math.ceil((width + margin) / tileSize) * tileSize;
+      const startY = Math.floor(-margin / tileSize) * tileSize;
+      const endY = Math.ceil((height + margin) / tileSize) * tileSize;
+      
+      // Draw tiles in a grid pattern
+      for (let x = startX; x < endX; x += tileSize) {
+        for (let y = startY; y < endY; y += tileSize) {
+          ctx.drawImage(bgImage, x, y, tileSize, tileSize);
+        }
       }
     } else {
       drawGridPattern(ctx, width, height);
@@ -357,8 +365,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     if (!img) return false;
     if (!img.complete) return false;
     if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
-    // Additional check during phase transitions
-    if (phaseTransition?.active && img.naturalWidth < 32) return false;
     return true;
   };
   
@@ -399,20 +405,13 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   // Validate frame coordinates don't exceed sprite bounds
   if (frameX >= spriteImage!.naturalWidth) {
     console.warn('Frame X exceeds sprite width:', frameX, spriteImage!.naturalWidth);
-    drawPlayerFallback(ctx, player, alpha, facingLeft);
-    ctx.restore();
-    return;
+    frameX = 0; // Reset to first frame instead of fallback
   }
   
   const renderSize = GAME_CONFIG.PLAYER_SIZE * 3; // Even larger to stay visible when zoomed out
   
   // More robust sprite drawing with better error handling
   try {
-    // Extra validation before drawing during transitions
-    if (!spriteImage || !spriteImage.complete || spriteImage.naturalWidth === 0) {
-      throw new Error('Sprite not ready during transition');
-    }
-    
     // Handle flipping for left direction
     if (facingLeft) {
       ctx.scale(-1, 1);
