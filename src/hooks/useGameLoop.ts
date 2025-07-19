@@ -57,6 +57,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Update time
   const newTime = state.time + deltaTime;
   
+  // Update mega bolt flash
+  const megaBoltFlash = Math.max(0, state.megaBoltFlash - deltaTime);
+  
   // Update player
   let player = { ...state.player };
   
@@ -96,12 +99,40 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Update enemies
   const enemies = state.enemies.map(enemy => {
     const direction = normalize({ x: player.x - enemy.x, y: player.y - enemy.y });
-    return {
+    const updatedEnemy = {
       ...enemy,
       x: enemy.x + direction.x * enemy.speed * dt,
       y: enemy.y + direction.y * enemy.speed * dt,
-      flashUntil: Math.max(0, enemy.flashUntil - deltaTime)
+      flashUntil: Math.max(0, enemy.flashUntil - deltaTime),
+      lastAttack: enemy.lastAttack || 0
     };
+    
+    // Boss attacks
+    if (enemy.type === 'BOSS' && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
+      // Create boss projectiles
+      const baseAngle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+      const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
+      const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
+      
+      for (let i = 0; i < GAME_CONFIG.BOSS_PROJECTILE_COUNT; i++) {
+        const angle = startAngle + (i * spreadStep);
+        const targetX = enemy.x + Math.cos(angle) * 500;
+        const targetY = enemy.y + Math.sin(angle) * 500;
+        
+        const bossProjectile = createProjectile(
+          { x: enemy.x, y: enemy.y },
+          { x: targetX, y: targetY },
+          enemy.damage
+        );
+        bossProjectile.isBossProjectile = true;
+        bossProjectile.size = 8; // Larger boss projectiles
+        projectiles.push(bossProjectile);
+      }
+      
+      updatedEnemy.lastAttack = newTime;
+    }
+    
+    return updatedEnemy;
   });
   
   // Update projectiles
@@ -243,6 +274,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         items.push(createItem('gold', { x: enemy.x, y: enemy.y }, goldAmount));
       }
       
+      // Separate check for Mega Bolt (very rare)
+      if (Math.random() < GAME_CONFIG.MEGA_BOLT_DROP_CHANCE) {
+        items.push(createItem('megabolt', { x: enemy.x, y: enemy.y }, 100)); // 100 gold value
+      }
+      
       // Check for skill drop
       if (!pendingSkillDrop && shouldDropSkill(totalEnemiesKilled)) {
         pendingSkillDrop = generateRandomSkill();
@@ -255,6 +291,33 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Check player-enemy collisions
   let screenShake = Math.max(0, state.screenShake - deltaTime);
+  
+  // Check player-boss projectile collisions
+  const survivingProjectiles = newProjectiles.filter(projectile => {
+    if (!projectile.isBossProjectile) return true;
+    
+    const collision = circleToCircle(
+      { x: player.x, y: player.y, radius: GAME_CONFIG.PLAYER_SIZE / 2 },
+      { x: projectile.x, y: projectile.y, radius: projectile.size }
+    );
+    
+    if (collision && newTime > player.invulnerableUntil) {
+      player.hp -= projectile.damage;
+      player.invulnerableUntil = newTime + GAME_CONFIG.PLAYER_INVINCIBILITY_TIME;
+      screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION;
+      
+      // Create hit particles
+      particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));
+      
+      if (player.hp <= 0) {
+        return false; // Remove projectile and trigger death
+      }
+      return false; // Remove projectile
+    }
+    
+    return true;
+  });
+  
   if (newTime > player.invulnerableUntil) {
     for (const enemy of aliveEnemies) {
       const collision = circleToCircle(
@@ -290,6 +353,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Check player-item collisions
   let gold = state.gold;
+  let activateMegaBolt = false;
   const uncollectedItems = items.filter(item => {
     // Base collection radius
     let itemRadius = item.type === 'gold' ? 40 : 25;
@@ -305,7 +369,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     );
     
     if (collision) {
-      if (item.type === 'gold') {
+      if (item.isMegaBolt) {
+        // Mega Bolt collected!
+        activateMegaBolt = true;
+        gold += item.value; // Still gives gold
+      } else if (item.type === 'gold') {
         gold += item.value;
       } else if (item.type === 'health') {
         player.hp = Math.min(player.maxHp, player.hp + item.value);
@@ -319,6 +387,33 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     }
     return true;
   });
+  
+  // Handle Mega Bolt activation
+  let finalEnemies = aliveEnemies;
+  let finalMegaBoltFlash = megaBoltFlash;
+  
+  if (activateMegaBolt) {
+    // Clear all enemies and create massive particle explosion
+    finalEnemies = [];
+    finalMegaBoltFlash = GAME_CONFIG.MEGA_BOLT_FLASH_DURATION;
+    
+    // Create particles for each destroyed enemy
+    aliveEnemies.forEach(enemy => {
+      particles.push(...createParticles({ x: enemy.x, y: enemy.y }, enemy.color, 12));
+      // Add gold for each destroyed enemy
+      const goldAmount = Math.floor(
+        (enemy.goldDrop.min + Math.random() * (enemy.goldDrop.max - enemy.goldDrop.min)) * 
+        player.goldMultiplier
+      );
+      gold += goldAmount;
+    });
+    
+    // Create massive flash particles at player position
+    particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.MEGA_BOLT, 30));
+    
+    // Screen shake for dramatic effect
+    screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION * 3;
+  }
   
   // Spawn enemies
   let lastEnemySpawn = state.lastEnemySpawn;
@@ -435,8 +530,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   return {
     ...state,
     player,
-    enemies: aliveEnemies,
-    projectiles: newProjectiles,
+    enemies: finalEnemies,
+    projectiles: survivingProjectiles,
     items: uncollectedItems,
     particles,
     gold,
@@ -451,6 +546,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     camera,
     pendingSkillDrop,
     screenScale,
-    enemiesKilled
+    enemiesKilled,
+    megaBoltFlash: finalMegaBoltFlash
   };
 }

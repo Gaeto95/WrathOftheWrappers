@@ -32,6 +32,7 @@ export interface Enemy {
   color: string;
   flashUntil: number;
   goldDrop: { min: number; max: number };
+  lastAttack?: number; // For boss attacks
 }
 
 export interface Projectile {
@@ -45,6 +46,7 @@ export interface Projectile {
   isFireball?: boolean;
   piercing?: boolean;
   piercedEnemies?: Set<string>;
+  isBossProjectile?: boolean;
 }
 
 export interface Item {
@@ -54,6 +56,7 @@ export interface Item {
   y: number;
   value: number;
   collected: boolean;
+  isMegaBolt?: boolean;
 }
 
 export interface Particle {
@@ -98,6 +101,7 @@ export interface GameState {
   enemiesKilled: number;
   lastBossSpawn: number;
   bossPhaseActive: boolean;
+  megaBoltFlash: number; // Flash effect timer
 }
 
 export function createInitialPlayer(upgrades: Upgrades, characterClass: CharacterClass): Player {
@@ -155,7 +159,8 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     screenScale: 1,
     enemiesKilled: 0,
     lastBossSpawn: 0,
-    bossPhaseActive: false
+    bossPhaseActive: false,
+    megaBoltFlash: 0
   };
 }
 
@@ -191,7 +196,8 @@ export function createEnemy(gameState: GameState): Enemy {
     size: config.size,
     color: config.color,
     flashUntil: 0,
-    goldDrop: config.goldDrop
+    goldDrop: config.goldDrop,
+    lastAttack: 0
   };
 }
 
@@ -230,14 +236,15 @@ export function createProjectile(from: Point, to: Point, damage: number, player?
   };
 }
 
-export function createItem(type: 'gold' | 'health', position: Point, value: number): Item {
+export function createItem(type: 'gold' | 'health' | 'megabolt', position: Point, value: number): Item {
   return {
     id: `item_${Date.now()}_${Math.random()}`,
-    type,
+    type: type === 'megabolt' ? 'gold' : type, // Display as gold but mark as mega bolt
     x: position.x,
     y: position.y,
     value,
-    collected: false
+    collected: false,
+    isMegaBolt: type === 'megabolt'
   };
 }
 

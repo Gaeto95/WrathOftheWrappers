@@ -74,6 +74,7 @@ export const GAME_CONFIG = {
   HEALTH_POTION_HEAL: 25,
   HEALTH_POTION_DROP_CHANCE: 0.1,
   GOLD_DROP_CHANCE: 0.8,
+  MEGA_BOLT_DROP_CHANCE: 0.02, // 2% chance - very rare
   
   // Upgrade costs (exponential scaling)
   UPGRADE_COSTS: {
@@ -99,6 +100,16 @@ export const GAME_CONFIG = {
   // Boss spawning
   BOSS_SPAWN_INTERVAL: 60000, // 60 seconds
   
+  // Boss settings
+  BOSS_ATTACK_INTERVAL: 2000, // Boss shoots every 2 seconds
+  BOSS_PROJECTILE_COUNT: 5, // Number of projectiles per attack
+  BOSS_PROJECTILE_SPREAD: 0.8, // Spread angle in radians
+  BOSS_AURA_SIZE: 150, // Boss aura radius
+  
+  // Mega Bolt settings
+  MEGA_BOLT_FLASH_DURATION: 1000, // 1 second flash
+  MEGA_BOLT_DAMAGE_RADIUS: 800, // Damage all enemies within this radius
+  
   // Colors
   COLORS: {
     BACKGROUND: '#0a0a0a',
@@ -107,6 +118,8 @@ export const GAME_CONFIG = {
     HEALTH_BAR_BG: '#333',
     GOLD: '#ffd93d',
     HEALTH_POTION: '#51cf66',
+    MEGA_BOLT: '#00ffff',
+    BOSS_AURA: '#ff0000',
     UI_TEXT: '#ffffff',
     UI_BACKGROUND: 'rgba(0, 0, 0, 0.7)'
   }
