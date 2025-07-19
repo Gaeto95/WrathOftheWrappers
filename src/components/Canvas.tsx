@@ -624,7 +624,7 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
     }
     
     // For small monsters (worm), rotate to face the player
-    if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER' || enemy.type === 'SPEEDER') {
+    if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER') {
       // Calculate angle to player - worm sprite points up by default, so we need to adjust
       const playerX = player.x;
       const playerY = player.y;
@@ -633,6 +633,21 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       // Translate to enemy position, rotate (subtract PI/2 since sprite points up by default), then draw centered
       ctx.translate(enemy.x, enemy.y);
       ctx.rotate(angle - Math.PI / 2); // Subtract 90 degrees since worm sprite points up
+      
+      ctx.drawImage(
+        monsterSprite,
+        -spriteSize/2, 
+        -spriteSize/2, 
+        spriteSize, 
+        spriteSize
+      );
+    } else if (enemy.type === 'SPEEDER') {
+      // SPEEDER rotates slowly based on time, not player direction
+      const rotationSpeed = 0.002; // Slow rotation speed
+      const angle = time * rotationSpeed;
+      
+      ctx.translate(enemy.x, enemy.y);
+      ctx.rotate(angle);
       
       ctx.drawImage(
         monsterSprite,
