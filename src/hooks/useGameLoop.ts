@@ -63,8 +63,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Initialize variables that will be used throughout the function
   let lastBossDefeat = state.lastBossDefeat || 0;
   let lastSideProjectiles = state.lastSideProjectiles || 0;
-  let lastEnemySpawn = state.lastEnemySpawn || 0;
- let lastBossSpawn = state.lastBossSpawn || 0;
   
   // Initialize projectiles array early so it can be used throughout the function
   let projectiles = state.projectiles
@@ -154,6 +152,68 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return updatedEnemy;
   });
   
+  // Check if there's a boss alive for side projectiles (use updated enemies array)
+  const bossPresent = enemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
+  const sideProjectilePhase = Math.floor(state.time / 60000);
+  
+  // Spawn side projectiles during boss fights
+  if (bossPresent && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
+    // Number of side projectiles increases with each phase
+    const sideProjectileCount = Math.min((sideProjectilePhase + 1) * 2, 8); // Phase 1: 2, Phase 2: 4, Phase 3: 6, Phase 4: 8
+    
+    for (let i = 0; i < sideProjectileCount; i++) {
+      // Spawn from random sides of the screen
+      const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+      let startX, startY, targetX, targetY;
+      
+      const effectiveWidth = GAME_CONFIG.CANVAS_WIDTH / state.screenScale;
+      const effectiveHeight = GAME_CONFIG.CANVAS_HEIGHT / state.screenScale;
+      const centerOffsetX = (effectiveWidth - GAME_CONFIG.CANVAS_WIDTH) / 2;
+      const centerOffsetY = (effectiveHeight - GAME_CONFIG.CANVAS_HEIGHT) / 2;
+      
+      switch (side) {
+        case 0: // Top
+          startX = Math.random() * effectiveWidth - centerOffsetX;
+          startY = -50 - centerOffsetY;
+          break;
+        case 1: // Right
+          startX = effectiveWidth + 50 - centerOffsetX;
+          startY = Math.random() * effectiveHeight - centerOffsetY;
+          break;
+        case 2: // Bottom
+          startX = Math.random() * effectiveWidth - centerOffsetX;
+          startY = effectiveHeight + 50 - centerOffsetY;
+          break;
+        case 3: // Left
+          startX = -50 - centerOffsetX;
+          startY = Math.random() * effectiveHeight - centerOffsetY;
+          break;
+      }
+      
+      // Target the player
+      targetX = player.x;
+      targetY = player.y;
+      
+      // Create side projectile
+      const direction = normalize({ x: targetX - startX, y: targetY - startY });
+      const sideProjectile = {
+        id: `side_projectile_${newTime}_${i}`,
+        x: startX,
+        y: startY,
+        vx: direction.x * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
+        vy: direction.y * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
+        damage: Math.floor(15 * state.difficultyMultiplier), // Scales with difficulty
+        size: GAME_CONFIG.SIDE_PROJECTILE_SIZE,
+        isBossProjectile: true, // Treat as boss projectile for collision
+        sourceEnemyId: 'side_spawner' // Special ID for side projectiles
+      };
+      
+      newSideProjectiles.push(sideProjectile);
+    }
+    
+    lastSideProjectiles = newTime;
+  }
+  
   // Update particles
   const particles = state.particles
     .map(particle => ({
@@ -221,7 +281,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let totalEnemiesKilled = 0;
   
   // Add boss projectiles to the projectiles array BEFORE collision detection
-  projectiles.push(...newBossProjectiles, ...newSideProjectiles);
+  projectiles.push(...newBossProjectiles);
+  projectiles.push(...newSideProjectiles);
   
   const newProjectiles = projectiles.filter(projectile => {
     let shouldRemoveProjectile = false;
@@ -313,85 +374,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     }
     return true;
   });
-  
-  // Check if there's a boss alive for side projectiles (use aliveEnemies array)
-  const isBossCurrentlyAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
-  const sideProjectilePhase = Math.floor(state.time / 60000);
-  
-  // Debug logging for side projectiles
-  if (isBossCurrentlyAlive) {
-    console.log('Boss is alive, checking side projectiles:', {
-      bossAlive: isBossCurrentlyAlive,
-      timeSinceLastSide: newTime - lastSideProjectiles,
-      interval: GAME_CONFIG.SIDE_PROJECTILE_INTERVAL,
-      shouldSpawn: newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL
-    });
-  }
-  
-  // Spawn side projectiles during boss fights
-  if (isBossCurrentlyAlive && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
-    // Number of side projectiles increases with each phase
-    const sideProjectileCount = Math.min((sideProjectilePhase + 1) * 2, 8); // Phase 1: 2, Phase 2: 4, Phase 3: 6, Phase 4: 8
-    
-    for (let i = 0; i < sideProjectileCount; i++) {
-      // Spawn from random sides of the screen
-      const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-      let startX, startY;
-      
-      const effectiveWidth = GAME_CONFIG.CANVAS_WIDTH / state.screenScale;
-      const effectiveHeight = GAME_CONFIG.CANVAS_HEIGHT / state.screenScale;
-      const centerOffsetX = (effectiveWidth - GAME_CONFIG.CANVAS_WIDTH) / 2;
-      const centerOffsetY = (effectiveHeight - GAME_CONFIG.CANVAS_HEIGHT) / 2;
-      
-      switch (side) {
-        case 0: // Top
-          startX = Math.random() * effectiveWidth - centerOffsetX;
-          startY = -50 - centerOffsetY;
-          break;
-        case 1: // Right
-          startX = effectiveWidth + 50 - centerOffsetX;
-          startY = Math.random() * effectiveHeight - centerOffsetY;
-          break;
-        case 2: // Bottom
-          startX = Math.random() * effectiveWidth - centerOffsetX;
-          startY = effectiveHeight + 50 - centerOffsetY;
-          break;
-        case 3: // Left
-          startX = -50 - centerOffsetX;
-          startY = Math.random() * effectiveHeight - centerOffsetY;
-          break;
-      }
-      
-      // Target the player
-      const targetX = player.x;
-      const targetY = player.y;
-      
-      // Create side projectile
-      const direction = normalize({ x: targetX - startX, y: targetY - startY });
-      const sideProjectile = {
-        id: `side_projectile_${newTime}_${i}`,
-        x: startX,
-        y: startY,
-        vx: direction.x * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
-        vy: direction.y * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
-        damage: Math.floor(15 * state.difficultyMultiplier), // Scales with difficulty
-        size: GAME_CONFIG.SIDE_PROJECTILE_SIZE,
-        isBossProjectile: true, // Treat as boss projectile for collision
-        sourceEnemyId: 'side_spawner', // Special ID for side projectiles
-        color: '#ff00ff' // Purple color for side projectiles
-      };
-      
-      newSideProjectiles.push(sideProjectile);
-    }
-    
-    lastSideProjectiles = newTime;
-    console.log('Side projectiles spawned:', {
-      count: sideProjectileCount,
-      bossAlive: isBossCurrentlyAlive,
-      phase: sideProjectilePhase,
-      projectiles: newSideProjectiles.length
-    });
-  }
   
   // Update last boss defeat time if a boss was defeated
   if (bossWasDefeated) {
@@ -547,11 +529,17 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   }
   
   // Spawn enemies
+  let lastEnemySpawn = state.lastEnemySpawn;
+  let lastBossSpawn = state.lastBossSpawn;
+  
+  // Check if there's currently a boss alive
+  const bossAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS');
+  
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
   
   // Don't spawn enemies during phase transitions or when boss is alive
-  if (phaseTransition.active || isBossCurrentlyAlive) {
+  if (phaseTransition.active || bossAlive) {
     spawnRate = Infinity; // Prevent spawning during transition
   } else {
     // Reduce spawn rate by 50% to make it much less overwhelming
@@ -564,7 +552,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const inBossDefeatPause = timeSinceLastBossDefeat < GAME_CONFIG.BOSS_DEFEAT_PAUSE;
   
   // Check if there's currently a boss alive (use filtered enemies)
-  if (!inBossDefeatPause && !isBossCurrentlyAlive && newTime - lastEnemySpawn > spawnRate) {
+  if (!inBossDefeatPause && !bossAlive && newTime - lastEnemySpawn > spawnRate) {
     finalEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
   }
