@@ -582,6 +582,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Screen scaling at 60 seconds
   let screenScale = state.screenScale;
   let expectedPhase = Math.floor(state.time / 60000) + 1;
+  let currentPhase = Math.floor(newTime / 60000) + 1;
   
   // Check if we've entered a new phase
   if (currentPhase > expectedPhase && !phaseTransition.active) {
