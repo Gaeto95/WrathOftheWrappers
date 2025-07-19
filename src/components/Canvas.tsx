@@ -21,6 +21,16 @@ const playerAnimationState: PlayerAnimationState = {
   currentAnimation: 'idle'
 };
 
+// Reset animation state when game restarts
+export function resetPlayerAnimation() {
+  playerAnimationState.isMoving = false;
+  playerAnimationState.isAttacking = false;
+  playerAnimationState.direction = 'down';
+  playerAnimationState.animationFrame = 0;
+  playerAnimationState.lastFrameTime = 0;
+  playerAnimationState.currentAnimation = 'idle';
+}
+
 // Individual sprite file configuration
 const SPRITE_CONFIG = {
   frameWidth: 64,
@@ -41,6 +51,9 @@ const SPRITE_CONFIG = {
   }
 };
 
+// Track which sprites have been successfully validated at least once
+const validatedSprites = new Set<string>();
+
 interface CanvasProps {
   gameState: GameState;
   phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number; phase: number };
@@ -55,15 +68,48 @@ const monsterImages = new Map<string, HTMLImageElement>();
 const spriteImages = new Map<string, HTMLImageElement>();
 const coinImageCache = new Map<string, HTMLImageElement>();
 const potionImageCache = new Map<string, HTMLImageElement>();
-let spritesInitialized = false; // Track if sprites have been initialized
-let monstersLoaded = false;
+let spritesInitialized = false;
+let monstersInitialized = false;
+
+// Initialize monster sprites immediately (not in useEffect)
+function initializeMonsterSprites() {
+  if (monstersInitialized) return;
+  monstersInitialized = true;
+  
+  // Load all monster sprites without triggering re-renders
+  const monsterTypes = [
+    { key: 'big', src: '/big-monster.png' },
+    { key: 'small', src: '/small-monster.png' },
+    { key: 'heavy-tank', src: '/heavy-tank-monster.png' },
+    { key: 'speeder', src: '/speeder-monster.png' },
+    { key: 'boss', src: '/boss-monster.png' }
+  ];
+  
+  monsterTypes.forEach(({ key, src }) => {
+    const img = new Image();
+    img.src = src;
+    monsterImages.set(key, img);
+  });
+  
+  // Load item sprites
+  const coinImg = new Image();
+  coinImg.src = '/coin.png';
+  coinImageCache.set('coin', coinImg);
+  
+  const potionImg = new Image();
+  potionImg.src = '/potion.png';
+  potionImageCache.set('potion', potionImg);
+}
+
+// Call immediately when module loads
+initializeMonsterSprites();
 
 export function Canvas({ gameState, phaseTransition, width, height, input, backgroundTexture = 'default' }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Load all sprite images
   useEffect(() => {
-    if (spritesInitialized) return; // Prevent reloading
+    if (spritesInitialized) return;
     
     const animations = Object.entries(SPRITE_CONFIG.animations);
     spritesInitialized = true;
@@ -82,31 +128,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     });
   }, []); // Empty dependency array - only run once
 
-  // Load monster sprites
-  useEffect(() => {
-    if (monstersLoaded) return; // Prevent reloading
 
-    // Load monster sprites
-    const bigMonsterImg = new Image();
-    bigMonsterImg.src = '/big-monster.png';
-    bigMonsterImg.onload = () => {
-      monsterImages.set('big', bigMonsterImg);
-    };
-    bigMonsterImg.onerror = () => {
-      console.warn('Failed to load big-monster.png');
-    };
-    
-    const smallMonsterImg = new Image();
-    smallMonsterImg.src = '/small-monster.png';
-    smallMonsterImg.onload = () => {
-      monsterImages.set('small', smallMonsterImg);
-      monstersLoaded = true;
-    };
-    smallMonsterImg.onerror = () => {
-      console.warn('Failed to load small-monster.png');
-      monstersLoaded = true;
-    };
-  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -356,26 +378,69 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     playerAnimationState.lastFrameTime = time;
   }
   
-  // Try to get the sprite for current animation
-  let finalAnimation = currentAnimation;
-  let spriteImage = spriteImages.get(finalAnimation);
+  // More robust sprite availability check
+  if (!spriteImages || spriteImages.size === 0 || !spritesInitialized) {
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
+  }
   
-  // More thorough sprite validation - especially during transitions
+  // Enhanced sprite validation - more defensive
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
     if (!img) return false;
     if (!img.complete) return false;
     if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
+    if (img.src === '') return false;
     return true;
   };
   
-  // If current animation sprite isn't ready, try idle
-  if (!isSpriteReady(spriteImage)) {
-    finalAnimation = 'idle';
-    spriteImage = spriteImages.get('idle');
+  // More robust sprite selection with memory
+  const selectBestSprite = (preferredAnimation: string) => {
+    // First try preferred animation
+    let sprite = spriteImages?.get(preferredAnimation);
+    if (isSpriteReady(sprite)) {
+      validatedSprites.add(preferredAnimation);
+      return { sprite, animation: preferredAnimation };
+    }
+    
+    // If preferred failed but was previously validated, try it anyway
+    if (validatedSprites.has(preferredAnimation) && sprite) {
+      return { sprite, animation: preferredAnimation };
+    }
+    
+    // Try idle as fallback
+    sprite = spriteImages?.get('idle');
+    if (isSpriteReady(sprite)) {
+      validatedSprites.add('idle');
+      return { sprite, animation: 'idle' };
+    }
+    
+    // If idle was previously validated, use it anyway
+    if (validatedSprites.has('idle') && sprite) {
+      return { sprite, animation: 'idle' };
+    }
+    
+    // Try any previously validated sprite
+    for (const validatedAnim of validatedSprites) {
+      sprite = spriteImages?.get(validatedAnim);
+      if (sprite) {
+        return { sprite, animation: validatedAnim };
+      }
+    }
+    
+    return null;
+  };
+  
+  const spriteResult = selectBestSprite(currentAnimation);
+  
+  if (!spriteResult) {
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
   }
   
-  // If idle also isn't ready, use fallback
-  if (!isSpriteReady(spriteImage)) {
+  const { sprite: spriteImage, animation: finalAnimation } = spriteResult;
+  
+  // Final safety check
+  if (!spriteImage) {
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
   }
@@ -403,9 +468,15 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   }
   
   // Validate frame coordinates don't exceed sprite bounds
-  if (frameX >= spriteImage!.naturalWidth) {
-    console.warn('Frame X exceeds sprite width:', frameX, spriteImage!.naturalWidth);
-    frameX = 0; // Reset to first frame instead of fallback
+  try {
+    if (frameX >= spriteImage.naturalWidth) {
+      frameX = 0; // Reset to first frame
+    }
+  } catch (e) {
+    // If we can't even check naturalWidth, use fallback
+    ctx.restore();
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
   }
   
   const renderSize = GAME_CONFIG.PLAYER_SIZE * 3; // Even larger to stay visible when zoomed out
@@ -416,19 +487,19 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     if (facingLeft) {
       ctx.scale(-1, 1);
       ctx.drawImage(
-        spriteImage!,
+        spriteImage,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         -player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
     } else {
       ctx.drawImage(
-        spriteImage!,
+        spriteImage,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
     }
   } catch (error) {
-    console.warn('Sprite drawing failed, using fallback:', error.message);
+    console.warn('Sprite drawing failed, using fallback:', error);
     // Restore context before fallback
     ctx.restore();
     drawPlayerFallback(ctx, player, alpha, facingLeft);
@@ -483,53 +554,62 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   const isFlashing = time < enemy.flashUntil;
   const color = isFlashing ? '#ffffff' : enemy.color;
   
+  // Helper function to check if monster sprite is ready
+  const isMonsterSpriteReady = (img: HTMLImageElement | undefined) => {
+    if (!img) return false;
+    if (!img.complete) return false;
+    if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
+    if (img.src === '' || img.src.includes('data:')) return false;
+    return true;
+  };
+  
   // Determine which sprite to use based on enemy type
   let monsterSprite = null;
   if (enemy.type === 'HEAVY_TANK') {
-    // Try to load heavy tank sprite, fallback to big monster
-    let heavyTankMonster = monsterImages.get('heavy-tank');
-    if (!heavyTankMonster) {
-      heavyTankMonster = new Image();
-      heavyTankMonster.src = '/heavy-tank-monster.png';
-      monsterImages.set('heavy-tank', heavyTankMonster);
-    }
+    const heavyTankMonster = monsterImages.get('heavy-tank');
     
-    if (heavyTankMonster && heavyTankMonster.complete && heavyTankMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(heavyTankMonster)) {
       monsterSprite = heavyTankMonster;
     } else {
       // Fallback to big monster sprite
       const bigMonster = monsterImages.get('big');
-      if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+      if (isMonsterSpriteReady(bigMonster)) {
         monsterSprite = bigMonster;
+      }
+    }
+  } else if (enemy.type === 'SPEEDER') {
+    const speederMonster = monsterImages.get('speeder');
+    
+    if (isMonsterSpriteReady(speederMonster)) {
+      monsterSprite = speederMonster;
+    } else {
+      // Fallback to small monster sprite
+      const smallMonster = monsterImages.get('small');
+      if (isMonsterSpriteReady(smallMonster)) {
+        monsterSprite = smallMonster;
       }
     }
   } else if (enemy.type === 'TANK') {
     // Regular Tank uses big monster sprite
     const bigMonster = monsterImages.get('big');
-    if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(bigMonster)) {
       monsterSprite = bigMonster;
     }
   } else if (enemy.type === 'BOSS') {
-    // Try to load boss sprite, fallback to big monster
-    let bossMonster = monsterImages.get('boss');
-    if (!bossMonster) {
-      bossMonster = new Image();
-      bossMonster.src = '/boss-monster.png';
-      monsterImages.set('boss', bossMonster);
-    }
+    const bossMonster = monsterImages.get('boss');
     
-    if (bossMonster && bossMonster.complete && bossMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(bossMonster)) {
       monsterSprite = bossMonster;
     } else {
       // Fallback to big monster sprite
       const bigMonster = monsterImages.get('big');
-      if (bigMonster && bigMonster.complete && bigMonster.naturalWidth > 0) {
+      if (isMonsterSpriteReady(bigMonster)) {
         monsterSprite = bigMonster;
       }
     }
-  } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER') {
+  } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER' || enemy.type === 'SPEEDER') {
     const smallMonster = monsterImages.get('small');
-    if (smallMonster && smallMonster.complete && smallMonster.naturalWidth > 0) {
+    if (isMonsterSpriteReady(smallMonster)) {
       monsterSprite = smallMonster;
     }
   }
@@ -553,6 +633,21 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       // Translate to enemy position, rotate (subtract PI/2 since sprite points up by default), then draw centered
       ctx.translate(enemy.x, enemy.y);
       ctx.rotate(angle - Math.PI / 2); // Subtract 90 degrees since worm sprite points up
+      
+      ctx.drawImage(
+        monsterSprite,
+        -spriteSize/2, 
+        -spriteSize/2, 
+        spriteSize, 
+        spriteSize
+      );
+    } else if (enemy.type === 'SPEEDER') {
+      // SPEEDER rotates slowly based on time, not player direction
+      const rotationSpeed = 0.002; // Slow rotation speed
+      const angle = time * rotationSpeed;
+      
+      ctx.translate(enemy.x, enemy.y);
+      ctx.rotate(angle);
       
       ctx.drawImage(
         monsterSprite,

@@ -39,23 +39,47 @@ export function circleToRectangle(circle: Circle, rect: Rectangle): boolean {
 }
 
 export function isOffScreen(point: Point, width: number, height: number, margin: number = 100): boolean {
-  return point.x < -margin || point.x > width + margin || 
-         point.y < -margin || point.y > height + margin;
+  return point.x < -150 || point.x > width + 150 || 
+         point.y < -150 || point.y > height + 150;
 }
 
-export function getRandomSpawnPosition(screenWidth: number, screenHeight: number): Point {
+export function getRandomSpawnPosition(screenWidth: number, screenHeight: number, screenScale: number = 1): Point {
+  // Calculate effective screen dimensions based on scale
+  const effectiveWidth = screenWidth / screenScale;
+  const effectiveHeight = screenHeight / screenScale;
+  
+  // Calculate center offset for scaled screen
+  const centerOffsetX = (effectiveWidth - screenWidth) / 2;
+  const centerOffsetY = (effectiveHeight - screenHeight) / 2;
+  
+  // Dynamic margin based on screen scale - spawn further out when zoomed out
+  const baseMargin = 80;
+  const scaleMargin = screenScale < 1 ? baseMargin / screenScale : baseMargin;
+  const margin = Math.max(80, Math.min(200, scaleMargin));
+  
   const side = Math.floor(Math.random() * 4);
-  const margin = 200; // Much further off-screen to prevent spawning inside visible area
   
   switch (side) {
     case 0: // Top
-      return { x: Math.random() * screenWidth, y: -margin };
+      return { 
+        x: Math.random() * effectiveWidth - centerOffsetX, 
+        y: -margin - centerOffsetY 
+      };
     case 1: // Right
-      return { x: screenWidth + margin, y: Math.random() * screenHeight };
+      return { 
+        x: effectiveWidth + margin - centerOffsetX, 
+        y: Math.random() * effectiveHeight - centerOffsetY 
+      };
     case 2: // Bottom
-      return { x: Math.random() * screenWidth, y: screenHeight + margin };
+      return { 
+        x: Math.random() * effectiveWidth - centerOffsetX, 
+        y: effectiveHeight + margin - centerOffsetY 
+      };
     case 3: // Left
-      return { x: -margin, y: Math.random() * screenHeight };
+      return { 
+        x: -margin - centerOffsetX, 
+        y: Math.random() * effectiveHeight - centerOffsetY 
+      };
     default:
       return { x: 0, y: 0 };
   }

@@ -160,21 +160,24 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
 }
 
 export function createEnemy(gameState: GameState): Enemy {
-  // 5% chance for Heavy Tank, 95% chance for normal monsters
+  // Special enemy spawn chances: 5% Heavy Tank, 2% Speeder, 93% normal monsters
   const spawnRoll = Math.random();
   let type: EnemyType;
   
   if (spawnRoll < 0.05) {
     // 5% chance for Heavy Tank
     type = 'HEAVY_TANK';
+  } else if (spawnRoll < 0.07) {
+    // 2% chance for Speeder (0.05 to 0.07)
+    type = 'SPEEDER';
   } else {
-    // 95% chance for normal enemies - explicit equal distribution
+    // 93% chance for normal enemies - explicit equal distribution
     const normalTypes = ['GRUNT', 'RUNNER', 'TANK'] as const;
     type = normalTypes[Math.floor(Math.random() * normalTypes.length)];
   }
   
   const config = GAME_CONFIG.ENEMY_TYPES[type];
-  const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
+  const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT, gameState.screenScale);
   
   return {
     id: `enemy_${Date.now()}_${Math.random()}`,

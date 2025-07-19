@@ -347,7 +347,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     aliveEnemies.length = 0;
     
     const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
-    const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
+    const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT, state.screenScale);
     
     const boss = {
       id: `boss_${newTime}_${Math.random()}`,
