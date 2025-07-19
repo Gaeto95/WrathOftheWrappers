@@ -557,15 +557,24 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     });
   }
   
-  // Apply screen scale changes during transition (not at start)
-  if (phaseTransition.active && phaseTransition.timeLeft < 4000) {
-    // Apply zoom during the middle of transition to avoid jump
-    const transitionProgress = (5000 - phaseTransition.timeLeft) / 5000;
-    if (transitionProgress > 0.2) { // Start zoom after 20% of transition
-      if (currentPhase === 2) screenScale = 0.85; // Phase 1: 15% zoom out
-      else if (currentPhase === 3) screenScale = 0.75; // Phase 2: 25% zoom out  
-      else if (currentPhase >= 4) screenScale = 0.7; // Phase 3+: 30% zoom out
-    }
+  // Apply smooth screen scale changes during transition
+  if (phaseTransition.active) {
+    const transitionProgress = (5000 - phaseTransition.timeLeft) / 5000; // 0 to 1
+    
+    // Determine target scale for this phase
+    let targetScale = 1.0;
+    if (currentPhase === 2) targetScale = 0.85; // Phase 1: 15% zoom out
+    else if (currentPhase === 3) targetScale = 0.75; // Phase 2: 25% zoom out  
+    else if (currentPhase >= 4) targetScale = 0.7; // Phase 3+: 30% zoom out
+    
+    // Smooth interpolation from current scale to target scale
+    const startScale = state.screenScale;
+    screenScale = startScale + (targetScale - startScale) * transitionProgress;
+  } else {
+    // Apply final scale when not in transition
+    if (currentPhase === 2) screenScale = 0.85;
+    else if (currentPhase === 3) screenScale = 0.75;
+    else if (currentPhase >= 4) screenScale = 0.7;
   }
   
   // Handle phase transition
