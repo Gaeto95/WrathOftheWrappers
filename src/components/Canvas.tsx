@@ -274,26 +274,13 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
         }
       }
     } else {
-      // Fallback to colored background while loading or if image fails
       const attempts = textureLoadAttempts.get(backgroundTexture) || 0;
       if (attempts >= 3) {
         // Give up and use grid pattern
         drawGridPattern(ctx, width, height);
       } else {
-        // Show loading state with colored background
-        let fallbackColor = '#0a0a0a';
-        if (backgroundTexture === 'desert') fallbackColor = '#8B4513';
-        else if (backgroundTexture === 'grassland') fallbackColor = '#228B22';
-        else if (backgroundTexture === 'stone') fallbackColor = '#696969';
-        
-        ctx.fillStyle = fallbackColor;
-        ctx.fillRect(-800, -800, width + 1600, height + 1600);
-        
-        // Show loading text
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(`Loading ${backgroundTexture} texture...`, width / 2, height / 2);
+        // Keep using grid pattern while loading
+        drawGridPattern(ctx, width, height);
       }
     }
   }
