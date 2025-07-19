@@ -74,7 +74,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
 
   // Load all sprite images
   useEffect(() => {
-    if (spritesInitialized) return; // Prevent reloading
+    if (spritesInitialized) return;
     
     const animations = Object.entries(SPRITE_CONFIG.animations);
     spritesInitialized = true;
@@ -104,8 +104,6 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     });
   }, []); // Empty dependency array - only run once
 
-  // Load monster sprites
-  useEffect(() => {
     if (monstersLoaded) return; // Prevent reloading
 
     // Load monster sprites
@@ -113,19 +111,10 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     bigMonsterImg.src = '/big-monster.png';
     bigMonsterImg.onload = () => {
       monsterImages.set('big', bigMonsterImg);
-    };
-    bigMonsterImg.onerror = () => {
-      console.warn('Failed to load big-monster.png');
-    };
-    
     const smallMonsterImg = new Image();
     smallMonsterImg.src = '/small-monster.png';
     smallMonsterImg.onload = () => {
       monsterImages.set('small', smallMonsterImg);
-      monstersLoaded = true;
-    };
-    smallMonsterImg.onerror = () => {
-      console.warn('Failed to load small-monster.png');
       monstersLoaded = true;
     };
   }, []);
@@ -379,7 +368,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   }
   
   // Use fallback during initial loading period or if sprites aren't ready
-  if (!spriteImages || spriteImages.size === 0 || !spritesFullyLoaded) {
+  if (!spriteImages || spriteImages.size === 0) {
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
   }
@@ -388,23 +377,9 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   let finalAnimation = currentAnimation;
   let spriteImage = spriteImages?.get(finalAnimation);
   
-  // Thorough sprite validation
+  // Simple but reliable sprite validation
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
-    if (!img) return false;
-    if (!img.complete) return false;
-    if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
-    // Additional check for actual image data
-    try {
-      // This will throw if image failed to load properly
-      const canvas = document.createElement('canvas');
-      const testCtx = canvas.getContext('2d');
-      if (testCtx) {
-        testCtx.drawImage(img, 0, 0, 1, 1);
-      }
-    } catch (e) {
-      return false;
-    }
-    return true;
+    return img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
   };
   
   // If current animation sprite isn't ready, try idle
