@@ -78,6 +78,7 @@ export function calculateFinalStats(basePlayer: Player, skills: PassiveSkill[]):
   let totalFireRateReduction = 0;
   let totalGoldBonus = 0;
   let totalMagnetRadius = 0;
+  let totalMultiShot = 0;
   
   skills.forEach(skill => {
     skill.effects.forEach(effect => {
@@ -99,6 +100,10 @@ export function calculateFinalStats(basePlayer: Player, skills: PassiveSkill[]):
           
         case 'magnet':
           totalMagnetRadius += effectValue;
+          break;
+          
+        case 'multiShot':
+          totalMultiShot += effectValue;
           break;
       }
     });
