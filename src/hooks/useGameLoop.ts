@@ -220,7 +220,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Add boss projectiles to the projectiles array BEFORE collision detection
   projectiles.push(...newBossProjectiles);
-  projectiles.push(...newSideProjectiles);
   
   const newProjectiles = projectiles.filter(projectile => {
     let shouldRemoveProjectile = false;
@@ -265,6 +264,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     
     return !shouldRemoveProjectile;
   });
+  
+  // Add side projectiles to the final projectiles array
+  newProjectiles.push(...newSideProjectiles);
   
   // Remove dead enemies and create items
   const items = [...state.items];
