@@ -132,6 +132,12 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const handleRestart = useCallback(() => {
     console.log('Quick restart - creating fresh game without saving current session');
     
+    // Reset player animation state
+    if (typeof window !== 'undefined') {
+      const { resetPlayerAnimation } = require('./Canvas');
+      resetPlayerAnimation();
+    }
+    
     // Stop game over sound and restart background music
     if (gameOverAudio) {
       gameOverAudio.pause();
@@ -298,6 +304,12 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const handleUpgradeScreenRestart = useCallback(() => {
     // Force a completely fresh restart without saving current session
     console.log('Creating completely fresh game state');
+    
+    // Reset player animation state
+    if (typeof window !== 'undefined') {
+      const { resetPlayerAnimation } = require('./Canvas');
+      resetPlayerAnimation();
+    }
     
     // Stop game over sound and restart background music
     if (gameOverAudio) {

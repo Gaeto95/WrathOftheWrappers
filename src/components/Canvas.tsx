@@ -21,6 +21,16 @@ const playerAnimationState: PlayerAnimationState = {
   currentAnimation: 'idle'
 };
 
+// Reset animation state when game restarts
+export function resetPlayerAnimation() {
+  playerAnimationState.isMoving = false;
+  playerAnimationState.isAttacking = false;
+  playerAnimationState.direction = 'down';
+  playerAnimationState.animationFrame = 0;
+  playerAnimationState.lastFrameTime = 0;
+  playerAnimationState.currentAnimation = 'idle';
+}
+
 // Individual sprite file configuration
 const SPRITE_CONFIG = {
   frameWidth: 64,

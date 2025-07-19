@@ -39,13 +39,13 @@ export function circleToRectangle(circle: Circle, rect: Rectangle): boolean {
 }
 
 export function isOffScreen(point: Point, width: number, height: number, margin: number = 100): boolean {
-  return point.x < -margin || point.x > width + margin || 
-         point.y < -margin || point.y > height + margin;
+  return point.x < -150 || point.x > width + 150 || 
+         point.y < -150 || point.y > height + 150;
 }
 
 export function getRandomSpawnPosition(screenWidth: number, screenHeight: number): Point {
   const side = Math.floor(Math.random() * 4);
-  const margin = 200; // Much further off-screen to prevent spawning inside visible area
+  const margin = 50; // Closer to screen edge so enemies are visible sooner
   
   switch (side) {
     case 0: // Top
