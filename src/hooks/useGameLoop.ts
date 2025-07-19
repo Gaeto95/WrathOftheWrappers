@@ -293,7 +293,17 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Spawn enemies
   let lastEnemySpawn = state.lastEnemySpawn;
   let lastBossSpawn = state.lastBossSpawn;
-  const spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
+  
+  // Reduce spawn rate during phase transitions and overall
+  let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
+  
+  // Don't spawn enemies during phase transitions
+  if (phaseTransition.active) {
+    spawnRate = Infinity; // Prevent spawning during transition
+  } else {
+    // Reduce spawn rate by 25% to make it less overwhelming
+    spawnRate *= 1.25;
+  }
   
   // Regular enemy spawning
   if (newTime - lastEnemySpawn > spawnRate) {
@@ -302,7 +312,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   }
   
   // Boss spawning every 60 seconds
-  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL) {
+  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL && !phaseTransition.active) {
     // Clear all existing enemies before boss spawn
     aliveEnemies.length = 0;
     
@@ -351,32 +361,43 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Screen scaling at 60 seconds
   let screenScale = state.screenScale;
-  if (newTime >= 60000 && screenScale === 1 && !phaseTransition.active) { // 60 seconds
+  let currentPhase = Math.floor(newTime / 60000) + 1; // Phase 1 at 60s, Phase 2 at 120s, etc.
+  let expectedPhase = Math.floor(state.time / 60000) + 1;
+  
+  // Check if we've entered a new phase
+  if (currentPhase > expectedPhase && !phaseTransition.active) {
     // Start phase transition
     setPhaseTransition({
       active: true,
-      timeLeft: 3000, // 3 seconds
-      blinkCount: 0
+      timeLeft: 8000, // 8 seconds for better breathing room
+      blinkCount: 0,
+      phase: currentPhase
     });
-    screenScale = 0.85; // Gentler zoom out to show 15% more area
+    
+    // Progressive zoom out for each phase
+    if (currentPhase === 2) screenScale = 0.85; // Phase 1: 15% zoom out
+    else if (currentPhase === 3) screenScale = 0.75; // Phase 2: 25% zoom out  
+    else if (currentPhase >= 4) screenScale = 0.7; // Phase 3+: 30% zoom out
   }
   
   // Handle phase transition
   if (phaseTransition.active) {
     const newTimeLeft = phaseTransition.timeLeft - deltaTime;
-    const newBlinkCount = Math.floor((3000 - newTimeLeft) / 300); // Blink every 300ms
+    const newBlinkCount = Math.floor((8000 - newTimeLeft) / 400); // Blink every 400ms
     
     if (newTimeLeft <= 0) {
       setPhaseTransition({
         active: false,
         timeLeft: 0,
-        blinkCount: 0
+        blinkCount: 0,
+        phase: 1
       });
     } else {
       setPhaseTransition({
         active: true,
         timeLeft: newTimeLeft,
-        blinkCount: newBlinkCount
+        blinkCount: newBlinkCount,
+        phase: phaseTransition.phase || 1
       });
     }
   }

@@ -20,6 +20,7 @@ interface PhaseTransition {
   active: boolean;
   timeLeft: number;
   blinkCount: number;
+  phase: number;
 }
 
 interface GameProps {
@@ -85,7 +86,8 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const [phaseTransition, setPhaseTransition] = useState<PhaseTransition>({
     active: false,
     timeLeft: 0,
-    blinkCount: 0
+    blinkCount: 0,
+    phase: 1
   });
   
   const input = useInput();

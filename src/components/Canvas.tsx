@@ -43,7 +43,7 @@ const SPRITE_CONFIG = {
 
 interface CanvasProps {
   gameState: GameState;
-  phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number };
+  phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number; phase: number };
   width: number;
   height: number;
   input?: any;
@@ -125,7 +125,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input }: Can
     let effectiveScale = gameState.screenScale;
     if (phaseTransition?.active) {
       // Gradually zoom out during transition
-      const progress = 1 - (phaseTransition.timeLeft / 3000);
+      const progress = 1 - (phaseTransition.timeLeft / 8000);
       effectiveScale = 1 - (progress * 0.1); // Gentler zoom during transition
     }
     
@@ -653,14 +653,14 @@ function drawParticle(ctx: CanvasRenderingContext2D, particle: any) {
 
 function drawPhaseTransitionText(
   ctx: CanvasRenderingContext2D, 
-  phaseTransition: { active: boolean; timeLeft: number; blinkCount: number },
+  phaseTransition: { active: boolean; timeLeft: number; blinkCount: number; phase: number },
   width: number,
   height: number
 ) {
   // Calculate blink opacity
-  const blinkInterval = 300; // 300ms per blink
-  const currentBlink = Math.floor((3000 - phaseTransition.timeLeft) / blinkInterval);
-  const blinkProgress = ((3000 - phaseTransition.timeLeft) % blinkInterval) / blinkInterval;
+  const blinkInterval = 400; // 400ms per blink
+  const currentBlink = Math.floor((8000 - phaseTransition.timeLeft) / blinkInterval);
+  const blinkProgress = ((8000 - phaseTransition.timeLeft) % blinkInterval) / blinkInterval;
   const opacity = Math.sin(blinkProgress * Math.PI) * 0.5 + 0.5; // Smooth blink
 
   ctx.save();
@@ -682,12 +682,12 @@ function drawPhaseTransitionText(
   
   // Draw main text
   ctx.fillStyle = '#ff0000';
-  ctx.fillText('PHASE 1', centerX, centerY);
+  ctx.fillText(`PHASE ${phaseTransition.phase}`, centerX, centerY);
   
   // Draw additional glow
   ctx.shadowBlur = 40;
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('PHASE 1', centerX, centerY);
+  ctx.fillText(`PHASE ${phaseTransition.phase}`, centerX, centerY);
   
   ctx.restore();
 }
