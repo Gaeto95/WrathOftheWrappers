@@ -15,6 +15,7 @@ import { BolterData, PermanentUpgrades } from '../types/bolter';
 import { PassiveSkill } from '../types/classes';
 import { createInitialPlayer } from '../utils/gameLogic';
 import { calculateFinalStats } from '../utils/skillSystem';
+import { resetPlayerAnimation } from './Canvas';
 
 interface PhaseTransition {
   active: boolean;
@@ -133,10 +134,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     console.log('Quick restart - creating fresh game without saving current session');
     
     // Reset player animation state
-    if (typeof window !== 'undefined') {
-      const { resetPlayerAnimation } = require('./Canvas');
-      resetPlayerAnimation();
-    }
+    resetPlayerAnimation();
     
     // Stop game over sound and restart background music
     if (gameOverAudio) {
@@ -306,10 +304,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     console.log('Creating completely fresh game state');
     
     // Reset player animation state
-    if (typeof window !== 'undefined') {
-      const { resetPlayerAnimation } = require('./Canvas');
-      resetPlayerAnimation();
-    }
+    resetPlayerAnimation();
     
     // Stop game over sound and restart background music
     if (gameOverAudio) {
