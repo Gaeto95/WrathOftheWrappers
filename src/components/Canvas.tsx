@@ -195,6 +195,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
 // Background texture cache
 const backgroundImages = new Map<string, HTMLImageElement>();
 let textureLoadAttempts = new Map<string, number>();
+let texturesInitialized = false;
 
 function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, height: number, backgroundTexture: string = 'default') {
   if (backgroundTexture === 'default') {
@@ -220,70 +221,60 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
       ctx.stroke();
     }
   } else {
-    // Try to load and draw texture
-    let bgImage = backgroundImages.get(backgroundTexture);
-    if (!bgImage) {
-      // Check if we've already tried loading this texture too many times
-      const attempts = textureLoadAttempts.get(backgroundTexture) || 0;
-      if (attempts >= 3) {
-        console.warn(`Giving up on loading ${backgroundTexture}.png after 3 attempts`);
-        // Fall back to grid pattern
-        drawGridPattern(ctx, width, height);
-        return;
-      }
-      
-      bgImage = new Image();
-      bgImage.crossOrigin = 'anonymous'; // Add CORS support
-      
-      bgImage.onload = () => {
-        console.log(`Background texture loaded: ${backgroundTexture}`);
-        textureLoadAttempts.set(backgroundTexture, 0); // Reset attempts on success
-      };
-      
-      bgImage.onerror = () => {
-        const newAttempts = attempts + 1;
-        textureLoadAttempts.set(backgroundTexture, newAttempts);
-        console.warn(`Failed to load background texture: ${backgroundTexture}.png (attempt ${newAttempts}/3)`);
-        
-        // Try alternative file extensions
-        if (newAttempts === 1) {
-          console.log(`Trying ${backgroundTexture}.jpg as fallback`);
-          bgImage!.src = `/${backgroundTexture}.jpg`;
-        }
-      };
-      
-      bgImage.src = `/${backgroundTexture}.png`;
-      backgroundImages.set(backgroundTexture, bgImage);
+    // Initialize textures only once
+    if (!texturesInitialized) {
+      initializeTextures();
+      texturesInitialized = true;
     }
     
+    let bgImage = backgroundImages.get(backgroundTexture);
+    
     if (bgImage.complete && bgImage.naturalWidth > 0) {
-      // Manual tiling with very small tile size (8x8)
-      const tileSize = 8; // Much smaller tileset
-      const margin = 200; // Extra coverage for camera shake and zoom
-      
-      // Calculate how many tiles we need
-      const startX = Math.floor(-margin / tileSize) * tileSize;
-      const endX = Math.ceil((width + margin) / tileSize) * tileSize;
-      const startY = Math.floor(-margin / tileSize) * tileSize;
-      const endY = Math.ceil((height + margin) / tileSize) * tileSize;
-      
-      // Draw tiles
-      for (let x = startX; x < endX; x += tileSize) {
-        for (let y = startY; y < endY; y += tileSize) {
-          ctx.drawImage(bgImage, x, y, tileSize, tileSize);
-        }
+      // Simple pattern repeat
+      const pattern = ctx.createPattern(bgImage, 'repeat');
+      if (pattern) {
+        ctx.fillStyle = pattern;
+        ctx.fillRect(-100, -100, width + 200, height + 200);
+      } else {
+        drawGridPattern(ctx, width, height);
       }
     } else {
-      const attempts = textureLoadAttempts.get(backgroundTexture) || 0;
-      if (attempts >= 3) {
-        // Give up and use grid pattern
-        drawGridPattern(ctx, width, height);
-      } else {
-        // Keep using grid pattern while loading
-        drawGridPattern(ctx, width, height);
-      }
+      drawGridPattern(ctx, width, height);
     }
   }
+}
+
+function initializeTextures() {
+  const textures = ['desert', 'grassland', 'stone'];
+  
+  textures.forEach(textureName => {
+    if (backgroundImages.has(textureName)) return;
+    
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      console.log(`Background texture loaded: ${textureName}`);
+    };
+    
+    img.onerror = () => {
+      console.warn(`Failed to load background texture: ${textureName}.png, trying .jpg`);
+      const fallbackImg = new Image();
+      fallbackImg.crossOrigin = 'anonymous';
+      fallbackImg.src = `/${textureName}.jpg`;
+      
+      fallbackImg.onload = () => {
+        backgroundImages.set(textureName, fallbackImg);
+      };
+      
+      fallbackImg.onerror = () => {
+        console.warn(`Failed to load ${textureName} texture completely`);
+      };
+    };
+    
+    img.src = `/${textureName}.png`;
+    backgroundImages.set(textureName, img);
+  });
 }
 
 function drawGridPattern(ctx: CanvasRenderingContext2D, width: number, height: number) {
