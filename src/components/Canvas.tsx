@@ -230,30 +230,22 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     let bgImage = backgroundImages.get(backgroundTexture);
     
     if (bgImage.complete && bgImage.naturalWidth > 0) {
-      // Seamless infinite tiling system
-      const tileSize = 64;
-      const margin = 400; // Larger margin for deeper zoom levels
+      // Manual infinite tiling system
+      const tileSize = 64; // Fixed tile size
+      const margin = 200; // Extra margin for camera shake and zoom
       
-      // Calculate tile grid with proper alignment to prevent seams
-      const tilesX = Math.ceil((width + margin * 2) / tileSize) + 2;
-      const tilesY = Math.ceil((height + margin * 2) / tileSize) + 2;
-      const startX = -margin - tileSize;
-      const startY = -margin - tileSize;
+      // Calculate how many tiles we need to cover the screen plus margin
+      const startX = Math.floor(-margin / tileSize) * tileSize;
+      const endX = Math.ceil((width + margin) / tileSize) * tileSize;
+      const startY = Math.floor(-margin / tileSize) * tileSize;
+      const endY = Math.ceil((height + margin) / tileSize) * tileSize;
       
-      // Disable image smoothing for pixel-perfect tiling
-      ctx.imageSmoothingEnabled = false;
-      
-      // Draw tiles in perfect grid alignment
-      for (let i = 0; i < tilesX; i++) {
-        for (let j = 0; j < tilesY; j++) {
-          const x = startX + (i * tileSize);
-          const y = startY + (j * tileSize);
+      // Draw tiles in a grid pattern
+      for (let x = startX; x < endX; x += tileSize) {
+        for (let y = startY; y < endY; y += tileSize) {
           ctx.drawImage(bgImage, x, y, tileSize, tileSize);
         }
       }
-      
-      // Re-enable smoothing for other elements
-      ctx.imageSmoothingEnabled = true;
     } else {
       drawGridPattern(ctx, width, height);
     }
