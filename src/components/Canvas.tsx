@@ -127,7 +127,10 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     if (phaseTransition?.active) {
       // Gradually zoom out during transition
       const progress = 1 - (phaseTransition.timeLeft / 8000);
-      effectiveScale = 1 - (progress * 0.1); // Gentler zoom during transition
+      // Use current scale as base, don't reset to 1
+      const targetScale = gameState.screenScale;
+      const startScale = Math.min(1.0, targetScale + 0.1); // Start slightly zoomed in
+      effectiveScale = startScale - (progress * 0.1); // Zoom to target
     }
     
     // Apply screen scaling from center
@@ -138,7 +141,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
       ctx.scale(effectiveScale, effectiveScale);
       ctx.translate(-centerX, -centerY);
       
-      // Improve rendering quality when scaled
+      // Improve rendering quality when scaled - especially important during transitions
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
     }
@@ -347,34 +350,29 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   
   const renderSize = GAME_CONFIG.PLAYER_SIZE * 3; // Even larger to stay visible when zoomed out
   
-  // Handle flipping for left direction
-  if (facingLeft) {
-    ctx.scale(-1, 1);
-    try {
+  // More robust sprite drawing with better error handling
+  try {
+    // Handle flipping for left direction
+    if (facingLeft) {
+      ctx.scale(-1, 1);
       ctx.drawImage(
         spriteImage!,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         -player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
-    } catch (error) {
-      console.error('Error drawing flipped sprite:', error);
-      ctx.restore();
-      drawPlayerFallback(ctx, player, alpha, facingLeft);
-      return;
-    }
-  } else {
-    try {
+    } else {
       ctx.drawImage(
         spriteImage!,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
-    } catch (error) {
-      console.error('Error drawing sprite:', error);
-      ctx.restore();
-      drawPlayerFallback(ctx, player, alpha, facingLeft);
-      return;
     }
+  } catch (error) {
+    console.error('Error drawing sprite during transition:', error);
+    // Restore context before fallback
+    ctx.restore();
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
   }
   
   ctx.restore();
