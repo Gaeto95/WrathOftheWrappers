@@ -194,6 +194,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
 
 // Background texture cache
 const backgroundImages = new Map<string, HTMLImageElement>();
+let textureLoadAttempts = new Map<string, number>();
 
 function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, height: number, backgroundTexture: string = 'default') {
   if (backgroundTexture === 'default') {
@@ -222,14 +223,36 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     // Try to load and draw texture
     let bgImage = backgroundImages.get(backgroundTexture);
     if (!bgImage) {
+      // Check if we've already tried loading this texture too many times
+      const attempts = textureLoadAttempts.get(backgroundTexture) || 0;
+      if (attempts >= 3) {
+        console.warn(`Giving up on loading ${backgroundTexture}.png after 3 attempts`);
+        // Fall back to grid pattern
+        drawGridPattern(ctx, width, height);
+        return;
+      }
+      
       bgImage = new Image();
-      bgImage.src = `/${backgroundTexture}.png`;
+      bgImage.crossOrigin = 'anonymous'; // Add CORS support
+      
       bgImage.onload = () => {
         console.log(`Background texture loaded: ${backgroundTexture}`);
+        textureLoadAttempts.set(backgroundTexture, 0); // Reset attempts on success
       };
+      
       bgImage.onerror = () => {
-        console.warn(`Failed to load background texture: ${backgroundTexture}.png`);
+        const newAttempts = attempts + 1;
+        textureLoadAttempts.set(backgroundTexture, newAttempts);
+        console.warn(`Failed to load background texture: ${backgroundTexture}.png (attempt ${newAttempts}/3)`);
+        
+        // Try alternative file extensions
+        if (newAttempts === 1) {
+          console.log(`Trying ${backgroundTexture}.jpg as fallback`);
+          bgImage!.src = `/${backgroundTexture}.jpg`;
+        }
       };
+      
+      bgImage.src = `/${backgroundTexture}.png`;
       backgroundImages.set(backgroundTexture, bgImage);
     }
     
@@ -243,7 +266,7 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
       } else {
         console.warn(`Failed to create pattern for ${backgroundTexture}`);
         // Fallback to manual tiling
-        const tileSize = Math.min(bgImage.naturalWidth, bgImage.naturalHeight);
+        const tileSize = Math.min(bgImage.naturalWidth || 64, bgImage.naturalHeight || 64);
         for (let x = -tileSize; x < width + tileSize; x += tileSize) {
           for (let y = -tileSize; y < height + tileSize; y += tileSize) {
             ctx.drawImage(bgImage, x, y, tileSize, tileSize);
@@ -252,20 +275,51 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
       }
     } else {
       // Fallback to colored background while loading or if image fails
-      let fallbackColor = '#0a0a0a';
-      if (backgroundTexture === 'desert') fallbackColor = '#8B4513';
-      else if (backgroundTexture === 'grassland') fallbackColor = '#228B22';
-      else if (backgroundTexture === 'stone') fallbackColor = '#696969';
-      
-      ctx.fillStyle = fallbackColor;
-      ctx.fillRect(-400, -400, width + 800, height + 800);
-      
-      // Show loading text
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(`Loading ${backgroundTexture} texture...`, width / 2, height / 2);
+      const attempts = textureLoadAttempts.get(backgroundTexture) || 0;
+      if (attempts >= 3) {
+        // Give up and use grid pattern
+        drawGridPattern(ctx, width, height);
+      } else {
+        // Show loading state with colored background
+        let fallbackColor = '#0a0a0a';
+        if (backgroundTexture === 'desert') fallbackColor = '#8B4513';
+        else if (backgroundTexture === 'grassland') fallbackColor = '#228B22';
+        else if (backgroundTexture === 'stone') fallbackColor = '#696969';
+        
+        ctx.fillStyle = fallbackColor;
+        ctx.fillRect(-800, -800, width + 1600, height + 1600);
+        
+        // Show loading text
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Loading ${backgroundTexture} texture...`, width / 2, height / 2);
+      }
     }
+  }
+}
+
+function drawGridPattern(ctx: CanvasRenderingContext2D, width: number, height: number) {
+  // Original grid pattern as fallback
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.lineWidth = 1;
+  
+  const gridSize = 100;
+  
+  // Draw vertical lines
+  for (let x = -gridSize; x <= width + gridSize; x += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height + gridSize);
+    ctx.stroke();
+  }
+  
+  // Draw horizontal lines
+  for (let y = -gridSize; y <= height + gridSize; y += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(-gridSize, y);
+    ctx.lineTo(width + gridSize, y);
+    ctx.stroke();
   }
 }
 
