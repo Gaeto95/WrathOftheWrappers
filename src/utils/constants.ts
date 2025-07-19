@@ -56,7 +56,7 @@ export const GAME_CONFIG = {
       goldDrop: { min: 5, max: 12 } // Low gold reward
     },
     BOSS: {
-      hp: 300, // 5x tank HP (50% reduction)
+      hp: 600, // 10x tank HP - much tankier boss
       speed: 50, // Slower than tank
       damage: 40, // Lower damage
       size: 90, // 125% bigger than tank (40 * 2.25 = 90)
@@ -98,10 +98,11 @@ export const GAME_CONFIG = {
   SCREEN_SHAKE_INTENSITY: 5,
   
   // Boss spawning
-  BOSS_SPAWN_INTERVAL: 60000, // 60 seconds
+  BOSS_SPAWN_INTERVAL: 60000, // 60 seconds between boss spawns
+  BOSS_DEFEAT_PAUSE: 8000, // 8 seconds pause after boss defeat for immersion
   
   // Boss settings
-  BOSS_ATTACK_INTERVAL: 2000, // Boss shoots every 2 seconds
+  BOSS_ATTACK_INTERVAL: 3000, // Boss shoots every 3 seconds (slightly slower)
   BOSS_PROJECTILE_COUNT: 5, // Number of projectiles per attack
   BOSS_PROJECTILE_SPREAD: 0.8, // Spread angle in radians
   BOSS_AURA_SIZE: 150, // Boss aura radius

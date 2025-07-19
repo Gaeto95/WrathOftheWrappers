@@ -252,10 +252,16 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const items = [...state.items];
   let pendingSkillDrop = state.pendingSkillDrop;
   let enemiesKilled = state.enemiesKilled;
+  let bossWasDefeated = false;
   const aliveEnemies = enemies.filter(enemy => {
     if (enemy.hp <= 0) {
       totalEnemiesKilled++;
       enemiesKilled++;
+      
+      // Check if this was a boss
+      if (enemy.type === 'BOSS') {
+        bossWasDefeated = true;
+      }
       
       // Create death particles
       particles.push(...createParticles({ x: enemy.x, y: enemy.y }, enemy.color, 8));
@@ -288,6 +294,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     }
     return true;
   });
+  
+  // Update last boss defeat time if a boss was defeated
+  if (bossWasDefeated) {
+    lastBossDefeat = newTime;
+  }
   
   // Check player-enemy collisions
   let screenShake = Math.max(0, state.screenShake - deltaTime);
@@ -418,6 +429,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Spawn enemies
   let lastEnemySpawn = state.lastEnemySpawn;
   let lastBossSpawn = state.lastBossSpawn;
+  let lastBossDefeat = state.lastBossDefeat || 0;
   
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
@@ -431,13 +443,17 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   }
   
   // Regular enemy spawning
-  if (newTime - lastEnemySpawn > spawnRate) {
+  // Don't spawn enemies during boss defeat pause
+  const timeSinceLastBossDefeat = newTime - lastBossDefeat;
+  const inBossDefeatPause = timeSinceLastBossDefeat < GAME_CONFIG.BOSS_DEFEAT_PAUSE;
+  
+  if (newTime - lastEnemySpawn > spawnRate && !inBossDefeatPause) {
     aliveEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
   }
   
   // Boss spawning every 60 seconds
-  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL && !phaseTransition.active) {
+  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL && !phaseTransition.active && !inBossDefeatPause) {
     // Clear all existing enemies before boss spawn
     aliveEnemies.length = 0;
     
@@ -456,7 +472,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       size: bossConfig.size,
       color: bossConfig.color,
       flashUntil: 0,
-      goldDrop: bossConfig.goldDrop
+      goldDrop: bossConfig.goldDrop,
+      lastAttack: newTime - GAME_CONFIG.BOSS_ATTACK_INTERVAL // Make boss attack immediately
     };
     
     aliveEnemies.push(boss);
@@ -548,5 +565,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     screenScale,
     enemiesKilled,
     megaBoltFlash: finalMegaBoltFlash
+    lastBossDefeat
   };
 }
