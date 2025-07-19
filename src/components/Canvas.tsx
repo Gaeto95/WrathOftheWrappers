@@ -503,6 +503,24 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
         monsterSprite = bigMonster;
       }
     }
+  } else if (enemy.type === 'SPEEDER') {
+    // Try to load speeder sprite, fallback to small monster
+    let speederMonster = monsterImages.get('speeder');
+    if (!speederMonster) {
+      speederMonster = new Image();
+      speederMonster.src = '/speeder-monster.png';
+      monsterImages.set('speeder', speederMonster);
+    }
+    
+    if (speederMonster && speederMonster.complete && speederMonster.naturalWidth > 0) {
+      monsterSprite = speederMonster;
+    } else {
+      // Fallback to small monster sprite
+      const smallMonster = monsterImages.get('small');
+      if (smallMonster && smallMonster.complete && smallMonster.naturalWidth > 0) {
+        monsterSprite = smallMonster;
+      }
+    }
   } else if (enemy.type === 'TANK') {
     // Regular Tank uses big monster sprite
     const bigMonster = monsterImages.get('big');
@@ -527,7 +545,7 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
         monsterSprite = bigMonster;
       }
     }
-  } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER') {
+  } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER' || enemy.type === 'SPEEDER') {
     const smallMonster = monsterImages.get('small');
     if (smallMonster && smallMonster.complete && smallMonster.naturalWidth > 0) {
       monsterSprite = smallMonster;
@@ -544,7 +562,7 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
     }
     
     // For small monsters (worm), rotate to face the player
-    if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER') {
+    if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER' || enemy.type === 'SPEEDER') {
       // Calculate angle to player - worm sprite points up by default, so we need to adjust
       const playerX = player.x;
       const playerY = player.y;

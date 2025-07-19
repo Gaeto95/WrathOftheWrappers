@@ -47,6 +47,14 @@ export const GAME_CONFIG = {
       color: '#cc0000', // Darker red
       goldDrop: { min: 60, max: 90 } // 2x tank gold
     },
+    SPEEDER: {
+      hp: 8, // Very low HP
+      speed: 250, // Very fast - faster than runner
+      damage: 6, // Low damage
+      size: 18, // Small size
+      color: '#ff9999', // Light red/pink
+      goldDrop: { min: 5, max: 12 } // Low gold reward
+    },
     BOSS: {
       hp: 300, // 5x tank HP (50% reduction)
       speed: 50, // Slower than tank
