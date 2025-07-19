@@ -110,7 +110,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Update enemies
   let enemies = [...state.enemies];
-  let bossProjectilesToAdd: any[] = [];
+  let newBossProjectiles: any[] = [];
   
   enemies = enemies.map(enemy => {
     const direction = normalize({ x: player.x - enemy.x, y: player.y - enemy.y });
@@ -141,7 +141,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         );
         bossProjectile.isBossProjectile = true;
         bossProjectile.size = 8; // Larger boss projectiles
-        bossProjectilesToAdd.push(bossProjectile);
+        newBossProjectiles.push(bossProjectile);
         console.log('Created boss projectile', i, 'at angle', angle);
       }
       
@@ -151,8 +151,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return updatedEnemy;
   });
   
-  // Add boss projectiles to the main projectiles array
-  projectiles.push(...bossProjectilesToAdd);
   
   // Update particles
   const particles = state.particles
@@ -219,6 +217,10 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Check projectile-enemy collisions
   const hitEnemies = new Set<string>();
   let totalEnemiesKilled = 0;
+  
+  // Add boss projectiles to the projectiles array BEFORE collision detection
+  projectiles.push(...newBossProjectiles);
+  
   const newProjectiles = projectiles.filter(projectile => {
     let shouldRemoveProjectile = false;
     
