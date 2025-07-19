@@ -1,10 +1,11 @@
 # This file keeps the public folder in git
-# Add your archer sprite assets here:
+# Add your bolter sprite assets here:
 # - coin.png
 # - potion.png  
 # - background-music.mp3
+# - speeder-monster.png (NEW - for the fast enemy type)
 # 
-# Archer Sprite Files (each contains 10 frames horizontally):
+# Bolter Sprite Files (each contains 8 frames horizontally):
 # - Idle.png
 # - Running.png
 # - Jumping.png
