@@ -220,8 +220,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let totalEnemiesKilled = 0;
   
   // Add boss projectiles to the projectiles array BEFORE collision detection
-  projectiles.push(...newBossProjectiles);
-  projectiles.push(...newSideProjectiles);
+  projectiles.push(...newBossProjectiles, ...newSideProjectiles);
   
   const newProjectiles = projectiles.filter(projectile => {
     let shouldRemoveProjectile = false;
