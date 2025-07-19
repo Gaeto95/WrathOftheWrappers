@@ -22,6 +22,7 @@ interface PhaseTransition {
   timeLeft: number;
   blinkCount: number;
   phase: number;
+  startScale?: number;
 }
 
 interface GameProps {

@@ -553,7 +553,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       active: true,
       timeLeft: 5000, // 5 seconds - better balance
       blinkCount: 0,
-      phase: currentPhase
+      phase: currentPhase,
+      startScale: screenScale // Store the current scale when transition starts
     });
   }
   
@@ -567,8 +568,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     else if (currentPhase === 3) targetScale = 0.75; // Phase 2: 25% zoom out  
     else if (currentPhase >= 4) targetScale = 0.7; // Phase 3+: 30% zoom out
     
-    // Smooth interpolation from current scale to target scale
-    const startScale = state.screenScale;
+    // Smooth interpolation from stored start scale to target scale
+    const startScale = phaseTransition.startScale || state.screenScale;
     screenScale = startScale + (targetScale - startScale) * transitionProgress;
   } else {
     // Apply final scale when not in transition
@@ -587,14 +588,16 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         active: false,
         timeLeft: 0,
         blinkCount: 0,
-        phase: 1
+        phase: 1,
+        startScale: undefined
       });
     } else {
       setPhaseTransition({
         active: true,
         timeLeft: newTimeLeft,
         blinkCount: newBlinkCount,
-        phase: phaseTransition.phase || 1
+        phase: phaseTransition.phase || 1,
+        startScale: phaseTransition.startScale
       });
     }
   }
