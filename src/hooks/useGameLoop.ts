@@ -338,14 +338,21 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       // Create hit particles
       particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));
       
-      if (player.hp <= 0) {
-        return false; // Remove projectile and trigger death
-      }
       return false; // Remove projectile
     }
     
     return true;
   });
+  
+  // Check for death after all damage sources
+  if (player.hp <= 0) {
+    return {
+      ...state,
+      player,
+      gameStatus: 'dead',
+      score: Math.floor(newTime / 1000)
+    };
+  }
   
   if (newTime > player.invulnerableUntil) {
     for (const enemy of aliveEnemies) {
@@ -367,17 +374,19 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         // Create hit particles
         particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));
         
-        if (player.hp <= 0) {
-          return {
-            ...state,
-            player,
-            gameStatus: 'dead',
-            score: Math.floor(newTime / 1000)
-          };
-        }
         break;
       }
     }
+  }
+  
+  // Final death check after all damage sources
+  if (player.hp <= 0) {
+    return {
+      ...state,
+      player,
+      gameStatus: 'dead',
+      score: Math.floor(newTime / 1000)
+    };
   }
   
   // Check player-item collisions
