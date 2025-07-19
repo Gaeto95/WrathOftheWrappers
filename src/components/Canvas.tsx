@@ -224,25 +224,47 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     if (!bgImage) {
       bgImage = new Image();
       bgImage.src = `/${backgroundTexture}.png`;
+      bgImage.onload = () => {
+        console.log(`Background texture loaded: ${backgroundTexture}`);
+      };
+      bgImage.onerror = () => {
+        console.warn(`Failed to load background texture: ${backgroundTexture}.png`);
+      };
       backgroundImages.set(backgroundTexture, bgImage);
     }
     
     if (bgImage.complete && bgImage.naturalWidth > 0) {
-      // Tile the background image
+      // Create repeating pattern and tile it
       const pattern = ctx.createPattern(bgImage, 'repeat');
       if (pattern) {
         ctx.fillStyle = pattern;
-        ctx.fillRect(-200, -200, width + 400, height + 400);
+        // Cover larger area to account for camera shake and zoom
+        ctx.fillRect(-400, -400, width + 800, height + 800);
+      } else {
+        console.warn(`Failed to create pattern for ${backgroundTexture}`);
+        // Fallback to manual tiling
+        const tileSize = Math.min(bgImage.naturalWidth, bgImage.naturalHeight);
+        for (let x = -tileSize; x < width + tileSize; x += tileSize) {
+          for (let y = -tileSize; y < height + tileSize; y += tileSize) {
+            ctx.drawImage(bgImage, x, y, tileSize, tileSize);
+          }
+        }
       }
     } else {
-      // Fallback to colored background while loading
+      // Fallback to colored background while loading or if image fails
       let fallbackColor = '#0a0a0a';
       if (backgroundTexture === 'desert') fallbackColor = '#8B4513';
       else if (backgroundTexture === 'grassland') fallbackColor = '#228B22';
       else if (backgroundTexture === 'stone') fallbackColor = '#696969';
       
       ctx.fillStyle = fallbackColor;
-      ctx.fillRect(-200, -200, width + 400, height + 400);
+      ctx.fillRect(-400, -400, width + 800, height + 800);
+      
+      // Show loading text
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Loading ${backgroundTexture} texture...`, width / 2, height / 2);
     }
   }
 }
