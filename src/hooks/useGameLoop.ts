@@ -318,6 +318,16 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const isBossCurrentlyAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
   const sideProjectilePhase = Math.floor(state.time / 60000);
   
+  // Debug logging for side projectiles
+  if (isBossCurrentlyAlive) {
+    console.log('Boss is alive, checking side projectiles:', {
+      bossAlive: isBossCurrentlyAlive,
+      timeSinceLastSide: newTime - lastSideProjectiles,
+      interval: GAME_CONFIG.SIDE_PROJECTILE_INTERVAL,
+      shouldSpawn: newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL
+    });
+  }
+  
   // Spawn side projectiles during boss fights
   if (isBossCurrentlyAlive && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
     // Number of side projectiles increases with each phase
@@ -326,7 +336,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     for (let i = 0; i < sideProjectileCount; i++) {
       // Spawn from random sides of the screen
       const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-      let startX, startY, targetX, targetY;
+      let startX, startY;
       
       const effectiveWidth = GAME_CONFIG.CANVAS_WIDTH / state.screenScale;
       const effectiveHeight = GAME_CONFIG.CANVAS_HEIGHT / state.screenScale;
@@ -353,8 +363,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       }
       
       // Target the player
-      targetX = player.x;
-      targetY = player.y;
+      const targetX = player.x;
+      const targetY = player.y;
       
       // Create side projectile
       const direction = normalize({ x: targetX - startX, y: targetY - startY });
@@ -367,14 +377,20 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         damage: Math.floor(15 * state.difficultyMultiplier), // Scales with difficulty
         size: GAME_CONFIG.SIDE_PROJECTILE_SIZE,
         isBossProjectile: true, // Treat as boss projectile for collision
-        sourceEnemyId: 'side_spawner' // Special ID for side projectiles
+        sourceEnemyId: 'side_spawner', // Special ID for side projectiles
+        color: '#ff00ff' // Purple color for side projectiles
       };
       
       newSideProjectiles.push(sideProjectile);
     }
     
     lastSideProjectiles = newTime;
-    console.log('Side projectiles spawned:', sideProjectileCount, 'Boss alive:', isBossCurrentlyAlive, 'Phase:', sideProjectilePhase);
+    console.log('Side projectiles spawned:', {
+      count: sideProjectileCount,
+      bossAlive: isBossCurrentlyAlive,
+      phase: sideProjectilePhase,
+      projectiles: newSideProjectiles.length
+    });
   }
   
   // Update last boss defeat time if a boss was defeated
