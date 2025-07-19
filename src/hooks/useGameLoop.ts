@@ -60,6 +60,15 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Update mega bolt flash
   const megaBoltFlash = Math.max(0, state.megaBoltFlash - deltaTime);
   
+  // Initialize projectiles array early so it can be used throughout the function
+  let projectiles = state.projectiles
+    .map(projectile => ({
+      ...projectile,
+      x: projectile.x + projectile.vx * dt,
+      y: projectile.y + projectile.vy * dt
+    }))
+    .filter(projectile => !isOffScreen(projectile, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT));
+  
   // Update player
   let player = { ...state.player };
   
@@ -134,15 +143,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     
     return updatedEnemy;
   });
-  
-  // Update projectiles
-  const projectiles = state.projectiles
-    .map(projectile => ({
-      ...projectile,
-      x: projectile.x + projectile.vx * dt,
-      y: projectile.y + projectile.vy * dt
-    }))
-    .filter(projectile => !isOffScreen(projectile, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT));
   
   // Update particles
   const particles = state.particles
