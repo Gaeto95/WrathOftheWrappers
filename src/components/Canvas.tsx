@@ -66,8 +66,40 @@ const spriteImages = new Map<string, HTMLImageElement>();
 const coinImageCache = new Map<string, HTMLImageElement>();
 const potionImageCache = new Map<string, HTMLImageElement>();
 let spritesInitialized = false;
-let spritesFullyLoaded = false; // Track if all sprites are actually loaded
-let monstersLoaded = false;
+let monstersInitialized = false;
+
+// Initialize monster sprites immediately (not in useEffect)
+function initializeMonsterSprites() {
+  if (monstersInitialized) return;
+  monstersInitialized = true;
+  
+  // Load all monster sprites without triggering re-renders
+  const monsterTypes = [
+    { key: 'big', src: '/big-monster.png' },
+    { key: 'small', src: '/small-monster.png' },
+    { key: 'heavy-tank', src: '/heavy-tank-monster.png' },
+    { key: 'speeder', src: '/speeder-monster.png' },
+    { key: 'boss', src: '/boss-monster.png' }
+  ];
+  
+  monsterTypes.forEach(({ key, src }) => {
+    const img = new Image();
+    img.src = src;
+    monsterImages.set(key, img);
+  });
+  
+  // Load item sprites
+  const coinImg = new Image();
+  coinImg.src = '/coin.png';
+  coinImageCache.set('coin', coinImg);
+  
+  const potionImg = new Image();
+  potionImg.src = '/potion.png';
+  potionImageCache.set('potion', potionImg);
+}
+
+// Call immediately when module loads
+initializeMonsterSprites();
 
 export function Canvas({ gameState, phaseTransition, width, height, input, backgroundTexture = 'default' }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,8 +110,6 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     
     const animations = Object.entries(SPRITE_CONFIG.animations);
     spritesInitialized = true;
-    let loadedCount = 0;
-    const totalSprites = animations.length;
     
     animations.forEach(([animName, config]) => {
       const img = new Image();
@@ -87,74 +117,15 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
       
       img.onload = () => {
         spriteImages.set(animName, img);
-        loadedCount++;
-        if (loadedCount === totalSprites) {
-          spritesFullyLoaded = true;
-          console.log('All player sprites loaded successfully');
-        }
       };
       
       img.onerror = () => {
         console.warn(`Failed to load sprite: ${config.file}`);
-        loadedCount++;
-        if (loadedCount === totalSprites) {
-          spritesFullyLoaded = true;
-        }
       };
     });
   }, []); // Empty dependency array - only run once
 
 
-  // Load monster and item sprites
-  useEffect(() => {
-    if (monstersLoaded) return; // Prevent reloading
-
-    // Load monster sprites
-    const bigMonsterImg = new Image();
-    bigMonsterImg.src = '/big-monster.png';
-    bigMonsterImg.onload = () => {
-      monsterImages.set('big', bigMonsterImg);
-    };
-    
-    const smallMonsterImg = new Image();
-    smallMonsterImg.src = '/small-monster.png';
-    smallMonsterImg.onload = () => {
-      monsterImages.set('small', smallMonsterImg);
-      monstersLoaded = true;
-    };
-    
-    // Load additional monster types
-    const heavyTankImg = new Image();
-    heavyTankImg.src = '/heavy-tank-monster.png';
-    heavyTankImg.onload = () => {
-      monsterImages.set('heavy-tank', heavyTankImg);
-    };
-    
-    const speederImg = new Image();
-    speederImg.src = '/speeder-monster.png';
-    speederImg.onload = () => {
-      monsterImages.set('speeder', speederImg);
-    };
-    
-    const bossImg = new Image();
-    bossImg.src = '/boss-monster.png';
-    bossImg.onload = () => {
-      monsterImages.set('boss', bossImg);
-    };
-    
-    // Load item sprites
-    const coinImg = new Image();
-    coinImg.src = '/coin.png';
-    coinImg.onload = () => {
-      coinImageCache.set('coin', coinImg);
-    };
-    
-    const potionImg = new Image();
-    potionImg.src = '/potion.png';
-    potionImg.onload = () => {
-      potionImageCache.set('potion', potionImg);
-    };
-  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -404,8 +375,8 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     playerAnimationState.lastFrameTime = time;
   }
   
-  // Use fallback during initial loading period or if sprites aren't ready
-  if (!spriteImages || spriteImages.size === 0) {
+  // More robust sprite availability check
+  if (!spriteImages || spriteImages.size === 0 || !spritesInitialized) {
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
   }
@@ -414,9 +385,14 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   let finalAnimation = currentAnimation;
   let spriteImage = spriteImages?.get(finalAnimation);
   
-  // Simple but reliable sprite validation
+  // Enhanced sprite validation - more defensive
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
-    return img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
+    if (!img) return false;
+    if (!img.complete) return false;
+    if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
+    // Additional check - make sure the image isn't in an error state
+    if (img.src === '' || img.src.includes('data:')) return false;
+    return true;
   };
   
   // If current animation sprite isn't ready, try idle
@@ -545,19 +521,14 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
     if (!img) return false;
     if (!img.complete) return false;
     if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
+    if (img.src === '' || img.src.includes('data:')) return false;
     return true;
   };
   
   // Determine which sprite to use based on enemy type
   let monsterSprite = null;
   if (enemy.type === 'HEAVY_TANK') {
-    // Try to load heavy tank sprite, fallback to big monster
-    let heavyTankMonster = monsterImages.get('heavy-tank');
-    if (!heavyTankMonster) {
-      heavyTankMonster = new Image();
-      heavyTankMonster.src = '/heavy-tank-monster.png';
-      monsterImages.set('heavy-tank', heavyTankMonster);
-    }
+    const heavyTankMonster = monsterImages.get('heavy-tank');
     
     if (isMonsterSpriteReady(heavyTankMonster)) {
       monsterSprite = heavyTankMonster;
@@ -569,13 +540,7 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       }
     }
   } else if (enemy.type === 'SPEEDER') {
-    // Try to load speeder sprite, fallback to small monster
-    let speederMonster = monsterImages.get('speeder');
-    if (!speederMonster) {
-      speederMonster = new Image();
-      speederMonster.src = '/speeder-monster.png';
-      monsterImages.set('speeder', speederMonster);
-    }
+    const speederMonster = monsterImages.get('speeder');
     
     if (isMonsterSpriteReady(speederMonster)) {
       monsterSprite = speederMonster;
@@ -593,13 +558,7 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       monsterSprite = bigMonster;
     }
   } else if (enemy.type === 'BOSS') {
-    // Try to load boss sprite, fallback to big monster
-    let bossMonster = monsterImages.get('boss');
-    if (!bossMonster) {
-      bossMonster = new Image();
-      bossMonster.src = '/boss-monster.png';
-      monsterImages.set('boss', bossMonster);
-    }
+    const bossMonster = monsterImages.get('boss');
     
     if (isMonsterSpriteReady(bossMonster)) {
       monsterSprite = bossMonster;
