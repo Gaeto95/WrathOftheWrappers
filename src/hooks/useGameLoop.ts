@@ -115,11 +115,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let newSideProjectiles: any[] = [];
   
   // Check if there's a boss alive for side projectiles
-  const initialBossPresence = enemies.some(enemy => enemy.type === 'BOSS');
+  const bossPresent = enemies.some(enemy => enemy.type === 'BOSS');
   const currentPhase = Math.floor(newTime / 60000) + 1;
   
   // Spawn side projectiles during boss fights
-  if (initialBossPresence && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
+  if (bossPresent && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
     // Number of side projectiles increases with each phase
     const sideProjectileCount = Math.min(currentPhase * 2, 8); // 2, 4, 6, 8 max
     
@@ -534,7 +534,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let lastBossSpawn = state.lastBossSpawn;
   
   // Check if there's currently a boss alive
-  const bossAlive = finalEnemies.some(enemy => enemy.type === 'BOSS');
+  const bossAlive = enemies.some(enemy => enemy.type === 'BOSS');
   
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
