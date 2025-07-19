@@ -117,6 +117,8 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
       monsterImages.set('small', smallMonsterImg);
       monstersLoaded = true;
     };
+    
+    smallMonsterImg.src = '/small-monster.png';
   }, []);
 
   useEffect(() => {
