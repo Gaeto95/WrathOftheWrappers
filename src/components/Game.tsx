@@ -33,6 +33,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [gameOverAudio, setGameOverAudio] = useState<HTMLAudioElement | null>(null);
+  const [backgroundTexture, setBackgroundTexture] = useState<string>('default');
 
   // Background music setup
   useEffect(() => {
