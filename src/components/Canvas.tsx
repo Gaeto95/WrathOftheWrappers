@@ -104,6 +104,9 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     });
   }, []); // Empty dependency array - only run once
 
+
+  // Load monster and item sprites
+  useEffect(() => {
     if (monstersLoaded) return; // Prevent reloading
 
     // Load monster sprites
@@ -111,6 +114,8 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     bigMonsterImg.src = '/big-monster.png';
     bigMonsterImg.onload = () => {
       monsterImages.set('big', bigMonsterImg);
+    };
+    
     const smallMonsterImg = new Image();
     smallMonsterImg.src = '/small-monster.png';
     smallMonsterImg.onload = () => {
@@ -118,7 +123,37 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
       monstersLoaded = true;
     };
     
-    smallMonsterImg.src = '/small-monster.png';
+    // Load additional monster types
+    const heavyTankImg = new Image();
+    heavyTankImg.src = '/heavy-tank-monster.png';
+    heavyTankImg.onload = () => {
+      monsterImages.set('heavy-tank', heavyTankImg);
+    };
+    
+    const speederImg = new Image();
+    speederImg.src = '/speeder-monster.png';
+    speederImg.onload = () => {
+      monsterImages.set('speeder', speederImg);
+    };
+    
+    const bossImg = new Image();
+    bossImg.src = '/boss-monster.png';
+    bossImg.onload = () => {
+      monsterImages.set('boss', bossImg);
+    };
+    
+    // Load item sprites
+    const coinImg = new Image();
+    coinImg.src = '/coin.png';
+    coinImg.onload = () => {
+      coinImageCache.set('coin', coinImg);
+    };
+    
+    const potionImg = new Image();
+    potionImg.src = '/potion.png';
+    potionImg.onload = () => {
+      potionImageCache.set('potion', potionImg);
+    };
   }, []);
 
   useEffect(() => {
