@@ -313,11 +313,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   });
   
   // Check if there's a boss alive for side projectiles (use aliveEnemies array)
-  const bossAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
+  const isBossCurrentlyAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
   const sideProjectilePhase = Math.floor(state.time / 60000);
   
   // Spawn side projectiles during boss fights
-  if (bossAlive && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
+  if (isBossCurrentlyAlive && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
     // Number of side projectiles increases with each phase
     const sideProjectileCount = Math.min((sideProjectilePhase + 1) * 2, 8); // Phase 1: 2, Phase 2: 4, Phase 3: 6, Phase 4: 8
     
@@ -372,7 +372,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     }
     
     lastSideProjectiles = newTime;
-    console.log('Side projectiles spawned:', sideProjectileCount, 'Boss alive:', bossAlive, 'Phase:', sideProjectilePhase);
+    console.log('Side projectiles spawned:', sideProjectileCount, 'Boss alive:', isBossCurrentlyAlive, 'Phase:', sideProjectilePhase);
   }
   
   // Update last boss defeat time if a boss was defeated
@@ -529,14 +529,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   }
   
   // Spawn enemies
-  let lastEnemySpawn = state.lastEnemySpawn;
-  let lastBossSpawn = state.lastBossSpawn;
-  
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
   
   // Don't spawn enemies during phase transitions or when boss is alive
-  if (phaseTransition.active || bossAlive) {
+  if (phaseTransition.active || isBossCurrentlyAlive) {
     spawnRate = Infinity; // Prevent spawning during transition
   } else {
     // Reduce spawn rate by 50% to make it much less overwhelming
@@ -549,7 +546,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const inBossDefeatPause = timeSinceLastBossDefeat < GAME_CONFIG.BOSS_DEFEAT_PAUSE;
   
   // Check if there's currently a boss alive (use filtered enemies)
-  if (!inBossDefeatPause && !bossAlive && newTime - lastEnemySpawn > spawnRate) {
+  if (!inBossDefeatPause && !isBossCurrentlyAlive && newTime - lastEnemySpawn > spawnRate) {
     finalEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
   }
