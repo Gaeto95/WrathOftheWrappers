@@ -692,8 +692,8 @@ function drawPhaseTransitionText(
 ) {
   // Calculate blink opacity
   const blinkInterval = 400; // 400ms per blink
-  const currentBlink = Math.floor((8000 - phaseTransition.timeLeft) / blinkInterval);
-  const blinkProgress = ((8000 - phaseTransition.timeLeft) % blinkInterval) / blinkInterval;
+  const currentBlink = Math.floor((5000 - phaseTransition.timeLeft) / blinkInterval);
+  const blinkProgress = ((5000 - phaseTransition.timeLeft) % blinkInterval) / blinkInterval;
   const opacity = Math.sin(blinkProgress * Math.PI) * 0.5 + 0.5; // Smooth blink
 
   ctx.save();

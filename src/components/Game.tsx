@@ -356,6 +356,53 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         {musicEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
       </button>
 
+      {/* Background Texture Controls */}
+      <div className="absolute top-4 left-4 z-50 bg-black bg-opacity-70 p-3 rounded-lg">
+        <div className="text-white text-sm mb-2 font-medium">Background:</div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setBackgroundTexture('default')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'default' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Grid
+          </button>
+          <button
+            onClick={() => setBackgroundTexture('desert')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'desert' 
+                ? 'bg-yellow-600 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Desert
+          </button>
+          <button
+            onClick={() => setBackgroundTexture('grassland')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'grassland' 
+                ? 'bg-green-600 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Grassland
+          </button>
+          <button
+            onClick={() => setBackgroundTexture('stone')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'stone' 
+                ? 'bg-gray-500 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Stone
+          </button>
+        </div>
+      </div>
+
       <div className="relative">
         <Canvas
           gameState={gameState}
@@ -363,6 +410,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
           width={GAME_CONFIG.CANVAS_WIDTH}
           height={GAME_CONFIG.CANVAS_HEIGHT}
           input={input}
+          backgroundTexture={backgroundTexture}
         />
         
         {gameState.gameStatus === 'playing' && (
