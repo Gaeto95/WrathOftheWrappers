@@ -51,6 +51,9 @@ const SPRITE_CONFIG = {
   }
 };
 
+// Track which sprites have been successfully validated at least once
+const validatedSprites = new Set<string>();
+
 interface CanvasProps {
   gameState: GameState;
   phaseTransition?: { active: boolean; timeLeft: number; blinkCount: number; phase: number };
@@ -390,24 +393,57 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     if (!img) return false;
     if (!img.complete) return false;
     if (img.naturalWidth === 0 || img.naturalHeight === 0) return false;
-    // Additional check - make sure the image isn't in an error state
-    if (img.src === '' || img.src.includes('data:')) return false;
+    if (img.src === '') return false;
     return true;
   };
   
-  // If current animation sprite isn't ready, try idle
-  if (!isSpriteReady(spriteImage)) {
-    finalAnimation = 'idle';
-    spriteImage = spriteImages?.get('idle');
-  }
+  // More robust sprite selection with memory
+  const selectBestSprite = (preferredAnimation: string) => {
+    // First try preferred animation
+    let sprite = spriteImages?.get(preferredAnimation);
+    if (isSpriteReady(sprite)) {
+      validatedSprites.add(preferredAnimation);
+      return { sprite, animation: preferredAnimation };
+    }
+    
+    // If preferred failed but was previously validated, try it anyway
+    if (validatedSprites.has(preferredAnimation) && sprite) {
+      return { sprite, animation: preferredAnimation };
+    }
+    
+    // Try idle as fallback
+    sprite = spriteImages?.get('idle');
+    if (isSpriteReady(sprite)) {
+      validatedSprites.add('idle');
+      return { sprite, animation: 'idle' };
+    }
+    
+    // If idle was previously validated, use it anyway
+    if (validatedSprites.has('idle') && sprite) {
+      return { sprite, animation: 'idle' };
+    }
+    
+    // Try any previously validated sprite
+    for (const validatedAnim of validatedSprites) {
+      sprite = spriteImages?.get(validatedAnim);
+      if (sprite) {
+        return { sprite, animation: validatedAnim };
+      }
+    }
+    
+    return null;
+  };
   
-  // If idle also isn't ready, use fallback
-  if (!isSpriteReady(spriteImage)) {
+  const spriteResult = selectBestSprite(currentAnimation);
+  
+  if (!spriteResult) {
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
   }
   
-  // Final safety check - ensure we have a valid sprite
+  const { sprite: spriteImage, animation: finalAnimation } = spriteResult;
+  
+  // Final safety check
   if (!spriteImage) {
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
@@ -419,6 +455,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   // Calculate sprite position - use only top row (8 frames)
   animConfig = SPRITE_CONFIG.animations[finalAnimation as keyof typeof SPRITE_CONFIG.animations];
   const currentFrame = Math.min(
+    finalAnimation = 'idle';
     finalAnimation === currentAnimation ? playerAnimationState.animationFrame : 0,
     (animConfig?.frames || 8) - 1 // Never exceed available frames
   );
@@ -436,9 +473,15 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   }
   
   // Validate frame coordinates don't exceed sprite bounds
-  if (frameX >= spriteImage.naturalWidth) {
-    console.warn('Frame X exceeds sprite width:', frameX, spriteImage.naturalWidth);
-    frameX = 0; // Reset to first frame
+  try {
+    if (frameX >= spriteImage.naturalWidth) {
+      frameX = 0; // Reset to first frame
+    }
+  } catch (e) {
+    // If we can't even check naturalWidth, use fallback
+    ctx.restore();
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
   }
   
   const renderSize = GAME_CONFIG.PLAYER_SIZE * 3; // Even larger to stay visible when zoomed out
