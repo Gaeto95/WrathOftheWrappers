@@ -455,7 +455,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   // Calculate sprite position - use only top row (8 frames)
   animConfig = SPRITE_CONFIG.animations[finalAnimation as keyof typeof SPRITE_CONFIG.animations];
   const currentFrame = Math.min(
-    finalAnimation = 'idle';
     finalAnimation === currentAnimation ? playerAnimationState.animationFrame : 0,
     (animConfig?.frames || 8) - 1 // Never exceed available frames
   );
