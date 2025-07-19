@@ -177,7 +177,7 @@ export function createEnemy(gameState: GameState): Enemy {
   }
   
   const config = GAME_CONFIG.ENEMY_TYPES[type];
-  const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
+  const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT, gameState.screenScale);
   
   return {
     id: `enemy_${Date.now()}_${Math.random()}`,

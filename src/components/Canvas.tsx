@@ -366,9 +366,15 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     playerAnimationState.lastFrameTime = time;
   }
   
+  // Always try to get sprites, but be more defensive
+  if (!spriteImages || spriteImages.size === 0) {
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
+  }
+  
   // Try to get the sprite for current animation
   let finalAnimation = currentAnimation;
-  let spriteImage = spriteImages.get(finalAnimation);
+  let spriteImage = spriteImages?.get(finalAnimation);
   
   // More thorough sprite validation - especially during transitions
   const isSpriteReady = (img: HTMLImageElement | undefined) => {
@@ -381,11 +387,17 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   // If current animation sprite isn't ready, try idle
   if (!isSpriteReady(spriteImage)) {
     finalAnimation = 'idle';
-    spriteImage = spriteImages.get('idle');
+    spriteImage = spriteImages?.get('idle');
   }
   
   // If idle also isn't ready, use fallback
   if (!isSpriteReady(spriteImage)) {
+    drawPlayerFallback(ctx, player, alpha, facingLeft);
+    return;
+  }
+  
+  // Final safety check - ensure we have a valid sprite
+  if (!spriteImage) {
     drawPlayerFallback(ctx, player, alpha, facingLeft);
     return;
   }
@@ -413,9 +425,9 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
   }
   
   // Validate frame coordinates don't exceed sprite bounds
-  if (frameX >= spriteImage!.naturalWidth) {
-    console.warn('Frame X exceeds sprite width:', frameX, spriteImage!.naturalWidth);
-    frameX = 0; // Reset to first frame instead of fallback
+  if (frameX >= spriteImage.naturalWidth) {
+    console.warn('Frame X exceeds sprite width:', frameX, spriteImage.naturalWidth);
+    frameX = 0; // Reset to first frame
   }
   
   const renderSize = GAME_CONFIG.PLAYER_SIZE * 3; // Even larger to stay visible when zoomed out
@@ -426,19 +438,19 @@ function drawPlayer(ctx: CanvasRenderingContext2D, player: any, time: number, in
     if (facingLeft) {
       ctx.scale(-1, 1);
       ctx.drawImage(
-        spriteImage!,
+        spriteImage,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         -player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
     } else {
       ctx.drawImage(
-        spriteImage!,
+        spriteImage,
         frameX, frameY, SPRITE_CONFIG.frameWidth, SPRITE_CONFIG.frameHeight,
         player.x - renderSize/2, player.y - renderSize/2, renderSize, renderSize
       );
     }
   } catch (error) {
-    console.warn('Sprite drawing failed, using fallback:', error.message);
+    console.warn('Sprite drawing failed, using fallback:', error);
     // Restore context before fallback
     ctx.restore();
     drawPlayerFallback(ctx, player, alpha, facingLeft);
