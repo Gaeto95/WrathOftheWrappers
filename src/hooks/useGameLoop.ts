@@ -153,67 +153,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   });
   
   // Check if there's a boss alive for side projectiles (use updated enemies array)
-  const bossPresent = enemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
-  const sideProjectilePhase = Math.floor(state.time / 60000);
-  
-  // Spawn side projectiles during boss fights
-  if (bossPresent && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
-    // Number of side projectiles increases with each phase
-    const sideProjectileCount = Math.min((sideProjectilePhase + 1) * 2, 8); // Phase 1: 2, Phase 2: 4, Phase 3: 6, Phase 4: 8
-    
-    for (let i = 0; i < sideProjectileCount; i++) {
-      // Spawn from random sides of the screen
-      const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-      let startX, startY, targetX, targetY;
-      
-      const effectiveWidth = GAME_CONFIG.CANVAS_WIDTH / state.screenScale;
-      const effectiveHeight = GAME_CONFIG.CANVAS_HEIGHT / state.screenScale;
-      const centerOffsetX = (effectiveWidth - GAME_CONFIG.CANVAS_WIDTH) / 2;
-      const centerOffsetY = (effectiveHeight - GAME_CONFIG.CANVAS_HEIGHT) / 2;
-      
-      switch (side) {
-        case 0: // Top
-          startX = Math.random() * effectiveWidth - centerOffsetX;
-          startY = -50 - centerOffsetY;
-          break;
-        case 1: // Right
-          startX = effectiveWidth + 50 - centerOffsetX;
-          startY = Math.random() * effectiveHeight - centerOffsetY;
-          break;
-        case 2: // Bottom
-          startX = Math.random() * effectiveWidth - centerOffsetX;
-          startY = effectiveHeight + 50 - centerOffsetY;
-          break;
-        case 3: // Left
-          startX = -50 - centerOffsetX;
-          startY = Math.random() * effectiveHeight - centerOffsetY;
-          break;
-      }
-      
-      // Target the player
-      targetX = player.x;
-      targetY = player.y;
-      
-      // Create side projectile
-      const direction = normalize({ x: targetX - startX, y: targetY - startY });
-      const sideProjectile = {
-        id: `side_projectile_${newTime}_${i}`,
-        x: startX,
-        y: startY,
-        vx: direction.x * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
-        vy: direction.y * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
-        damage: Math.floor(15 * state.difficultyMultiplier), // Scales with difficulty
-        size: GAME_CONFIG.SIDE_PROJECTILE_SIZE,
-        isBossProjectile: true, // Treat as boss projectile for collision
-        sourceEnemyId: 'side_spawner' // Special ID for side projectiles
-      };
-      
-      newSideProjectiles.push(sideProjectile);
-    }
-    
-    lastSideProjectiles = newTime;
-  }
-  
   // Update particles
   const particles = state.particles
     .map(particle => ({
@@ -374,6 +313,68 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     }
     return true;
   });
+  
+  // Check if there's a boss alive for side projectiles (use aliveEnemies array)
+  const bossPresent = aliveEnemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
+  const sideProjectilePhase = Math.floor(state.time / 60000);
+  
+  // Spawn side projectiles during boss fights
+  if (bossPresent && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
+    // Number of side projectiles increases with each phase
+    const sideProjectileCount = Math.min((sideProjectilePhase + 1) * 2, 8); // Phase 1: 2, Phase 2: 4, Phase 3: 6, Phase 4: 8
+    
+    for (let i = 0; i < sideProjectileCount; i++) {
+      // Spawn from random sides of the screen
+      const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+      let startX, startY, targetX, targetY;
+      
+      const effectiveWidth = GAME_CONFIG.CANVAS_WIDTH / state.screenScale;
+      const effectiveHeight = GAME_CONFIG.CANVAS_HEIGHT / state.screenScale;
+      const centerOffsetX = (effectiveWidth - GAME_CONFIG.CANVAS_WIDTH) / 2;
+      const centerOffsetY = (effectiveHeight - GAME_CONFIG.CANVAS_HEIGHT) / 2;
+      
+      switch (side) {
+        case 0: // Top
+          startX = Math.random() * effectiveWidth - centerOffsetX;
+          startY = -50 - centerOffsetY;
+          break;
+        case 1: // Right
+          startX = effectiveWidth + 50 - centerOffsetX;
+          startY = Math.random() * effectiveHeight - centerOffsetY;
+          break;
+        case 2: // Bottom
+          startX = Math.random() * effectiveWidth - centerOffsetX;
+          startY = effectiveHeight + 50 - centerOffsetY;
+          break;
+        case 3: // Left
+          startX = -50 - centerOffsetX;
+          startY = Math.random() * effectiveHeight - centerOffsetY;
+          break;
+      }
+      
+      // Target the player
+      targetX = player.x;
+      targetY = player.y;
+      
+      // Create side projectile
+      const direction = normalize({ x: targetX - startX, y: targetY - startY });
+      const sideProjectile = {
+        id: `side_projectile_${newTime}_${i}`,
+        x: startX,
+        y: startY,
+        vx: direction.x * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
+        vy: direction.y * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
+        damage: Math.floor(15 * state.difficultyMultiplier), // Scales with difficulty
+        size: GAME_CONFIG.SIDE_PROJECTILE_SIZE,
+        isBossProjectile: true, // Treat as boss projectile for collision
+        sourceEnemyId: 'side_spawner' // Special ID for side projectiles
+      };
+      
+      newSideProjectiles.push(sideProjectile);
+    }
+    
+    lastSideProjectiles = newTime;
+  }
   
   // Update last boss defeat time if a boss was defeated
   if (bossWasDefeated) {
