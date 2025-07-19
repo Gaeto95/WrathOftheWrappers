@@ -63,6 +63,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Initialize variables that will be used throughout the function
   let lastBossDefeat = state.lastBossDefeat || 0;
   let lastSideProjectiles = state.lastSideProjectiles || 0;
+  let lastEnemySpawn = state.lastEnemySpawn || 0;
   
   // Initialize projectiles array early so it can be used throughout the function
   let projectiles = state.projectiles
