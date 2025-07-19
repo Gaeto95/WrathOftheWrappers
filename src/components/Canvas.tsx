@@ -257,22 +257,31 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     let bgImage = backgroundImages.get(backgroundTexture);
     
     if (bgImage.complete && bgImage.naturalWidth > 0) {
+      // Improve rendering quality to reduce seams
+      ctx.imageSmoothingEnabled = false; // Disable smoothing for pixel-perfect tiles
+      
       // Manual infinite tiling system
       const tileSize = 64; // Fixed tile size
+      const tileOverlap = 1; // 1 pixel overlap to prevent seams
       const margin = 200; // Extra margin for camera shake and zoom
       
       // Calculate how many tiles we need to cover the screen plus margin
-      const startX = Math.floor(-margin / tileSize) * tileSize;
-      const endX = Math.ceil((width + margin) / tileSize) * tileSize;
-      const startY = Math.floor(-margin / tileSize) * tileSize;
-      const endY = Math.ceil((height + margin) / tileSize) * tileSize;
+      const effectiveTileSize = tileSize - tileOverlap;
+      const startX = Math.floor(-margin / effectiveTileSize) * effectiveTileSize;
+      const endX = Math.ceil((width + margin) / effectiveTileSize) * effectiveTileSize;
+      const startY = Math.floor(-margin / effectiveTileSize) * effectiveTileSize;
+      const endY = Math.ceil((height + margin) / effectiveTileSize) * effectiveTileSize;
       
       // Draw tiles in a grid pattern
-      for (let x = startX; x < endX; x += tileSize) {
-        for (let y = startY; y < endY; y += tileSize) {
-          ctx.drawImage(bgImage, x, y, tileSize, tileSize);
+      for (let x = startX; x < endX; x += effectiveTileSize) {
+        for (let y = startY; y < endY; y += effectiveTileSize) {
+          // Draw with slight overlap to prevent seams
+          ctx.drawImage(bgImage, x, y, tileSize + tileOverlap, tileSize + tileOverlap);
         }
       }
+      
+      // Restore smoothing setting
+      ctx.imageSmoothingEnabled = true;
     } else {
       drawGridPattern(ctx, width, height);
     }
