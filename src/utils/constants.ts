@@ -51,7 +51,7 @@ export const GAME_CONFIG = {
       hp: 8, // Very low HP
       speed: 250, // Very fast - faster than runner
       damage: 6, // Low damage
-      size: 18, // Small size
+      size: 36, // Medium size (2x increase from 18)
       color: '#ff9999', // Light red/pink
       goldDrop: { min: 5, max: 12 } // Low gold reward
     },
