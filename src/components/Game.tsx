@@ -357,82 +357,50 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         {musicEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
       </button>
 
-      {/* Background Texture Controls - Above Canvas */}
-      <div className="absolute top-16 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-sm border border-gray-600/50 rounded-xl p-4 shadow-2xl">
-          <div className="text-center mb-3">
-            <h3 className="text-white text-sm font-bold tracking-wide">🎨 BACKGROUND THEME</h3>
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mt-1"></div>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setBackgroundTexture('default')}
-              className={`group relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
-                backgroundTexture === 'default' 
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25' 
-                  : 'bg-gray-700/80 text-gray-300 hover:bg-gray-600/80 hover:text-white'
-              }`}
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                <span className="text-lg">⚡</span>
-                Grid
-              </span>
-              {backgroundTexture === 'default' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-blue-400/20 rounded-lg animate-pulse"></div>
-              )}
-            </button>
-            
-            <button
-              onClick={() => setBackgroundTexture('desert')}
-              className={`group relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
-                backgroundTexture === 'desert' 
-                  ? 'bg-gradient-to-r from-yellow-600 to-orange-600 text-white shadow-lg shadow-yellow-500/25' 
-                  : 'bg-gray-700/80 text-gray-300 hover:bg-gray-600/80 hover:text-white'
-              }`}
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                <span className="text-lg">🏜️</span>
-                Desert
-              </span>
-              {backgroundTexture === 'desert' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-lg animate-pulse"></div>
-              )}
-            </button>
-            
-            <button
-              onClick={() => setBackgroundTexture('grassland')}
-              className={`group relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
-                backgroundTexture === 'grassland' 
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/25' 
-                  : 'bg-gray-700/80 text-gray-300 hover:bg-gray-600/80 hover:text-white'
-              }`}
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                <span className="text-lg">🌿</span>
-                Grassland
-              </span>
-              {backgroundTexture === 'grassland' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-400/20 rounded-lg animate-pulse"></div>
-              )}
-            </button>
-            
-            <button
-              onClick={() => setBackgroundTexture('stone')}
-              className={`group relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
-                backgroundTexture === 'stone' 
-                  ? 'bg-gradient-to-r from-gray-600 to-slate-600 text-white shadow-lg shadow-gray-500/25' 
-                  : 'bg-gray-700/80 text-gray-300 hover:bg-gray-600/80 hover:text-white'
-              }`}
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                <span className="text-lg">🗿</span>
-                Stone
-              </span>
-              {backgroundTexture === 'stone' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-400/20 to-slate-400/20 rounded-lg animate-pulse"></div>
-              )}
-            </button>
-          </div>
+      {/* Background Texture Controls */}
+      <div className="absolute top-4 left-4 z-50 bg-black bg-opacity-70 p-3 rounded-lg">
+        <div className="text-white text-sm mb-2 font-medium">Background:</div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setBackgroundTexture('default')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'default' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Grid
+          </button>
+          <button
+            onClick={() => setBackgroundTexture('desert')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'desert' 
+                ? 'bg-yellow-600 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Desert
+          </button>
+          <button
+            onClick={() => setBackgroundTexture('grassland')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'grassland' 
+                ? 'bg-green-600 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Grassland
+          </button>
+          <button
+            onClick={() => setBackgroundTexture('stone')}
+            className={`px-3 py-1 rounded text-xs transition-all duration-200 ${
+              backgroundTexture === 'stone' 
+                ? 'bg-gray-500 text-white' 
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            Stone
+          </button>
         </div>
       </div>
 
