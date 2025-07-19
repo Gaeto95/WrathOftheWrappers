@@ -532,9 +532,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let lastEnemySpawn = state.lastEnemySpawn;
   let lastBossSpawn = state.lastBossSpawn;
   
-  // Check if there's currently a boss alive
-  const bossAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS');
-  
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
   
