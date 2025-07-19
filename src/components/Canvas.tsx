@@ -257,8 +257,8 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     }
     
     if (bgImage.complete && bgImage.naturalWidth > 0) {
-      // Manual tiling with small tile size (30x30)
-      const tileSize = 30; // Small tileset as requested
+      // Manual tiling with very small tile size (8x8)
+      const tileSize = 8; // Much smaller tileset
       const margin = 200; // Extra coverage for camera shake and zoom
       
       // Calculate how many tiles we need

@@ -359,7 +359,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
 
       {/* Background Texture Controls */}
       {/* Background Texture Dropdown - Positioned above canvas with proper spacing */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 mb-8">
         <div className="bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-3 border border-gray-600">
           <div className="text-white text-sm mb-2 font-medium text-center">Background:</div>
           <div className="flex gap-2">
@@ -407,7 +407,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         </div>
       </div>
 
-      <div className="relative">
+      <div className="relative mt-20">
         <Canvas
           gameState={gameState}
           phaseTransition={phaseTransition}
