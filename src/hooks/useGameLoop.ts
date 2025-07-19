@@ -57,6 +57,21 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Update time
   const newTime = state.time + deltaTime;
   
+  // Update mega bolt flash
+  const megaBoltFlash = Math.max(0, state.megaBoltFlash - deltaTime);
+  
+  // Initialize variables that will be used throughout the function
+  let lastBossDefeat = state.lastBossDefeat || 0;
+  
+  // Initialize projectiles array early so it can be used throughout the function
+  let projectiles = state.projectiles
+    .map(projectile => ({
+      ...projectile,
+      x: projectile.x + projectile.vx * dt,
+      y: projectile.y + projectile.vy * dt
+    }))
+    .filter(projectile => !isOffScreen(projectile, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT));
+  
   // Update player
   let player = { ...state.player };
   
@@ -94,24 +109,49 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   );
   
   // Update enemies
-  const enemies = state.enemies.map(enemy => {
+  let enemies = [...state.enemies];
+  let newBossProjectiles: any[] = [];
+  
+  enemies = enemies.map(enemy => {
     const direction = normalize({ x: player.x - enemy.x, y: player.y - enemy.y });
-    return {
+    const updatedEnemy = {
       ...enemy,
       x: enemy.x + direction.x * enemy.speed * dt,
       y: enemy.y + direction.y * enemy.speed * dt,
-      flashUntil: Math.max(0, enemy.flashUntil - deltaTime)
+      flashUntil: Math.max(0, enemy.flashUntil - deltaTime),
+      lastAttack: enemy.lastAttack || 0
     };
+    
+    // Boss attacks - only if boss is alive
+    if (enemy.type === 'BOSS' && updatedEnemy.hp > 0 && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
+      console.log('Boss attacking!', newTime, updatedEnemy.lastAttack);
+      const baseAngle = Math.atan2(player.y - updatedEnemy.y, player.x - updatedEnemy.x);
+      const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
+      const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
+      
+      for (let i = 0; i < GAME_CONFIG.BOSS_PROJECTILE_COUNT; i++) {
+        const angle = startAngle + (i * spreadStep);
+        const targetX = updatedEnemy.x + Math.cos(angle) * 500;
+        const targetY = updatedEnemy.y + Math.sin(angle) * 500;
+        
+        const bossProjectile = createProjectile(
+          { x: updatedEnemy.x, y: updatedEnemy.y },
+          { x: targetX, y: targetY },
+          updatedEnemy.damage
+        );
+        bossProjectile.isBossProjectile = true;
+        bossProjectile.size = 8; // Larger boss projectiles
+        bossProjectile.sourceEnemyId = updatedEnemy.id; // Track which enemy fired this
+        newBossProjectiles.push(bossProjectile);
+        console.log('Created boss projectile', i, 'at angle', angle);
+      }
+      
+      updatedEnemy.lastAttack = newTime;
+    }
+    
+    return updatedEnemy;
   });
   
-  // Update projectiles
-  const projectiles = state.projectiles
-    .map(projectile => ({
-      ...projectile,
-      x: projectile.x + projectile.vx * dt,
-      y: projectile.y + projectile.vy * dt
-    }))
-    .filter(projectile => !isOffScreen(projectile, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT));
   
   // Update particles
   const particles = state.particles
@@ -178,10 +218,19 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Check projectile-enemy collisions
   const hitEnemies = new Set<string>();
   let totalEnemiesKilled = 0;
+  
+  // Add boss projectiles to the projectiles array BEFORE collision detection
+  projectiles.push(...newBossProjectiles);
+  
   const newProjectiles = projectiles.filter(projectile => {
     let shouldRemoveProjectile = false;
     
     for (const enemy of enemies) {
+      // Skip collision if this projectile was fired by this enemy
+      if (projectile.isBossProjectile && projectile.sourceEnemyId === enemy.id) {
+        continue;
+      }
+      
       // Skip if enemy already hit by non-piercing projectile
       if (!projectile.piercing && hitEnemies.has(enemy.id)) continue;
       
@@ -221,10 +270,16 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const items = [...state.items];
   let pendingSkillDrop = state.pendingSkillDrop;
   let enemiesKilled = state.enemiesKilled;
+  let bossWasDefeated = false;
   const aliveEnemies = enemies.filter(enemy => {
     if (enemy.hp <= 0) {
       totalEnemiesKilled++;
       enemiesKilled++;
+      
+      // Check if this was a boss
+      if (enemy.type === 'BOSS') {
+        bossWasDefeated = true;
+      }
       
       // Create death particles
       particles.push(...createParticles({ x: enemy.x, y: enemy.y }, enemy.color, 8));
@@ -243,6 +298,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         items.push(createItem('gold', { x: enemy.x, y: enemy.y }, goldAmount));
       }
       
+      // Separate check for Mega Bolt (very rare)
+      if (Math.random() < GAME_CONFIG.MEGA_BOLT_DROP_CHANCE) {
+        items.push(createItem('megabolt', { x: enemy.x, y: enemy.y }, 100)); // 100 gold value
+      }
+      
       // Check for skill drop
       if (!pendingSkillDrop && shouldDropSkill(totalEnemiesKilled)) {
         pendingSkillDrop = generateRandomSkill();
@@ -253,8 +313,47 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return true;
   });
   
+  // Update last boss defeat time if a boss was defeated
+  if (bossWasDefeated) {
+    lastBossDefeat = newTime;
+  }
+  
   // Check player-enemy collisions
   let screenShake = Math.max(0, state.screenShake - deltaTime);
+  
+  // Check player-boss projectile collisions
+  const survivingProjectiles = newProjectiles.filter(projectile => {
+    if (!projectile.isBossProjectile) return true;
+    
+    const collision = circleToCircle(
+      { x: player.x, y: player.y, radius: GAME_CONFIG.PLAYER_SIZE / 2 },
+      { x: projectile.x, y: projectile.y, radius: projectile.size }
+    );
+    
+    if (collision && newTime > player.invulnerableUntil) {
+      player.hp -= projectile.damage;
+      player.invulnerableUntil = newTime + GAME_CONFIG.PLAYER_INVINCIBILITY_TIME;
+      screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION;
+      
+      // Create hit particles
+      particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));
+      
+      return false; // Remove projectile
+    }
+    
+    return true;
+  });
+  
+  // Check for death after all damage sources
+  if (player.hp <= 0) {
+    return {
+      ...state,
+      player,
+      gameStatus: 'dead',
+      score: Math.floor(newTime / 1000)
+    };
+  }
+  
   if (newTime > player.invulnerableUntil) {
     for (const enemy of aliveEnemies) {
       const collision = circleToCircle(
@@ -275,21 +374,24 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         // Create hit particles
         particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.PLAYER, 6));
         
-        if (player.hp <= 0) {
-          return {
-            ...state,
-            player,
-            gameStatus: 'dead',
-            score: Math.floor(newTime / 1000)
-          };
-        }
         break;
       }
     }
   }
   
+  // Final death check after all damage sources
+  if (player.hp <= 0) {
+    return {
+      ...state,
+      player,
+      gameStatus: 'dead',
+      score: Math.floor(newTime / 1000)
+    };
+  }
+  
   // Check player-item collisions
   let gold = state.gold;
+  let activateMegaBolt = false;
   const uncollectedItems = items.filter(item => {
     // Base collection radius
     let itemRadius = item.type === 'gold' ? 40 : 25;
@@ -305,7 +407,11 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     );
     
     if (collision) {
-      if (item.type === 'gold') {
+      if (item.isMegaBolt) {
+        // Mega Bolt collected!
+        activateMegaBolt = true;
+        gold += item.value; // Still gives gold
+      } else if (item.type === 'gold') {
         gold += item.value;
       } else if (item.type === 'health') {
         player.hp = Math.min(player.maxHp, player.hp + item.value);
@@ -320,15 +426,56 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return true;
   });
   
+  // Handle Mega Bolt activation
+  let finalEnemies = aliveEnemies;
+  let finalMegaBoltFlash = megaBoltFlash;
+  
+  if (activateMegaBolt) {
+    // Clear all enemies except bosses and create massive particle explosion
+    const survivingEnemies = [];
+    const destroyedEnemies = [];
+    
+    aliveEnemies.forEach(enemy => {
+      if (enemy.type === 'BOSS') {
+        survivingEnemies.push(enemy);
+      } else {
+        destroyedEnemies.push(enemy);
+      }
+    });
+    
+    finalEnemies = survivingEnemies;
+    finalMegaBoltFlash = GAME_CONFIG.MEGA_BOLT_FLASH_DURATION;
+    
+    // Create particles for each destroyed enemy (excluding bosses)
+    destroyedEnemies.forEach(enemy => {
+      particles.push(...createParticles({ x: enemy.x, y: enemy.y }, enemy.color, 12));
+      // Add gold for each destroyed enemy
+      const goldAmount = Math.floor(
+        (enemy.goldDrop.min + Math.random() * (enemy.goldDrop.max - enemy.goldDrop.min)) * 
+        player.goldMultiplier
+      );
+      gold += goldAmount;
+    });
+    
+    // Create massive flash particles at player position
+    particles.push(...createParticles({ x: player.x, y: player.y }, GAME_CONFIG.COLORS.MEGA_BOLT, 30));
+    
+    // Screen shake for dramatic effect
+    screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION * 3;
+  }
+  
   // Spawn enemies
   let lastEnemySpawn = state.lastEnemySpawn;
   let lastBossSpawn = state.lastBossSpawn;
   
+  // Check if there's currently a boss alive
+  const bossAlive = finalEnemies.some(enemy => enemy.type === 'BOSS');
+  
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
   
-  // Don't spawn enemies during phase transitions
-  if (phaseTransition.active) {
+  // Don't spawn enemies during phase transitions or when boss is alive
+  if (phaseTransition.active || bossAlive) {
     spawnRate = Infinity; // Prevent spawning during transition
   } else {
     // Reduce spawn rate by 50% to make it much less overwhelming
@@ -336,37 +483,15 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   }
   
   // Regular enemy spawning
-  if (newTime - lastEnemySpawn > spawnRate) {
+  // Don't spawn enemies during boss defeat pause
+  const timeSinceLastBossDefeat = newTime - lastBossDefeat;
+  const inBossDefeatPause = timeSinceLastBossDefeat < GAME_CONFIG.BOSS_DEFEAT_PAUSE;
+  
+  if (newTime - lastEnemySpawn > spawnRate && !inBossDefeatPause && !bossAlive && !phaseTransition.active) {
     aliveEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
   }
   
-  // Boss spawning every 60 seconds
-  if (newTime - lastBossSpawn > GAME_CONFIG.BOSS_SPAWN_INTERVAL && !phaseTransition.active) {
-    // Clear all existing enemies before boss spawn
-    aliveEnemies.length = 0;
-    
-    const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
-    const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT, state.screenScale);
-    
-    const boss = {
-      id: `boss_${newTime}_${Math.random()}`,
-      type: 'BOSS' as EnemyType,
-      x: spawnPos.x,
-      y: spawnPos.y,
-      hp: bossConfig.hp * state.enemyHealthMultiplier,
-      maxHp: bossConfig.hp * state.enemyHealthMultiplier,
-      speed: bossConfig.speed,
-      damage: bossConfig.damage,
-      size: bossConfig.size,
-      color: bossConfig.color,
-      flashUntil: 0,
-      goldDrop: bossConfig.goldDrop
-    };
-    
-    aliveEnemies.push(boss);
-    lastBossSpawn = newTime;
-  }
   
   // Update difficulty
   let difficultyMultiplier = state.difficultyMultiplier;
@@ -396,18 +521,62 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Check if we've entered a new phase
   if (currentPhase > expectedPhase && !phaseTransition.active) {
+    // Clear all enemies when phase transition starts
+    finalEnemies.length = 0;
+    
     // Start phase transition
     setPhaseTransition({
       active: true,
       timeLeft: 5000, // 5 seconds - better balance
       blinkCount: 0,
-      phase: currentPhase
+      phase: currentPhase,
+      startScale: screenScale // Store the current scale when transition starts
     });
+  }
+  
+  // Apply smooth screen scale changes during transition
+  if (phaseTransition.active) {
+    const transitionProgress = (5000 - phaseTransition.timeLeft) / 5000; // 0 to 1
     
-    // Progressive zoom out for each phase - calculate from current scale
-    if (currentPhase === 2) screenScale = 0.85; // Phase 1: 15% zoom out
-    else if (currentPhase === 3) screenScale = 0.75; // Phase 2: 25% zoom out  
-    else if (currentPhase >= 4) screenScale = 0.7; // Phase 3+: 30% zoom out
+    // Determine target scale for this phase
+    let targetScale = 1.0;
+    if (currentPhase === 2) targetScale = 0.85; // Phase 1: 15% zoom out
+    else if (currentPhase === 3) targetScale = 0.75; // Phase 2: 25% zoom out  
+    else if (currentPhase >= 4) targetScale = 0.7; // Phase 3+: 30% zoom out
+    
+    // Smooth interpolation from stored start scale to target scale
+    const startScale = phaseTransition.startScale || state.screenScale;
+    screenScale = startScale + (targetScale - startScale) * transitionProgress;
+    
+    // Spawn boss after 4 seconds (when 1 second left in transition)
+    if (phaseTransition.timeLeft <= 1000 && !finalEnemies.some(enemy => enemy.type === 'BOSS')) {
+      const bossConfig = GAME_CONFIG.ENEMY_TYPES.BOSS;
+      const spawnPos = getRandomSpawnPosition(GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT, screenScale);
+      
+      const boss = {
+        id: `boss_${newTime}_${Math.random()}`,
+        type: 'BOSS' as EnemyType,
+        x: spawnPos.x,
+        y: spawnPos.y,
+        hp: bossConfig.hp * state.enemyHealthMultiplier,
+        maxHp: bossConfig.hp * state.enemyHealthMultiplier,
+        speed: bossConfig.speed,
+        damage: bossConfig.damage,
+        size: bossConfig.size,
+        color: bossConfig.color,
+        flashUntil: 0,
+        goldDrop: bossConfig.goldDrop,
+        lastAttack: newTime // Start with fresh attack timer
+      };
+      
+      finalEnemies.push(boss);
+      lastBossSpawn = newTime; // Update boss spawn timer
+    }
+  } else {
+    // Apply final scale when not in transition
+    if (currentPhase === 2) screenScale = 0.85;
+    else if (currentPhase === 3) screenScale = 0.75;
+    else if (currentPhase >= 4) screenScale = 0.7;
   }
   
   // Handle phase transition
@@ -420,14 +589,16 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
         active: false,
         timeLeft: 0,
         blinkCount: 0,
-        phase: 1
+        phase: 1,
+        startScale: undefined
       });
     } else {
       setPhaseTransition({
         active: true,
         timeLeft: newTimeLeft,
         blinkCount: newBlinkCount,
-        phase: phaseTransition.phase || 1
+        phase: phaseTransition.phase || 1,
+        startScale: phaseTransition.startScale
       });
     }
   }
@@ -435,8 +606,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   return {
     ...state,
     player,
-    enemies: aliveEnemies,
-    projectiles: newProjectiles,
+    enemies: finalEnemies,
+    projectiles: survivingProjectiles,
     items: uncollectedItems,
     particles,
     gold,
@@ -451,6 +622,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     camera,
     pendingSkillDrop,
     screenScale,
-    enemiesKilled
+    enemiesKilled,
+    megaBoltFlash: finalMegaBoltFlash,
+    lastBossDefeat
   };
 }

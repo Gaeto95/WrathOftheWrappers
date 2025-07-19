@@ -22,6 +22,7 @@ interface PhaseTransition {
   timeLeft: number;
   blinkCount: number;
   phase: number;
+  startScale?: number;
 }
 
 interface GameProps {
@@ -194,6 +195,9 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     if (!gameState.pendingSkillDrop) return;
     
     setGameState(prev => {
+      // Additional safety check inside state updater to prevent race conditions
+      if (!prev.pendingSkillDrop) return prev;
+      
       const newSkills = [...prev.player.classState.equippedSkills];
       
       // Check if we already have this skill type

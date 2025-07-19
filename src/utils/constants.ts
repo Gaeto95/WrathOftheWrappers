@@ -10,7 +10,7 @@ export const GAME_CONFIG = {
   PLAYER_MAX_HP: 100,
   PLAYER_DAMAGE: 25,
   PLAYER_FIRE_RATE: 0.5, // seconds between shots
-  PLAYER_INVINCIBILITY_TIME: 1000, // milliseconds
+  PLAYER_INVINCIBILITY_TIME: 500, // milliseconds
   
   // Enemy settings
   ENEMY_SPAWN_RATE: 800, // milliseconds - faster initial spawning for more action
@@ -56,7 +56,7 @@ export const GAME_CONFIG = {
       goldDrop: { min: 5, max: 12 } // Low gold reward
     },
     BOSS: {
-      hp: 300, // 5x tank HP (50% reduction)
+      hp: 600, // 10x tank HP - much tankier boss
       speed: 50, // Slower than tank
       damage: 40, // Lower damage
       size: 90, // 125% bigger than tank (40 * 2.25 = 90)
@@ -74,6 +74,7 @@ export const GAME_CONFIG = {
   HEALTH_POTION_HEAL: 25,
   HEALTH_POTION_DROP_CHANCE: 0.1,
   GOLD_DROP_CHANCE: 0.8,
+  MEGA_BOLT_DROP_CHANCE: 0.02, // 2% chance - very rare
   
   // Upgrade costs (exponential scaling)
   UPGRADE_COSTS: {
@@ -97,7 +98,18 @@ export const GAME_CONFIG = {
   SCREEN_SHAKE_INTENSITY: 5,
   
   // Boss spawning
-  BOSS_SPAWN_INTERVAL: 60000, // 60 seconds
+  BOSS_SPAWN_INTERVAL: 60000, // 60 seconds between boss spawns
+  BOSS_DEFEAT_PAUSE: 3000, // 3 seconds pause after boss defeat for immersion
+  
+  // Boss settings
+  BOSS_ATTACK_INTERVAL: 1500, // Boss shoots every 1.5 seconds (faster)
+  BOSS_PROJECTILE_COUNT: 5, // Number of projectiles per attack
+  BOSS_PROJECTILE_SPREAD: 0.8, // Spread angle in radians
+  BOSS_AURA_SIZE: 200, // Boss aura radius - increased for visibility
+  
+  // Mega Bolt settings
+  MEGA_BOLT_FLASH_DURATION: 1000, // 1 second flash
+  MEGA_BOLT_DAMAGE_RADIUS: 800, // Damage all enemies within this radius
   
   // Colors
   COLORS: {
@@ -107,6 +119,8 @@ export const GAME_CONFIG = {
     HEALTH_BAR_BG: '#333',
     GOLD: '#ffd93d',
     HEALTH_POTION: '#51cf66',
+    MEGA_BOLT: '#00ffff',
+    BOSS_AURA: '#ff0000',
     UI_TEXT: '#ffffff',
     UI_BACKGROUND: 'rgba(0, 0, 0, 0.7)'
   }

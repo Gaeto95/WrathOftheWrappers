@@ -144,16 +144,8 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
     // Apply camera shake and screen scaling
     ctx.save();
     
-    // Apply additional zoom during phase transition for dramatic effect
-    let effectiveScale = gameState.screenScale;
-    if (phaseTransition?.active) {
-      // Gradually zoom out during transition
-      const progress = 1 - (phaseTransition.timeLeft / 8000);
-      // Use current scale as base, don't reset to 1
-      const targetScale = gameState.screenScale;
-      const startScale = Math.min(1.0, targetScale + 0.1); // Start slightly zoomed in
-      effectiveScale = startScale - (progress * 0.1); // Zoom to target
-    }
+    // Use the screen scale directly from game state (already smoothly interpolated)
+    const effectiveScale = gameState.screenScale;
     
     // Apply screen scaling from center
     if (effectiveScale !== 1) {
@@ -180,12 +172,12 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
 
     // Draw enemies
     gameState.enemies.forEach(enemy => {
-      drawEnemy(ctx, enemy, gameState.time, gameState.player);
+      drawEnemy(ctx, enemy, gameState.time, gameState.player, gameState.megaBoltFlash);
     });
 
     // Draw projectiles
     gameState.projectiles.forEach(projectile => {
-      drawProjectile(ctx, projectile);
+      drawProjectile(ctx, projectile, gameState.megaBoltFlash);
     });
 
     // Draw particles
@@ -195,13 +187,18 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
 
     // Draw player
     drawPlayer(ctx, gameState.player, gameState.time, input, spriteImages, phaseTransition);
-
+    
     // Draw phase transition text
     if (phaseTransition?.active) {
       drawPhaseTransitionText(ctx, phaseTransition, width, height);
     }
 
     ctx.restore();
+    
+    // Draw mega bolt flash effect AFTER restore to cover entire canvas
+    if (gameState.megaBoltFlash > 0) {
+      drawMegaBoltFlash(ctx, gameState.megaBoltFlash, width, height);
+    }
   }, [gameState, width, height, input]);
 
   return (
@@ -252,22 +249,31 @@ function drawBackgroundPattern(ctx: CanvasRenderingContext2D, width: number, hei
     let bgImage = backgroundImages.get(backgroundTexture);
     
     if (bgImage.complete && bgImage.naturalWidth > 0) {
+      // Improve rendering quality to reduce seams
+      ctx.imageSmoothingEnabled = false; // Disable smoothing for pixel-perfect tiles
+      
       // Manual infinite tiling system
       const tileSize = 64; // Fixed tile size
+      const tileOverlap = 1; // 1 pixel overlap to prevent seams
       const margin = 200; // Extra margin for camera shake and zoom
       
       // Calculate how many tiles we need to cover the screen plus margin
-      const startX = Math.floor(-margin / tileSize) * tileSize;
-      const endX = Math.ceil((width + margin) / tileSize) * tileSize;
-      const startY = Math.floor(-margin / tileSize) * tileSize;
-      const endY = Math.ceil((height + margin) / tileSize) * tileSize;
+      const effectiveTileSize = tileSize - tileOverlap;
+      const startX = Math.floor(-margin / effectiveTileSize) * effectiveTileSize;
+      const endX = Math.ceil((width + margin) / effectiveTileSize) * effectiveTileSize;
+      const startY = Math.floor(-margin / effectiveTileSize) * effectiveTileSize;
+      const endY = Math.ceil((height + margin) / effectiveTileSize) * effectiveTileSize;
       
       // Draw tiles in a grid pattern
-      for (let x = startX; x < endX; x += tileSize) {
-        for (let y = startY; y < endY; y += tileSize) {
-          ctx.drawImage(bgImage, x, y, tileSize, tileSize);
+      for (let x = startX; x < endX; x += effectiveTileSize) {
+        for (let y = startY; y < endY; y += effectiveTileSize) {
+          // Draw with slight overlap to prevent seams
+          ctx.drawImage(bgImage, x, y, tileSize + tileOverlap, tileSize + tileOverlap);
         }
       }
+      
+      // Restore smoothing setting
+      ctx.imageSmoothingEnabled = true;
     } else {
       drawGridPattern(ctx, width, height);
     }
@@ -550,7 +556,7 @@ function drawPlayerFallback(ctx: CanvasRenderingContext2D, player: any, alpha: n
   
   ctx.restore();
 }
-function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, player: any) {
+function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, player: any, megaBoltFlash: number = 0) {
   const isFlashing = time < enemy.flashUntil;
   const color = isFlashing ? '#ffffff' : enemy.color;
   
@@ -708,11 +714,45 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
   
   ctx.fillStyle = GAME_CONFIG.COLORS.HEALTH_BAR;
   ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+  
+  // Draw boss aura AFTER the boss sprite so it's visible on top
+  if (enemy.type === 'BOSS') {
+    drawBossAura(ctx, enemy, time);
+  }
 }
 
-function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any) {
-  const color = projectile.isFireball ? '#f59e0b' : GAME_CONFIG.PROJECTILE_COLOR;
-  const glowColor = projectile.isFireball ? '#fbbf24' : GAME_CONFIG.PROJECTILE_COLOR;
+function drawBossAura(ctx: CanvasRenderingContext2D, boss: any, time: number) {
+  // Pulsing red aura
+  const pulseIntensity = 0.5 + 0.3 * Math.sin(time * 0.005); // Increased base intensity
+  
+  const gradient = ctx.createRadialGradient(
+    boss.x, boss.y, 0,
+    boss.x, boss.y, GAME_CONFIG.BOSS_AURA_SIZE
+  );
+  gradient.addColorStop(0, `rgba(255, 0, 0, ${pulseIntensity * 0.4})`); // More visible center
+  gradient.addColorStop(0.5, `rgba(255, 0, 0, ${pulseIntensity * 0.2})`); // Visible mid-range
+  gradient.addColorStop(0.8, `rgba(255, 0, 0, ${pulseIntensity * 0.1})`); // Softer edge
+  gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+  
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(boss.x, boss.y, GAME_CONFIG.BOSS_AURA_SIZE, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any, megaBoltFlash: number = 0) {
+  let color, glowColor;
+  
+  if (projectile.isBossProjectile) {
+    color = '#ff0000';
+    glowColor = '#ff4444';
+  } else if (projectile.isFireball) {
+    color = '#f59e0b';
+    glowColor = '#fbbf24';
+  } else {
+    color = GAME_CONFIG.PROJECTILE_COLOR;
+    glowColor = GAME_CONFIG.PROJECTILE_COLOR;
+  }
   
   // Draw projectile glow
   const gradient = ctx.createRadialGradient(
@@ -735,7 +775,7 @@ function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any) {
 }
 
 function drawItem(ctx: CanvasRenderingContext2D, item: any) {
-  if (item.type === 'gold') {
+  if (item.type === 'gold' && !item.isMegaBolt) {
     let coinImage = coinImageCache.get('coin');
     if (!coinImage) {
       coinImage = new Image();
@@ -778,6 +818,43 @@ function drawItem(ctx: CanvasRenderingContext2D, item: any) {
       ctx.arc(item.x, item.y, size, 0, Math.PI * 2);
       ctx.stroke();
     }
+  } else if (item.isMegaBolt) {
+    // Mega Bolt - special cyan glowing effect
+    const size = 20;
+    const pulseIntensity = 0.5 + 0.5 * Math.sin(Date.now() * 0.01);
+    
+    // Draw mega bolt glow
+    const gradient = ctx.createRadialGradient(
+      item.x, item.y, 0,
+      item.x, item.y, size * 2
+    );
+    gradient.addColorStop(0, `rgba(0, 255, 255, ${pulseIntensity})`);
+    gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, size * 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw mega bolt body
+    ctx.fillStyle = GAME_CONFIG.COLORS.MEGA_BOLT;
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, size, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw lightning bolt symbol
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚡', item.x, item.y);
+    
+    // Draw mega bolt border
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, size, 0, Math.PI * 2);
+    ctx.stroke();
   } else {
     let potionImage = potionImageCache.get('potion');
     if (!potionImage) {
@@ -833,6 +910,43 @@ function drawParticle(ctx: CanvasRenderingContext2D, particle: any) {
   ctx.beginPath();
   ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
   ctx.fill();
+  
+  ctx.restore();
+}
+
+function drawMegaBoltFlash(ctx: CanvasRenderingContext2D, flashTime: number, width: number, height: number) {
+  const progress = 1 - (flashTime / GAME_CONFIG.MEGA_BOLT_FLASH_DURATION);
+  const intensity = flashTime / GAME_CONFIG.MEGA_BOLT_FLASH_DURATION;
+  
+  ctx.save();
+  
+  // Full screen flash effect with transparency
+  const alpha = intensity * 0.7; // Strong but not blinding
+  
+  // Create gradient from center outward for more dramatic effect
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const maxDimension = Math.max(width, height);
+  
+  const gradient = ctx.createRadialGradient(
+    centerX, centerY, 0,
+    centerX, centerY, maxDimension
+  );
+  
+  // Cyan to white gradient for mega bolt effect
+  gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+  gradient.addColorStop(0.3, `rgba(0, 255, 255, ${alpha * 0.8})`);
+  gradient.addColorStop(0.6, `rgba(0, 200, 255, ${alpha * 0.5})`);
+  gradient.addColorStop(1, `rgba(0, 150, 255, ${alpha * 0.2})`);
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+  
+  // Add pulsing edge effect
+  const pulseAlpha = intensity * 0.3 * (1 + Math.sin(flashTime * 0.01));
+  ctx.globalAlpha = pulseAlpha;
+  ctx.fillStyle = GAME_CONFIG.COLORS.MEGA_BOLT;
+  ctx.fillRect(0, 0, width, height);
   
   ctx.restore();
 }
