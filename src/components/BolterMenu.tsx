@@ -34,29 +34,13 @@ Making dreams into reality
 
 SPECIAL THANKS TO
 
-The Bolt Platform
-For making this dream possible
-
-React & TypeScript
-The foundation of our adventure
-
-Tailwind CSS
-Making everything look beautiful
-
-Canvas API
-Bringing the game world to life
-
-
 Thank you for playing Wrath of the Wrappers
 
 May your bolts fly true
 May your upgrades be plentiful  
 May your survival times be legendary
 
-
 ⚡ Powered by Bolt ⚡
-
-
 
 
 THE END
