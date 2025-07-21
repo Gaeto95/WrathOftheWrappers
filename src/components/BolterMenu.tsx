@@ -120,13 +120,13 @@ THE END
   useEffect(() => {
     if (!shouldScroll || currentIndex < creditsText.length) return;
 
-    // Calculate maximum scroll to prevent text from going too far down
-    const maxScroll = 2000; // Limit scroll to prevent text from escaping
+    // Calculate maximum scroll to prevent text from escaping screen
+    const maxScroll = 800; // Much lower limit to keep text visible
 
     const scrollTimer = setInterval(() => {
       setScrollPosition(prev => {
         const newPosition = prev + 1;
-        // Stop scrolling when we reach the maximum
+        // Stop scrolling when we reach the maximum to keep text on screen
         if (newPosition >= maxScroll) {
           return maxScroll;
         }
