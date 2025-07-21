@@ -144,19 +144,29 @@ THE END
   useEffect(() => {
     if (!shouldScroll) return;
 
+    // Calculate how much to scroll based on character position
+    const lineHeight = 1.5; // Approximate line height in relative units
+    const charactersPerLine = 50; // Approximate characters per line
+    
+    // Calculate scroll based on current character position
+    const currentLine = Math.floor(currentIndex / charactersPerLine);
+    const targetScroll = Math.max(0, (currentLine - 10) * 24); // Keep ~10 lines visible, 24px per line
+    
+    // Smooth scroll to target position
     const scrollTimer = setInterval(() => {
       setScrollPosition(prev => {
-        // Scroll smoothly after typing is complete
-        const newPosition = prev + 2;
+        const diff = targetScroll - prev;
+        if (Math.abs(diff) < 1) return targetScroll;
         
-        // Stop when we've scrolled a reasonable amount
-        const maxScroll = 400;
+        // Smooth interpolation
+        const newPosition = prev + diff * 0.1;
+        const maxScroll = Math.max(400, targetScroll);
         return Math.min(newPosition, maxScroll);
       });
-    }, 50); // Smooth 20fps scrolling
+    }, 16); // 60fps smooth scrolling
 
     return () => clearInterval(scrollTimer);
-  }, [shouldScroll]);
+  }, [shouldScroll, currentIndex, creditsText.length]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
