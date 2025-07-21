@@ -14,8 +14,33 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [creditsAudio, setCreditsAudio] = useState<HTMLAudioElement | null>(null);
 
   const creditsText = "no spoilers yet";
+
+  // Initialize credits music
+  useEffect(() => {
+    const audioElement = new Audio('/credits-music.mp3');
+    audioElement.loop = true;
+    audioElement.volume = 0.3;
+    setCreditsAudio(audioElement);
+    
+    return () => {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+    };
+  }, []);
+
+  // Handle credits modal open/close with music
+  useEffect(() => {
+    if (showCredits && creditsAudio) {
+      creditsAudio.currentTime = 0;
+      creditsAudio.play().catch(e => console.log('Credits music failed to play:', e));
+    } else if (creditsAudio) {
+      creditsAudio.pause();
+      creditsAudio.currentTime = 0;
+    }
+  }, [showCredits, creditsAudio]);
 
   // Letter by letter reveal animation
   useEffect(() => {
@@ -30,13 +55,21 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + creditsText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-        // Slowly scroll down as text appears
-        setScrollPosition(prev => prev + 2); // Adjust scroll speed here
+        // Scroll down as text appears - more aggressive scrolling
+        setScrollPosition(prev => prev + 3); // Adjust scroll speed here
       }, 150); // 150ms per character for slow reveal
 
       return () => clearTimeout(timer);
     }
   }, [showCredits, currentIndex, creditsText]);
+
+  const handleCloseCredits = () => {
+    setShowCredits(false);
+    if (creditsAudio) {
+      creditsAudio.pause();
+      creditsAudio.currentTime = 0;
+    }
+  };
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -254,7 +287,7 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
           <div className="relative bg-gray-900 rounded-xl shadow-2xl border border-purple-500/30 w-full max-w-4xl h-full max-h-[80vh] flex flex-col overflow-hidden">
             {/* Close Button */}
             <button
-              onClick={() => setShowCredits(false)}
+              onClick={handleCloseCredits}
               className="absolute top-4 right-4 z-10 text-gray-400 hover:text-white transition-colors duration-300 bg-gray-800 rounded-full p-2"
             >
               <X className="w-6 h-6" />
@@ -276,11 +309,11 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
                 className="absolute inset-0 p-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '50vh' // Start text in middle of screen
+                  paddingTop: '20px' // Start text at the top
                 }}
               >
                 {/* Main Text Content */}
-                <div className="text-center max-w-3xl mx-auto">
+                <div className="text-left max-w-3xl mx-auto">
                   <div className="text-xl md:text-2xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
                     {displayedText}
                     {currentIndex < creditsText.length && (
