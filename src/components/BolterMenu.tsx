@@ -280,9 +280,9 @@ THE END
         
         // Only scroll if we should be scrolling
         if (shouldScroll) {
-          setScrollPosition(prev => prev + 2); // Smooth scrolling
+          setScrollPosition(prev => prev + 4); // Faster scrolling
         }
-      }, 150); // 150ms per character for slow reveal
+      }, 80); // 80ms per character for faster reveal
 
       return () => clearTimeout(timer);
     }
@@ -532,7 +532,8 @@ THE END
                 className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '200px' // Start below the title
+                  paddingTop: '200px', // Start below the title
+                  paddingBottom: '800px' // Add bottom padding so text doesn't escape
                 }}
               >
                 <div className="text-center">
