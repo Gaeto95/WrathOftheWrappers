@@ -150,7 +150,7 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     gold: 0,
     time: 0, // This will be set when game actually starts
     score: 0,
-    gameStatus: 'waiting', // Start in waiting state
+    gameStatus: 'playing', // Start in playing state but time won't advance until gameStartTime is set
     lastEnemySpawn: 0,
     nextDifficultyIncrease: GAME_CONFIG.DIFFICULTY_INCREASE_INTERVAL,
     nextEnemyHealthIncrease: GAME_CONFIG.ENEMY_HEALTH_INCREASE_INTERVAL,

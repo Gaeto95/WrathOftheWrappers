@@ -99,10 +99,10 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
 
   // Handle start game
   const handleStartGame = useCallback(() => {
-    setGameState(prev => ({ 
-      ...prev, 
-      gameStatus: 'playing',
-      gameStartTime: Date.now() // Record when game actually started
+    // Game is already in playing state, just set the start time to begin the timer
+    setGameState(prev => ({
+      ...prev,
+      gameStartTime: Date.now() // This will make the timer start counting
     }));
   }, []);
 
@@ -115,10 +115,10 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
 
   // Mark game as started when it begins playing
   useEffect(() => {
-    if (gameState.gameStatus === 'playing' && !gameStarted) {
+    if (gameState.gameStatus === 'playing' && gameState.gameStartTime > 0 && !gameStarted) {
       setGameStarted(true);
     }
-  }, [gameState.gameStatus, gameStarted]);
+  }, [gameState.gameStatus, gameState.gameStartTime, gameStarted]);
 
   // Handle death
   useEffect(() => {
@@ -444,17 +444,6 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
           input={input}
           backgroundTexture={backgroundTexture}
         />
-        
-        {gameState.gameStatus === 'waiting' && (
-          <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-            <button
-              onClick={handleStartGame}
-              className="px-12 py-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-bold text-2xl transition-all duration-200 transform hover:scale-105"
-            >
-              🎮 Start Game
-            </button>
-          </div>
-        )}
         
         {gameState.gameStatus === 'playing' && (
           <>

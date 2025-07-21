@@ -55,9 +55,9 @@ export function useGameLoop(
 function updateGameState(state: GameState, deltaTime: number, input: InputState, phaseTransition: any, setPhaseTransition: any): GameState {
   const dt = deltaTime / 1000; // Convert to seconds
   
-  // Update time - only if game has started
+  // Update time - only if game has actually started (gameStartTime is set)
   let newTime = state.time;
-  if (state.gameStatus === 'playing') {
+  if (state.gameStatus === 'playing' && state.gameStartTime > 0) {
     newTime = state.time + deltaTime;
   }
   
