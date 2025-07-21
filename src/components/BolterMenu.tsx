@@ -105,6 +105,9 @@ THE END
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + creditsText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
+        
+        // Scroll up by 1.5px for each character to keep text in view
+        setScrollPosition(prev => prev + 1.5);
       }, 60); // 60ms per character - faster typing
 
       return () => clearTimeout(timer);
@@ -116,21 +119,19 @@ THE END
     }
   }, [currentIndex, showCredits, shouldScroll, creditsText.length]);
 
-  // Separate effect for scrolling - only when typing is complete
+  // Final scroll effect - only when typing is complete
   useEffect(() => {
-    if (!shouldScroll || currentIndex < creditsText.length) return;
+    if (!shouldScroll) return;
 
-    // Scroll at exactly the same rate as typing to keep text in same position
-    const scrollSpeed = 60; // Match the 60ms typing interval exactly
+    // Additional slow scroll after typing is complete
+    const scrollSpeed = 50; // Slower final scroll
 
     const scrollTimer = setInterval(() => {
       setScrollPosition(prev => {
-        // Calculate how much to scroll based on typing progress
-        // Each character should move the text up by approximately 1.2px (line height factor)
-        const newPosition = prev + 1.2;
+        const newPosition = prev + 1;
         
-        // Stop scrolling when typing is complete and we've scrolled enough
-        const maxScroll = creditsText.length * 1.2 * 0.3; // 30% of total text height
+        // Conservative max scroll
+        const maxScroll = 500;
         if (currentIndex >= creditsText.length && newPosition >= maxScroll) {
           return maxScroll;
         }
@@ -139,22 +140,6 @@ THE END
     }, scrollSpeed); // Exact same interval as typing
 
     return () => clearInterval(scrollTimer);
-  }, [shouldScroll, currentIndex, creditsText.length]);
-  // Start scrolling immediately when credits show, at typing speed
-  useEffect(() => {
-    if (!shouldScroll) return;
-
-    // Only scroll after typing is complete
-    const scrollTimer = setInterval(() => {
-      setScrollPosition(prev => {
-        const newPosition = prev + 1; // Slow 1px per 16ms scroll
-        const maxScroll = 300; // Conservative max scroll
-        return Math.min(newPosition, maxScroll);
-      });
-    }, 16); // 60fps smooth scrolling
-
-    return () => clearInterval(scrollTimer);
-  }, [shouldScroll, currentIndex, creditsText.length]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
