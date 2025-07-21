@@ -231,6 +231,8 @@ THE END
 
 
 
+`;
+
   // Initialize credits music
   useEffect(() => {
     const audioElement = new Audio('/credits-music.mp3');
@@ -554,7 +556,4 @@ THE END
       </div>
     </>
   );
-}
-}
-}
 }
