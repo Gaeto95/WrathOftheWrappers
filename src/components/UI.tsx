@@ -44,7 +44,7 @@ export function UI({ gameState, bolterData }: UIProps) {
         {/* Gold */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-base font-medium">Gold</span>
-          <span className="text-yellow-400 font-bold text-lg">{gameState.gold}</span>
+          <span className="text-yellow-400 font-bold text-lg">{(bolterData.totalGold + gameState.gold).toLocaleString()}</span>
         </div>
         
         {/* Score & Time */}
