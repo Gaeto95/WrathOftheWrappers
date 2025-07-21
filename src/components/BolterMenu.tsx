@@ -118,7 +118,7 @@ THE END
 
   // Separate effect for scrolling - only when typing is complete
   useEffect(() => {
-    if (!shouldScroll) return;
+    if (!shouldScroll || currentIndex < creditsText.length) return;
 
     // Scroll at exactly the same rate as typing to keep text in same position
     const scrollSpeed = 60; // Match the 60ms typing interval exactly
@@ -144,23 +144,11 @@ THE END
   useEffect(() => {
     if (!shouldScroll) return;
 
-    // Calculate how much to scroll based on character position
-    const lineHeight = 1.5; // Approximate line height in relative units
-    const charactersPerLine = 50; // Approximate characters per line
-    
-    // Calculate scroll based on current character position
-    const currentLine = Math.floor(currentIndex / charactersPerLine);
-    const targetScroll = Math.max(0, (currentLine - 10) * 24); // Keep ~10 lines visible, 24px per line
-    
-    // Smooth scroll to target position
+    // Only scroll after typing is complete
     const scrollTimer = setInterval(() => {
       setScrollPosition(prev => {
-        const diff = targetScroll - prev;
-        if (Math.abs(diff) < 1) return targetScroll;
-        
-        // Smooth interpolation
-        const newPosition = prev + diff * 0.1;
-        const maxScroll = Math.max(400, targetScroll);
+        const newPosition = prev + 1; // Slow 1px per 16ms scroll
+        const maxScroll = 300; // Conservative max scroll
         return Math.min(newPosition, maxScroll);
       });
     }, 16); // 60fps smooth scrolling
@@ -413,17 +401,17 @@ THE END
             {/* Main Content Area */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center">
               {/* Top fade overlay - much stronger and longer */}
-              <div className="absolute top-0 left-0 right-0 h-80 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
               
               {/* Bottom fade overlay - stronger */}
-              <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black to-transparent z-30 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black via-black to-transparent z-30 pointer-events-none" />
               
               <div 
                 className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
-                  transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '500px', // Start well below the title
-                  paddingBottom: '800px' // Adequate bottom padding
+                  transform: `translateY(${200 - scrollPosition}px)`, // Start 200px down, then scroll up
+                  paddingTop: '100px', // Minimal top padding
+                  paddingBottom: '400px' // Bottom padding
                 }}
               >
                 <div className="text-center">
