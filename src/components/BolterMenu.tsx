@@ -120,6 +120,7 @@ THE END
 
       return () => clearTimeout(timer);
     }
+  }, [currentIndex, showCredits, shouldScroll]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
@@ -338,10 +339,11 @@ THE END
                 Credits
               </button>
             </div>
+            </div>
           </div>
         </div>
       </div>
-            </div>
+      </div>
       {/* Credits Modal */}
       {showCredits && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
@@ -349,13 +351,13 @@ THE END
             {/* Close Button */}
             <button
               onClick={handleCloseCredits}
-              className="absolute top-8 right-8 z-50 text-gray-400 hover:text-white transition-colors duration-300 bg-black bg-opacity-80 rounded-full p-3 hover:bg-opacity-100"
+              className="absolute top-8 right-8 z-10 text-gray-400 hover:text-white transition-colors duration-300 bg-black bg-opacity-50 rounded-full p-3"
             >
               <X className="w-6 h-6" />
             </button>
 
             {/* Title at top */}
-            <div className="absolute top-0 left-0 right-0 z-40 p-8 text-center">
+            <div className="absolute top-0 left-0 right-0 z-30 p-8 text-center">
               <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
                 ⚔️ Wrath of the Wrappers
               </h1>
@@ -364,18 +366,18 @@ THE END
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center">
-              {/* Top fade overlay - much stronger and longer */}
-              <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
+              {/* Top fade overlay */}
+              <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-black to-transparent z-20 pointer-events-none" />
               
-              {/* Bottom fade overlay - stronger */}
-              <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black to-transparent z-30 pointer-events-none" />
+              {/* Bottom fade overlay */}
+              <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black to-transparent z-20 pointer-events-none" />
               
               <div 
                 className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '600px', // Start well below the title
-                  paddingBottom: '800px' // Adequate bottom padding
+                  paddingTop: '400px', // Start even further below the title
+                  paddingBottom: '800px' // More bottom padding to prevent escape
                 }}
               >
                 <div className="text-center">
@@ -396,7 +398,6 @@ THE END
           </div>
         </div>
       )}
-      </div>
     </>
   );
 }
