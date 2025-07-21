@@ -362,12 +362,18 @@ THE END
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center">
+              {/* Top fade overlay */}
+              <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent z-20 pointer-events-none" />
+              
+              {/* Bottom fade overlay */}
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-20 pointer-events-none" />
+              
               <div 
                 className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '200px', // Start below the title
-                  paddingBottom: '800px' // Add bottom padding so text doesn't escape
+                  paddingTop: '300px', // Start well below the title
+                  paddingBottom: '600px' // Ensure text doesn't escape bottom
                 }}
               >
                 <div className="text-center">
