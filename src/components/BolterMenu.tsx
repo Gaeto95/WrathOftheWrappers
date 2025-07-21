@@ -140,6 +140,30 @@ THE END
     }, scrollSpeed); // Exact same interval as typing
 
     return () => clearInterval(scrollTimer);
+  }, [shouldScroll, currentIndex, creditsText.length]);
+
+  // Final scroll effect - only when typing is complete
+  useEffect(() => {
+    if (!shouldScroll) return;
+
+    // Additional slow scroll after typing is complete
+    const scrollSpeed = 50; // Slower final scroll
+
+    const scrollTimer = setInterval(() => {
+      setScrollPosition(prev => {
+        const newPosition = prev + 1;
+        
+        // Conservative max scroll
+        const maxScroll = 500;
+        if (currentIndex >= creditsText.length && newPosition >= maxScroll) {
+          return maxScroll;
+        }
+        return newPosition;
+      });
+    }, scrollSpeed); // Exact same interval as typing
+
+    return () => clearInterval(scrollTimer);
+  }, [shouldScroll, currentIndex, creditsText.length]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
