@@ -31,9 +31,6 @@ From concept to completion
 Powered by the magic of AI assistance
 Making dreams into reality
 
-
-SPECIAL THANKS TO
-
 Thank you for playing Wrath of the Wrappers
 
 May your bolts fly true
