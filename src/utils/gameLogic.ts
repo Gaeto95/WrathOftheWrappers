@@ -104,7 +104,6 @@ export interface GameState {
   bossPhaseActive: boolean;
   megaBoltFlash: number; // Flash effect timer
   lastBossDefeat: number; // Track when last boss was defeated
-  lastSideProjectiles: number; // Track when side projectiles were last spawned
   gameStartTime: number; // When the game actually started
 }
 
@@ -166,7 +165,6 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     bossPhaseActive: false,
     megaBoltFlash: 0,
     lastBossDefeat: 0,
-    lastSideProjectiles: 0,
     gameStartTime: 0 // Track when game actually started
   };
 }

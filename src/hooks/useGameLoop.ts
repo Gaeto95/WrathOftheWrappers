@@ -66,7 +66,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Initialize variables that will be used throughout the function
   let lastBossDefeat = state.lastBossDefeat || 0;
-  let lastSideProjectiles = state.lastSideProjectiles || 0;
   
   // Initialize projectiles array early so it can be used throughout the function
   let projectiles = state.projectiles
@@ -116,7 +115,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Update enemies
   let enemies = [...state.enemies];
   let newBossProjectiles: any[] = [];
-  let newSideProjectiles: any[] = [];
   
   enemies = enemies.map(enemy => {
     const direction = normalize({ x: player.x - enemy.x, y: player.y - enemy.y });
@@ -130,12 +128,12 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     
     // Boss attacks - only if boss is alive
     if (enemy.type === 'BOSS' && updatedEnemy.hp > 0 && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
-      const baseAngle = Math.atan2(player.y - updatedEnemy.y, player.x - updatedEnemy.x);
-      const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
-      const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
+      // Boss fires in a full circle pattern
+      const projectileCount = 8; // 8 projectiles in all directions
+      const angleStep = (Math.PI * 2) / projectileCount; // 360 degrees divided by projectile count
       
-      for (let i = 0; i < GAME_CONFIG.BOSS_PROJECTILE_COUNT; i++) {
-        const angle = startAngle + (i * spreadStep);
+      for (let i = 0; i < projectileCount; i++) {
+        const angle = i * angleStep;
         const targetX = updatedEnemy.x + Math.cos(angle) * 500;
         const targetY = updatedEnemy.y + Math.sin(angle) * 500;
         
@@ -156,67 +154,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return updatedEnemy;
   });
   
-  // Check if there's a boss alive for side projectiles (use updated enemies array)
-  const bossPresent = enemies.some(enemy => enemy.type === 'BOSS' && enemy.hp > 0);
-  const sideProjectilePhase = Math.floor(state.time / 60000);
-  
-  // Spawn side projectiles during boss fights
-  if (bossPresent && newTime - lastSideProjectiles > GAME_CONFIG.SIDE_PROJECTILE_INTERVAL) {
-    // Number of side projectiles increases with each phase
-    const sideProjectileCount = Math.min((sideProjectilePhase + 1) * 2, 8); // Phase 1: 2, Phase 2: 4, Phase 3: 6, Phase 4: 8
-    
-    for (let i = 0; i < sideProjectileCount; i++) {
-      // Spawn from random sides of the screen
-      const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-      let startX, startY, targetX, targetY;
-      
-      const effectiveWidth = GAME_CONFIG.CANVAS_WIDTH / state.screenScale;
-      const effectiveHeight = GAME_CONFIG.CANVAS_HEIGHT / state.screenScale;
-      const centerOffsetX = (effectiveWidth - GAME_CONFIG.CANVAS_WIDTH) / 2;
-      const centerOffsetY = (effectiveHeight - GAME_CONFIG.CANVAS_HEIGHT) / 2;
-      
-      switch (side) {
-        case 0: // Top
-          startX = Math.random() * effectiveWidth - centerOffsetX;
-          startY = -50 - centerOffsetY;
-          break;
-        case 1: // Right
-          startX = effectiveWidth + 50 - centerOffsetX;
-          startY = Math.random() * effectiveHeight - centerOffsetY;
-          break;
-        case 2: // Bottom
-          startX = Math.random() * effectiveWidth - centerOffsetX;
-          startY = effectiveHeight + 50 - centerOffsetY;
-          break;
-        case 3: // Left
-          startX = -50 - centerOffsetX;
-          startY = Math.random() * effectiveHeight - centerOffsetY;
-          break;
-      }
-      
-      // Target the player
-      targetX = player.x;
-      targetY = player.y;
-      
-      // Create side projectile
-      const direction = normalize({ x: targetX - startX, y: targetY - startY });
-      const sideProjectile = {
-        id: `side_projectile_${newTime}_${i}`,
-        x: startX,
-        y: startY,
-        vx: direction.x * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
-        vy: direction.y * GAME_CONFIG.SIDE_PROJECTILE_SPEED,
-        damage: Math.floor(15 * state.difficultyMultiplier), // Scales with difficulty
-        size: GAME_CONFIG.SIDE_PROJECTILE_SIZE,
-        isBossProjectile: true, // Treat as boss projectile for collision
-        sourceEnemyId: 'side_spawner' // Special ID for side projectiles
-      };
-      
-      newSideProjectiles.push(sideProjectile);
-    }
-    
-    lastSideProjectiles = newTime;
-  }
   
   // Update particles
   const particles = state.particles
@@ -286,7 +223,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Add boss projectiles to the projectiles array BEFORE collision detection
   projectiles.push(...newBossProjectiles);
-  projectiles.push(...newSideProjectiles);
   
   const newProjectiles = projectiles.filter(projectile => {
     let shouldRemoveProjectile = false;
@@ -693,7 +629,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     screenScale,
     enemiesKilled,
     megaBoltFlash: finalMegaBoltFlash,
-    lastBossDefeat,
-    lastSideProjectiles
+    lastBossDefeat
   };
 }
