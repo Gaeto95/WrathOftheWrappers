@@ -106,6 +106,15 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     }));
   }, []);
 
+  // Auto-start the game when component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleStartGame();
+    }, 100); // Small delay to ensure everything is loaded
+    
+    return () => clearTimeout(timer);
+  }, [handleStartGame]);
+
   // Start game session only when game actually starts
   useEffect(() => {
     if (!sessionEnded && gameStarted) {
@@ -176,8 +185,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     
     // Start fresh session
     bolterSystem.startGameSession();
-  }
-  )
+  }, [bolterSystem, audio, gameOverAudio]);
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)
