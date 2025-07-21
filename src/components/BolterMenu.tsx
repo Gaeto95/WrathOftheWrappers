@@ -361,17 +361,17 @@ THE END
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-hidden relative">
+            <div className="flex-1 overflow-hidden relative flex items-center justify-center">
               <div 
-                className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out absolute top-0 left-1/2 transform -translate-x-1/2"
+                className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '150px',
-                  paddingBottom: '100vh'
+                  paddingTop: '200px', // Start below the title
+                  paddingBottom: '800px' // Add bottom padding so text doesn't escape
                 }}
               >
                 <div className="text-center">
-                  <div className="text-xl md:text-2xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
+                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
                     {displayedText}
                     {currentIndex < creditsText.length && (
                       <span className="animate-pulse text-purple-400">|</span>
