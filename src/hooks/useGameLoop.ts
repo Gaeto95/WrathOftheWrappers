@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { GameState, createEnemy, createProjectile, createItem, createParticles, findNearestEnemy } from '../utils/gameLogic';
+import { GameState, createEnemy, createProjectile, createItem, createParticles, findNearestEnemy, EnemyType } from '../utils/gameLogic';
 import { circleToCircle, circleToCircleWithRadius, isOffScreen, getDistance, normalize, getRandomSpawnPosition } from '../utils/collision';
 import { GAME_CONFIG } from '../utils/constants';
 import { InputState } from './useInput';
@@ -334,8 +334,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
           type: 'BOSS_MINION' as EnemyType,
           x: minionX,
           y: minionY,
-          hp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * gameState.enemyHealthMultiplier,
-          maxHp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * gameState.enemyHealthMultiplier,
+          hp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * state.enemyHealthMultiplier,
+          maxHp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * state.enemyHealthMultiplier,
           speed: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.speed,
           damage: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.damage,
           size: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.size,
