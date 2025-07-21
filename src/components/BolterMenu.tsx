@@ -107,14 +107,14 @@ THE END
         setCurrentIndex(prev => prev + 1);
         
         // Check if we need to start scrolling (when text gets long enough)
-        const estimatedLines = Math.floor((currentIndex + 1) / 40); // Better estimate of lines
-        if (estimatedLines > 12 && !shouldScroll) { // Start scrolling after ~12 lines
+        const estimatedLines = Math.floor((currentIndex + 1) / 35); // Better estimate of lines
+        if (estimatedLines > 8 && !shouldScroll) { // Start scrolling after ~8 lines
           setShouldScroll(true);
         }
         
         // Only scroll if we should be scrolling
         if (shouldScroll) {
-          setScrollPosition(prev => prev + 2); // Slower, more controlled scrolling
+          setScrollPosition(prev => prev + 1.5); // Even slower, more controlled scrolling
         }
       }, 80); // 80ms per character for faster reveal
 
@@ -339,7 +339,6 @@ THE END
         </div>
       </div>
             </div>
-
       {/* Credits Modal */}
       {showCredits && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
