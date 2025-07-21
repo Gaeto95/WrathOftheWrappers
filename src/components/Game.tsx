@@ -131,7 +131,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
 
   // Handle death
   useEffect(() => {
-    if (gameState.gameStatus === 'dead' && !sessionEnded) {
+    if (gameState.gameStatus === 'dead' && !sessionEnded && gameStarted) {
       // Stop background music and play game over sound
       if (audio) {
         audio.pause();
@@ -143,7 +143,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       }
       
       // Save stats if we have a current session
-      if (bolterSystem.currentSession) {
+      if (bolterSystem.currentSession && gameState.gold > 0) {
         const finalStats = {
           survivalTime: gameState.score,
           goldEarned: gameState.gold,
@@ -155,7 +155,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       }
       setSessionEnded(true);
     }
-  }, [gameState.gameStatus, sessionEnded, bolterSystem, audio, gameOverAudio, gameState.score, gameState.gold, gameState.enemiesKilled]);
+  }, [gameState.gameStatus, sessionEnded, gameStarted, bolterSystem, audio, gameOverAudio, gameState.score, gameState.gold, gameState.enemiesKilled]);
 
   const handleRestart = useCallback(() => {
     console.log('Quick restart - creating fresh game without saving current session');
@@ -362,6 +362,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     
     // Create brand new game state with current upgrades
     const freshGameState = createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter');
+    freshGameState.gameStartTime = Date.now(); // Start the timer immediately
     console.log('Fresh game state created:', {
       time: freshGameState.time,
       enemies: freshGameState.enemies.length,
@@ -374,6 +375,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       enemiesKilled: 0
     });
     setSessionEnded(false);
+    setGameStarted(true); // Mark game as started
     
     // Start completely new session
     bolterSystem.startGameSession();
