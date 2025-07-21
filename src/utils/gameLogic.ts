@@ -88,7 +88,7 @@ export interface GameState {
   gold: number;
   time: number;
   score: number;
-  gameStatus: 'playing' | 'paused' | 'dead' | 'upgrading' | 'upgrading-dead';
+  gameStatus: 'waiting' | 'playing' | 'paused' | 'dead' | 'upgrading' | 'upgrading-dead';
   lastEnemySpawn: number;
   nextDifficultyIncrease: number;
   nextEnemyHealthIncrease: number;
@@ -149,7 +149,7 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     gold: 0,
     time: 0,
     score: 0,
-    gameStatus: 'playing', // Start playing when game is created
+    gameStatus: 'waiting', // Wait for user to start
     lastEnemySpawn: 0,
     nextDifficultyIncrease: GAME_CONFIG.DIFFICULTY_INCREASE_INTERVAL,
     nextEnemyHealthIncrease: GAME_CONFIG.ENEMY_HEALTH_INCREASE_INTERVAL,
