@@ -34,12 +34,16 @@ export function useBolterSystem() {
   }, [bolterData, setBolterData]);
 
   const purchaseUpgrade = useCallback((upgradeType: keyof PermanentUpgrades, cost: number) => {
+    // Check if we have enough gold first
+    if (bolterData.totalGold < cost) return false;
+    
     const newUpgrades = {
       ...bolterData.permanentUpgrades,
       [upgradeType]: bolterData.permanentUpgrades[upgradeType] + 1
     };
 
     updateBolterData({
+      totalGold: bolterData.totalGold - cost,
       permanentUpgrades: newUpgrades
     });
 

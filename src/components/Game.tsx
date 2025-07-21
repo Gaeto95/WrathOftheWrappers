@@ -195,30 +195,38 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     const totalGold = bolterSystem.bolterData.totalGold + gameState.gold;
     if (totalGold < cost) return false;
     
-    // Purchase the upgrade first
-    const success = bolterSystem.purchaseUpgrade(type, cost);
-    if (!success) return false;
-    
-    // Then deduct cost from session gold first, then profile if needed
+    // Deduct cost from session gold first, then profile if needed
     if (gameState.gold >= cost) {
       // Deduct from session gold only
       setGameState(prev => ({
         ...prev,
         gold: prev.gold - cost
       }));
+      // Purchase the upgrade using profile gold (but we already deducted from session)
+      bolterSystem.updateBolterData({
+        totalGold: bolterSystem.bolterData.totalGold + cost, // Add back what we're about to deduct
+        permanentUpgrades: {
+          ...bolterSystem.bolterData.permanentUpgrades,
+          [type]: bolterSystem.bolterData.permanentUpgrades[type] + 1
+        }
+      });
     } else {
       // Deduct what we can from session, rest from profile
       const remainingCost = cost - gameState.gold;
-      bolterSystem.updateBolterData({
-        totalGold: bolterSystem.bolterData.totalGold - remainingCost
-      });
       setGameState(prev => ({
         ...prev,
         gold: 0
       }));
+      bolterSystem.updateBolterData({
+        totalGold: bolterSystem.bolterData.totalGold - remainingCost,
+        permanentUpgrades: {
+          ...bolterSystem.bolterData.permanentUpgrades,
+          [type]: bolterSystem.bolterData.permanentUpgrades[type] + 1
+        }
+      });
     }
     
-    return success;
+    return true;
   }, [bolterSystem, gameState.gold]);
 
   const handleAcceptSkill = useCallback(() => {
