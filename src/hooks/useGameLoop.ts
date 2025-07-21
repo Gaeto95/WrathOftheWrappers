@@ -273,8 +273,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const items = [...state.items];
   let pendingSkillDrop = state.pendingSkillDrop;
   let enemiesKilled = state.enemiesKilled;
-  let bossWasDefeated = false;
-  let bossDeathPosition: { x: number; y: number } | null = null;
+  const defeatedBosses: { x: number; y: number }[] = [];
   const aliveEnemies = enemies.filter(enemy => {
     if (enemy.hp <= 0) {
       totalEnemiesKilled++;
@@ -282,8 +281,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       
       // Check if this was a boss
       if (enemy.type === 'BOSS') {
-        bossWasDefeated = true;
-        bossDeathPosition = { x: enemy.x, y: enemy.y };
+        defeatedBosses.push({ x: enemy.x, y: enemy.y });
       }
       
       // Create death particles
@@ -318,11 +316,16 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return true;
   });
   
-  // Update last boss defeat time if a boss was defeated
-  if (bossWasDefeated) {
+  // Update last boss defeat time and spawn minions for each defeated boss
+  if (defeatedBosses.length > 0) {
     lastBossDefeat = newTime;
-    
-    // Spawn 4 boss minions at the boss death location
+  }
+  
+  // Start with alive enemies
+  finalEnemies = [...aliveEnemies];
+  
+  // Spawn boss minions AFTER all other enemy processing
+  defeatedBosses.forEach(bossDeathPosition => {
     if (bossDeathPosition) {
       for (let i = 0; i < 4; i++) {
         const angle = (Math.PI * 2 * i) / 4; // Evenly spaced around circle
@@ -346,10 +349,10 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
           lastAttack: 0
         };
         
-        aliveEnemies.push(minion);
+        finalEnemies.push(minion);
       }
     }
-  }
+  });
   
   // Check player-enemy collisions
   let screenShake = Math.max(0, state.screenShake - deltaTime);
@@ -461,8 +464,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return true;
   });
   
-  // Handle Mega Bolt activation
-  finalEnemies = [...aliveEnemies]; // Create a copy to avoid reference issues
   let finalMegaBoltFlash = megaBoltFlash;
   
   if (activateMegaBolt) {
@@ -470,7 +471,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     const survivingEnemies = [];
     const destroyedEnemies = [];
     
-    aliveEnemies.forEach(enemy => {
+    finalEnemies.forEach(enemy => {
       if (enemy.type === 'BOSS') {
         survivingEnemies.push(enemy);
       } else {
@@ -504,7 +505,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let lastBossSpawn = state.lastBossSpawn;
   
   // Check if there's currently a boss alive
-  const bossAlive = aliveEnemies.some(enemy => enemy.type === 'BOSS');
+  const bossAlive = finalEnemies.some(enemy => enemy.type === 'BOSS');
   
   // Reduce spawn rate during phase transitions and overall
   let spawnRate = GAME_CONFIG.ENEMY_SPAWN_RATE / state.difficultyMultiplier;
