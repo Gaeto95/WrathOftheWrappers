@@ -346,7 +346,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
           lastAttack: 0
         };
         
-        finalEnemies.push(minion);
+        aliveEnemies.push(minion);
       }
     }
   }
@@ -462,7 +462,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   });
   
   // Handle Mega Bolt activation
-  finalEnemies = aliveEnemies;
+  finalEnemies = [...aliveEnemies]; // Create a copy to avoid reference issues
   let finalMegaBoltFlash = megaBoltFlash;
   
   if (activateMegaBolt) {
