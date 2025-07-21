@@ -140,6 +140,23 @@ THE END
 
     return () => clearInterval(scrollTimer);
   }, [shouldScroll, currentIndex, creditsText.length]);
+  // Start scrolling immediately when credits show, at typing speed
+  useEffect(() => {
+    if (!showCredits) return;
+
+    const scrollTimer = setInterval(() => {
+      setScrollPosition(prev => {
+        // Scroll at exactly 1 pixel per typing interval to keep cursor position stable
+        const newPosition = prev + 1;
+        
+        // Stop when we've scrolled enough to keep text visible
+        const maxScroll = 600; // Conservative limit
+        return Math.min(newPosition, maxScroll);
+      });
+    }, 60); // Same as typing speed
+
+    return () => clearInterval(scrollTimer);
+  }, [showCredits]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
