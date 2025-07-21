@@ -55,8 +55,11 @@ export function useGameLoop(
 function updateGameState(state: GameState, deltaTime: number, input: InputState, phaseTransition: any, setPhaseTransition: any): GameState {
   const dt = deltaTime / 1000; // Convert to seconds
   
-  // Update time
-  const newTime = state.time + deltaTime;
+  // Update time - only if game has started
+  let newTime = state.time;
+  if (state.gameStatus === 'playing') {
+    newTime = state.time + deltaTime;
+  }
   
   // Update mega bolt flash
   const megaBoltFlash = Math.max(0, state.megaBoltFlash - deltaTime);

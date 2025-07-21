@@ -99,7 +99,11 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
 
   // Handle start game
   const handleStartGame = useCallback(() => {
-    setGameState(prev => ({ ...prev, gameStatus: 'playing' }));
+    setGameState(prev => ({ 
+      ...prev, 
+      gameStatus: 'playing',
+      gameStartTime: Date.now() // Record when game actually started
+    }));
   }, []);
 
   // Start game session only when game actually starts
@@ -440,6 +444,17 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
           input={input}
           backgroundTexture={backgroundTexture}
         />
+        
+        {gameState.gameStatus === 'waiting' && (
+          <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+            <button
+              onClick={handleStartGame}
+              className="px-12 py-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-bold text-2xl transition-all duration-200 transform hover:scale-105"
+            >
+              🎮 Start Game
+            </button>
+          </div>
+        )}
         
         {gameState.gameStatus === 'playing' && (
           <>

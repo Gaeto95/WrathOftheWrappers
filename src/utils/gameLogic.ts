@@ -105,6 +105,7 @@ export interface GameState {
   megaBoltFlash: number; // Flash effect timer
   lastBossDefeat: number; // Track when last boss was defeated
   lastSideProjectiles: number; // Track when side projectiles were last spawned
+  gameStartTime: number; // When the game actually started
 }
 
 export function createInitialPlayer(upgrades: Upgrades, characterClass: CharacterClass): Player {
@@ -147,9 +148,9 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     items: [],
     particles: [],
     gold: 0,
-    time: 0,
+    time: 0, // This will be set when game actually starts
     score: 0,
-    gameStatus: 'playing',
+    gameStatus: 'waiting', // Start in waiting state
     lastEnemySpawn: 0,
     nextDifficultyIncrease: GAME_CONFIG.DIFFICULTY_INCREASE_INTERVAL,
     nextEnemyHealthIncrease: GAME_CONFIG.ENEMY_HEALTH_INCREASE_INTERVAL,
@@ -165,7 +166,8 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     bossPhaseActive: false,
     megaBoltFlash: 0,
     lastBossDefeat: 0,
-    lastSideProjectiles: 0
+    lastSideProjectiles: 0,
+    gameStartTime: 0 // Track when game actually started
   };
 }
 
