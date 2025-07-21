@@ -17,7 +17,219 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [shouldScroll, setShouldScroll] = useState(false);
   const [creditsAudio, setCreditsAudio] = useState<HTMLAudioElement | null>(null);
 
-  const creditsText = "no spoilers yet";
+  const creditsText = `⚔️ WRATH OF THE WRAPPERS ⚔️
+
+A Complete Survival Action RPG
+Built entirely with Bolt.new
+
+
+GAME DESIGN & DEVELOPMENT
+Created with love and no spoilers yet
+
+Every line of code crafted with care
+No spoilers in this section either
+
+Powered by the magic of AI assistance
+But still no spoilers to be found here
+
+
+SPECIAL THANKS TO
+
+The Bolt Platform
+For making this dream possible
+No spoilers about how amazing it is
+
+React & TypeScript
+The foundation of our adventure
+Definitely no spoilers about the tech stack
+
+Tailwind CSS
+Making everything look beautiful
+Zero spoilers about the styling secrets
+
+Canvas API
+Bringing the game world to life
+Absolutely no spoilers about rendering magic
+
+
+GAMEPLAY FEATURES
+
+• Endless waves of enemies
+• Progressive difficulty scaling  
+• Permanent upgrade system
+• Multiple enemy types with unique behaviors
+• Dynamic skill system with random drops
+• Beautiful sprite animations
+• Epic boss battles every 60 seconds
+• Screen scaling phases for increased challenge
+• Auto-targeting combat system
+• Particle effects and screen shake
+• Multiple background textures
+• Persistent progression system
+
+No spoilers about any secret features though!
+
+
+ENEMY TYPES ENCOUNTERED
+
+Grunt Enemies
+The basic threat, no spoilers about their tactics
+
+Runner Enemies  
+Fast and aggressive, but no spoilers on strategy
+
+Tank Enemies
+Slow but powerful, spoiler-free zone here
+
+Heavy Tank Enemies
+Elite variants with double stats
+No spoilers about their spawn rates
+
+Speeder Enemies
+Lightning fast with unique rotation
+Spoiler alert: there are no spoilers
+
+Boss Enemies
+Massive threats with special attacks
+No spoilers about their devastating abilities
+
+
+UPGRADE SYSTEM
+
+Damage Upgrades
+Increase your offensive power
+No spoilers about the scaling formula
+
+Speed Upgrades  
+Move faster to avoid danger
+No spoilers about movement mechanics
+
+Health Upgrades
+Survive longer in battle
+No spoilers about the health calculations
+
+Fire Rate Upgrades
+Attack more frequently
+No spoilers about the timing systems
+
+Gold Bonus Upgrades
+Earn more currency per kill
+No spoilers about the economy balance
+
+
+SKILL SYSTEM
+
+Critical Strike
+Chance for double damage
+No spoilers about the proc rates
+
+Gold Magnet
+Increased pickup radius
+No spoilers about the range calculations
+
+Explosive Impact
+Area of effect damage
+No spoilers about the blast radius
+
+Multi Shot
+Fire additional projectiles
+No spoilers about the cone patterns
+
+Battle Frenzy
+Reduced attack cooldowns
+No spoilers about the stacking mechanics
+
+
+TECHNICAL ACHIEVEMENTS
+
+60 FPS Game Loop
+Smooth performance guaranteed
+No spoilers about the optimization tricks
+
+Collision Detection
+Precise hit detection systems
+No spoilers about the algorithms used
+
+Sprite Animation System
+9 different character animations
+No spoilers about the frame management
+
+Particle Systems
+Dynamic visual effects
+No spoilers about the rendering pipeline
+
+Audio Integration
+Background music and sound effects
+No spoilers about the audio implementation
+
+Local Storage Persistence
+Your progress is always saved
+No spoilers about the data structures
+
+
+DEVELOPMENT STATS
+
+Lines of Code: 5000+
+Components Created: 20+
+Hours of Development: Countless
+Bugs Fixed: Too many to count
+Features Added: More than expected
+Spoilers Included: Absolutely zero
+
+
+EASTER EGGS
+
+There might be some hidden features
+But no spoilers about what they are
+
+Secret mechanics may exist
+But we're not spoiling anything here
+
+Special interactions could be possible
+But that would be a spoiler, wouldn't it?
+
+
+FINAL THOUGHTS
+
+This game represents the power of modern web development
+No spoilers about the development process though
+
+Built entirely in the browser using cutting-edge tools
+But we won't spoil the technical details
+
+A testament to what's possible with AI assistance
+Though we're keeping the implementation secrets safe
+
+Every pixel, every line of code, every game mechanic
+Crafted with passion and attention to detail
+But still no spoilers about the secret sauce
+
+
+Thank you for playing Wrath of the Wrappers
+
+May your bolts fly true
+May your upgrades be plentiful  
+May your survival times be legendary
+
+And may you never encounter any spoilers
+About the amazing journey that awaits
+
+
+⚡ Powered by Bolt ⚡
+
+
+
+
+
+
+THE END
+
+
+
+
+
+
+
 
   // Initialize credits music
   useEffect(() => {
