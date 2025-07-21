@@ -114,7 +114,7 @@ THE END
         
         // Consistent scroll speed regardless of text length
         if (shouldScroll) {
-          setScrollPosition(prev => prev + 2); // Consistent scroll speed
+          setScrollPosition(prev => prev + 1); // Slower, more readable scroll speed
         }
       }, 60); // 60ms per character - faster typing
 
@@ -367,7 +367,7 @@ THE END
             {/* Main Content Area */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center">
               {/* Top fade overlay - much stronger and longer */}
-              <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-80 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
               
               {/* Bottom fade overlay - stronger */}
               <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black to-transparent z-30 pointer-events-none" />
@@ -376,7 +376,7 @@ THE END
                 className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '600px', // Start well below the title
+                  paddingTop: '500px', // Start well below the title
                   paddingBottom: '800px' // Adequate bottom padding
                 }}
               >
