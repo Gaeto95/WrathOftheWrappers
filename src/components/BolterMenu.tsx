@@ -118,24 +118,24 @@ THE END
 
   // Separate effect for scrolling - only when typing is complete
   useEffect(() => {
-    if (!shouldScroll || currentIndex < creditsText.length) return;
+    if (!shouldScroll) return;
 
-    // Calculate maximum scroll to prevent text from escaping screen
-    const maxScroll = 800; // Much lower limit to keep text visible
+    // Start scrolling immediately when shouldScroll is true, even while typing
+    const maxScroll = 1200; // Reasonable limit to keep text visible
 
     const scrollTimer = setInterval(() => {
       setScrollPosition(prev => {
-        const newPosition = prev + 1;
+        const newPosition = prev + 0.5; // Slower scroll to match typing
         // Stop scrolling when we reach the maximum to keep text on screen
         if (newPosition >= maxScroll) {
           return maxScroll;
         }
         return newPosition;
       });
-    }, 16); // ~60fps for smooth scrolling
+    }, 32); // Slower interval to match typing rhythm
 
     return () => clearInterval(scrollTimer);
-  }, [shouldScroll, currentIndex, creditsText.length]);
+  }, [shouldScroll]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
