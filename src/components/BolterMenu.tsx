@@ -107,14 +107,14 @@ THE END
         setCurrentIndex(prev => prev + 1);
         
         // Check if we need to start scrolling (when text gets long enough)
-        const estimatedLines = Math.floor((currentIndex + 1) / 35); // Better estimate of lines
-        if (estimatedLines > 8 && !shouldScroll) { // Start scrolling after ~8 lines
+        const estimatedLines = Math.floor((currentIndex + 1) / 40); // Better estimate of lines
+        if (estimatedLines > 12 && !shouldScroll) { // Start scrolling after ~12 lines
           setShouldScroll(true);
         }
         
         // Only scroll if we should be scrolling
         if (shouldScroll) {
-          setScrollPosition(prev => prev + 1.5); // Even slower, more controlled scrolling
+          setScrollPosition(prev => prev + 2); // Slower, more controlled scrolling
         }
       }, 80); // 80ms per character for faster reveal
 
@@ -310,7 +310,6 @@ THE END
                   <span>Start Game</span>
                 </div>
               </button>
-            <div className="absolute top-0 left-0 right-0 h-80 bg-gradient-to-b from-black to-transparent z-20 pointer-events-none" />
             
             {/* Enhanced "Powered by Bolt" with stronger glow */}
             <div className="mt-4 text-center">
@@ -339,14 +338,15 @@ THE END
           </div>
         </div>
       </div>
-            <div className="absolute bottom-0 left-0 right-0 h-80 bg-gradient-to-t from-black to-transparent z-20 pointer-events-none" />
+            </div>
+
       {/* Credits Modal */}
       {showCredits && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
           <div className="relative w-full h-full flex flex-col overflow-hidden">
             {/* Close Button */}
-                paddingTop: '500px', // Start much further below the title
-                paddingBottom: '1000px' // Even more bottom padding to prevent escape
+            <button
+              onClick={handleCloseCredits}
               className="absolute top-8 right-8 z-10 text-gray-400 hover:text-white transition-colors duration-300 bg-black bg-opacity-50 rounded-full p-3"
             >
               <X className="w-6 h-6" />
