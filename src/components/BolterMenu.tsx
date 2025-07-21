@@ -13,6 +13,7 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [showCredits, setShowCredits] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   const creditsText = "no spoilers yet";
 
@@ -21,6 +22,7 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
     if (!showCredits) {
       setDisplayedText('');
       setCurrentIndex(0);
+      setScrollPosition(0);
       return;
     }
 
@@ -28,6 +30,8 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + creditsText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
+        // Slowly scroll down as text appears
+        setScrollPosition(prev => prev + 2); // Adjust scroll speed here
       }, 150); // 150ms per character for slow reveal
 
       return () => clearTimeout(timer);
@@ -246,42 +250,54 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
 
       {/* Credits Modal */}
       {showCredits && (
-        <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center">
-          <div className="relative w-full h-full flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-8">
+          <div className="relative bg-gray-900 rounded-xl shadow-2xl border border-purple-500/30 w-full max-w-4xl h-full max-h-[80vh] flex flex-col overflow-hidden">
             {/* Close Button */}
             <button
               onClick={() => setShowCredits(false)}
-              className="absolute top-4 right-4 z-10 text-white hover:text-purple-400 transition-colors duration-300"
+              className="absolute top-4 right-4 z-10 text-gray-400 hover:text-white transition-colors duration-300 bg-gray-800 rounded-full p-2"
             >
-              <X className="w-8 h-8" />
+              <X className="w-6 h-6" />
             </button>
 
-            {/* Credits Content */}
-            <div className="flex-1 flex items-center justify-center overflow-hidden">
-              <div className="text-center max-w-4xl mx-auto px-8">
-                {/* Title */}
-                <div className="mb-16">
-                  <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-4">
-                    ⚔️ Wrath of the Wrappers
-                  </h1>
-                  <div className="text-xl text-gray-300 font-medium">
-                    Credits
-                  </div>
-                </div>
 
-                {/* Rolling Text */}
-                <div className="relative">
-                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wider">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 border-b border-purple-500/30">
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-center">
+                ⚔️ Wrath of the Wrappers
+              </h1>
+              <div className="text-center text-gray-300 font-medium mt-2">Credits</div>
+            </div>
+
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-hidden relative bg-gradient-to-b from-gray-800 to-gray-900">
+              {/* Content Container */}
+              <div 
+                className="absolute inset-0 p-8 transition-transform duration-300 ease-out"
+                style={{ 
+                  transform: `translateY(-${scrollPosition}px)`,
+                  paddingTop: '50vh' // Start text in middle of screen
+                }}
+              >
+                {/* Main Text Content */}
+                <div className="text-center max-w-3xl mx-auto">
+                  <div className="text-xl md:text-2xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
                     {displayedText}
                     {currentIndex < creditsText.length && (
-                      <span className="animate-pulse">|</span>
+                      <span className="animate-pulse text-purple-400">|</span>
                     )}
                   </div>
                 </div>
-
-                {/* Gradient fade effect at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
               </div>
+
+              {/* Gradient Overlays for Book Effect */}
+              <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-gray-800 to-transparent pointer-events-none z-10" />
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-900 to-transparent pointer-events-none z-10" />
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-800 p-4 border-t border-purple-500/30 text-center">
+              <div className="text-sm text-gray-400">Press ESC or click X to close</div>
             </div>
           </div>
         </div>
