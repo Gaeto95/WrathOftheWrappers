@@ -13,7 +13,7 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [showCredits, setShowCredits] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [scrollPosition, setScrollPosition] = useState(0);
+  const [containerScroll, setContainerScroll] = useState(0);
   const [creditsAudio, setCreditsAudio] = useState<HTMLAudioElement | null>(null);
 
   const creditsText = `⚔️ WRATH OF THE WRAPPERS ⚔️
@@ -95,7 +95,7 @@ THE END
     if (!showCredits) {
       setDisplayedText('');
       setCurrentIndex(0);
-      setScrollPosition(0);
+      setContainerScroll(0);
       return;
     }
 
@@ -109,16 +109,16 @@ THE END
     }
   }, [currentIndex, showCredits, creditsText.length]);
 
-  // Scroll effect - only AFTER typing is complete
+  // Container scroll effect - only AFTER typing is complete
   useEffect(() => {
     if (currentIndex < creditsText.length) return; // Don't scroll until typing is done
 
-    const scrollSpeed = 30; // Faster scroll speed
+    const scrollSpeed = 50; // Scroll speed
 
     const scrollTimer = setInterval(() => {
-      setScrollPosition(prev => {
+      setContainerScroll(prev => {
         const newPosition = prev + 1;
-        const maxScroll = 800; // Much larger scroll distance to handle all text
+        const maxScroll = 2000; // Very large scroll distance
         if (newPosition >= maxScroll) {
           return maxScroll;
         }
@@ -133,7 +133,7 @@ THE END
     setShowCredits(false);
     setDisplayedText('');
     setCurrentIndex(0);
-    setScrollPosition(0);
+    setContainerScroll(0);
     if (creditsAudio) {
       creditsAudio.pause();
       creditsAudio.currentTime = 0;
@@ -371,27 +371,30 @@ THE END
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-hidden relative flex items-center justify-center">
+            <div className="flex-1 overflow-hidden relative">
               {/* Top fade overlay - much stronger and longer */}
               <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
               
               {/* Bottom fade overlay - stronger */}
               <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black via-black to-transparent z-30 pointer-events-none" />
               
+              {/* Scrollable container */}
               <div 
-                className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
+                className="absolute inset-0 overflow-hidden"
                 style={{ 
-                  transform: `translateY(${-scrollPosition}px)`, // Simple scroll up
-                  paddingTop: '200px', // Start text lower
-                  paddingBottom: '400px' // Bottom padding
+                  transform: `translateY(${-containerScroll}px)`
                 }}
               >
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line" style={{ minHeight: '200px' }}>
-                    {displayedText}
-                    {currentIndex < creditsText.length && (
-                      <span className="animate-pulse text-purple-400">|</span>
-                    )}
+                <div className="flex items-center justify-center min-h-full pt-96">
+                  <div className="w-full max-w-4xl px-8">
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
+                        {displayedText}
+                        {currentIndex < creditsText.length && (
+                          <span className="animate-pulse text-purple-400">|</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
