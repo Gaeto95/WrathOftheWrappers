@@ -80,6 +80,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const [gameState, setGameState] = useState<GameState>(() => 
     createInitialGameState(bolterData.permanentUpgrades, 'bolter')
   );
+  const [gameStarted, setGameStarted] = useState(false);
   const [sessionStats, setSessionStats] = useState({
     startTime: Date.now(),
     enemiesKilled: 0
@@ -96,12 +97,19 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const input = useInput();
   useGameLoop(gameState, setGameState, input, phaseTransition, setPhaseTransition);
 
-  // Start game session
+  // Start game session only when game actually starts
   useEffect(() => {
-    if (!sessionEnded) {
+    if (!sessionEnded && gameStarted) {
       bolterSystem.startGameSession();
     }
-  }, []); // Empty dependency array - only run once on mount
+  }, [gameStarted, sessionEnded, bolterSystem]);
+
+  // Mark game as started when it begins playing
+  useEffect(() => {
+    if (gameState.gameStatus === 'playing' && !gameStarted) {
+      setGameStarted(true);
+    }
+  }, [gameState.gameStatus, gameStarted]);
 
   // Handle death
   useEffect(() => {
