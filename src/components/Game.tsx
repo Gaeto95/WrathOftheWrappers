@@ -366,6 +366,45 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     bolterSystem.startGameSession();
   }, [bolterSystem, audio, gameOverAudio, musicEnabled]);
 
+  const handleRestart = useCallback(() => {
+    console.log('Quick restart - creating fresh game without saving current session');
+    
+    // Reset player animation state
+    resetPlayerAnimation();
+    
+    // Stop game over sound and restart background music
+    if (gameOverAudio) {
+      gameOverAudio.pause();
+      gameOverAudio.currentTime = 0;
+    }
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play().then(() => {
+        setMusicEnabled(true);
+      }).catch(e => console.log('Background music restart failed:', e));
+    }
+    
+    // Create completely fresh game state
+    const freshGameState = createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter');
+    setGameState(freshGameState);
+    setSessionStats({
+      startTime: Date.now(),
+      enemiesKilled: 0
+    });
+    setSessionEnded(false);
+    
+    // Start fresh session
+    bolterSystem.startGameSession();
+    
+    // Auto-start the game after brief delay
+    setTimeout(() => {
+      setGameState(prev => ({
+        ...prev,
+        gameStartTime: Date.now()
+      }));
+    }, 100);
+  }, [bolterSystem, audio, gameOverAudio]);
+
   // Save stats when returning to profiles
   useEffect(() => {
     return () => {
