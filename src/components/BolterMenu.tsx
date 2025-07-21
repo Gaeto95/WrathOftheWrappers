@@ -14,6 +14,7 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [shouldScroll, setShouldScroll] = useState(false);
   const [creditsAudio, setCreditsAudio] = useState<HTMLAudioElement | null>(null);
 
   const creditsText = "no spoilers yet";
@@ -48,6 +49,7 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
       setDisplayedText('');
       setCurrentIndex(0);
       setScrollPosition(0);
+      setShouldScroll(false);
       return;
     }
 
@@ -55,8 +57,17 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + creditsText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-        // Scroll down as text appears - more aggressive scrolling
-        setScrollPosition(prev => prev + 3); // Adjust scroll speed here
+        
+        // Check if we need to start scrolling (when text gets long enough)
+        const estimatedLines = Math.floor((currentIndex + 1) / 50); // Rough estimate of lines
+        if (estimatedLines > 15 && !shouldScroll) { // Start scrolling after ~15 lines
+          setShouldScroll(true);
+        }
+        
+        // Only scroll if we should be scrolling
+        if (shouldScroll) {
+          setScrollPosition(prev => prev + 2); // Smooth scrolling
+        }
       }, 150); // 150ms per character for slow reveal
 
       return () => clearTimeout(timer);
@@ -283,38 +294,35 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
 
       {/* Credits Modal */}
       {showCredits && (
-        <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-8">
-          <div className="relative bg-gray-900 rounded-xl shadow-2xl border border-purple-500/30 w-full max-w-4xl h-full max-h-[80vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          <div className="relative w-full h-full flex flex-col overflow-hidden">
             {/* Close Button */}
             <button
               onClick={handleCloseCredits}
-              className="absolute top-4 right-4 z-10 text-gray-400 hover:text-white transition-colors duration-300 bg-gray-800 rounded-full p-2"
+              className="absolute top-8 right-8 z-10 text-gray-400 hover:text-white transition-colors duration-300 bg-black bg-opacity-50 rounded-full p-3"
             >
               <X className="w-6 h-6" />
             </button>
 
-
-            {/* Header */}
-            <div className="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 border-b border-purple-500/30">
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-center">
+            {/* Title at top */}
+            <div className="absolute top-0 left-0 right-0 z-10 p-8 text-center">
+              <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
                 ⚔️ Wrath of the Wrappers
               </h1>
-              <div className="text-center text-gray-300 font-medium mt-2">Credits</div>
+              <div className="text-gray-300 font-medium mt-2 text-xl">Credits</div>
             </div>
 
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-hidden relative bg-gradient-to-b from-gray-800 to-gray-900">
-              {/* Content Container */}
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-hidden relative flex items-center justify-center">
               <div 
-                className="absolute inset-0 p-8 transition-transform duration-300 ease-out"
+                className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '20px' // Start text at the top
+                  paddingTop: '200px' // Start below the title
                 }}
               >
-                {/* Main Text Content */}
-                <div className="text-left max-w-3xl mx-auto">
-                  <div className="text-xl md:text-2xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
+                <div className="text-center">
+                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
                     {displayedText}
                     {currentIndex < creditsText.length && (
                       <span className="animate-pulse text-purple-400">|</span>
@@ -322,15 +330,11 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
                   </div>
                 </div>
               </div>
-
-              {/* Gradient Overlays for Book Effect */}
-              <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-gray-800 to-transparent pointer-events-none z-10" />
-              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-900 to-transparent pointer-events-none z-10" />
             </div>
 
-            {/* Footer */}
-            <div className="bg-gray-800 p-4 border-t border-purple-500/30 text-center">
-              <div className="text-sm text-gray-400">Press ESC or click X to close</div>
+            {/* Bottom instruction */}
+            <div className="absolute bottom-8 left-0 right-0 text-center">
+              <div className="text-sm text-gray-500">Press ESC or click X to close</div>
             </div>
           </div>
         </div>
