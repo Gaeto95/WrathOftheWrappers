@@ -91,6 +91,11 @@ function initializeMonsterSprites() {
     monsterImages.set(key, img);
   });
   
+  // Load boss minion sprite
+  const minionImg = new Image();
+  minionImg.src = '/boss-minion.png';
+  monsterImages.set('boss-minion', minionImg);
+  
   // Load item sprites
   const coinImg = new Image();
   coinImg.src = '/coin.png';
@@ -612,6 +617,18 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
       const bigMonster = monsterImages.get('big');
       if (isMonsterSpriteReady(bigMonster)) {
         monsterSprite = bigMonster;
+      }
+    }
+  } else if (enemy.type === 'BOSS_MINION') {
+    const minionMonster = monsterImages.get('boss-minion');
+    
+    if (isMonsterSpriteReady(minionMonster)) {
+      monsterSprite = minionMonster;
+    } else {
+      // Fallback to small monster sprite
+      const smallMonster = monsterImages.get('small');
+      if (isMonsterSpriteReady(smallMonster)) {
+        monsterSprite = smallMonster;
       }
     }
   } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER' || enemy.type === 'SPEEDER') {

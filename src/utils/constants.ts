@@ -62,6 +62,14 @@ export const GAME_CONFIG = {
       size: 90, // 125% bigger than tank (40 * 2.25 = 90)
       color: '#800080', // Purple for boss
       goldDrop: { min: 150, max: 225 } // 5x tank gold (adjusted for lower HP)
+    },
+    BOSS_MINION: {
+      hp: 40, // Healthy but not too tanky
+      speed: 160, // Fast like runner
+      damage: 12, // Low damage
+      size: 28, // Medium size
+      color: '#9932cc', // Dark orchid - similar to boss but lighter
+      goldDrop: { min: 20, max: 35 } // Decent gold reward
     }
   },
   

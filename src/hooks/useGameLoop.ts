@@ -273,6 +273,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   let pendingSkillDrop = state.pendingSkillDrop;
   let enemiesKilled = state.enemiesKilled;
   let bossWasDefeated = false;
+  let bossDeathPosition: { x: number; y: number } | null = null;
   const aliveEnemies = enemies.filter(enemy => {
     if (enemy.hp <= 0) {
       totalEnemiesKilled++;
@@ -281,6 +282,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       // Check if this was a boss
       if (enemy.type === 'BOSS') {
         bossWasDefeated = true;
+        bossDeathPosition = { x: enemy.x, y: enemy.y };
       }
       
       // Create death particles
@@ -318,6 +320,34 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   // Update last boss defeat time if a boss was defeated
   if (bossWasDefeated) {
     lastBossDefeat = newTime;
+    
+    // Spawn 4 boss minions at the boss death location
+    if (bossDeathPosition) {
+      for (let i = 0; i < 4; i++) {
+        const angle = (Math.PI * 2 * i) / 4; // Evenly spaced around circle
+        const spawnDistance = 80; // Distance from boss death position
+        const minionX = bossDeathPosition.x + Math.cos(angle) * spawnDistance;
+        const minionY = bossDeathPosition.y + Math.sin(angle) * spawnDistance;
+        
+        const minion = {
+          id: `boss_minion_${newTime}_${i}_${Math.random()}`,
+          type: 'BOSS_MINION' as EnemyType,
+          x: minionX,
+          y: minionY,
+          hp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * gameState.enemyHealthMultiplier,
+          maxHp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * gameState.enemyHealthMultiplier,
+          speed: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.speed,
+          damage: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.damage,
+          size: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.size,
+          color: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.color,
+          flashUntil: 0,
+          goldDrop: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.goldDrop,
+          lastAttack: 0
+        };
+        
+        finalEnemies.push(minion);
+      }
+    }
   }
   
   // Check player-enemy collisions

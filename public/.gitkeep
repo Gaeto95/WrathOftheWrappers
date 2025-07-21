@@ -4,6 +4,7 @@
 # - potion.png  
 # - background-music.mp3
 # - speeder-monster.png (NEW - for the fast enemy type)
+# - boss-minion.png (NEW - for boss minions that spawn when boss dies)
 # 
 # Bolter Sprite Files (each contains 8 frames horizontally):
 # - Idle.png
