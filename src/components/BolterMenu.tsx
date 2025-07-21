@@ -113,12 +113,12 @@ THE END
   useEffect(() => {
     if (currentIndex < creditsText.length) return; // Don't scroll until typing is done
 
-    const scrollSpeed = 50; // Scroll every 50ms
+    const scrollSpeed = 30; // Faster scroll speed
 
     const scrollTimer = setInterval(() => {
       setScrollPosition(prev => {
         const newPosition = prev + 1;
-        const maxScroll = 400; // Maximum scroll distance
+        const maxScroll = 800; // Much larger scroll distance to handle all text
         if (newPosition >= maxScroll) {
           return maxScroll;
         }
