@@ -105,22 +105,27 @@ THE END
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + creditsText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-        
-        // Always start scrolling after 3 seconds of typing, regardless of text length
-        const typingTime = (currentIndex + 1) * 60; // 60ms per character
-        if (typingTime > 3000 && !shouldScroll) {
-          setShouldScroll(true);
-        }
-        
-        // Consistent scroll speed regardless of text length
-        if (shouldScroll) {
-          setScrollPosition(prev => prev + 1); // Slower, more readable scroll speed
-        }
       }, 60); // 60ms per character - faster typing
 
       return () => clearTimeout(timer);
+    } else {
+      // Only start scrolling AFTER all text is fully typed
+      if (!shouldScroll) {
+        setShouldScroll(true);
+      }
     }
-  }, [currentIndex, showCredits, shouldScroll]);
+  }, [currentIndex, showCredits, shouldScroll, creditsText.length]);
+
+  // Separate effect for scrolling - only when typing is complete
+  useEffect(() => {
+    if (!shouldScroll || currentIndex < creditsText.length) return;
+
+    const scrollTimer = setInterval(() => {
+      setScrollPosition(prev => prev + 1); // 1px per frame for smooth scroll
+    }, 16); // ~60fps for smooth scrolling
+
+    return () => clearInterval(scrollTimer);
+  }, [shouldScroll, currentIndex, creditsText.length]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
