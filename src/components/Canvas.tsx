@@ -120,6 +120,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
       
       img.onload = () => {
         spriteImages.set(animName, img);
+        console.log(`Player sprite loaded: ${animName}`);
       };
       
       img.onerror = () => {

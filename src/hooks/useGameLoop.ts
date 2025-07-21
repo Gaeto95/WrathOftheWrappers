@@ -25,11 +25,6 @@ export function useGameLoop(
       return;
     }
 
-    // Mark as started when we first enter playing state
-    if (!gameStartedRef.current) {
-      gameStartedRef.current = true;
-    }
-
     const deltaTime = currentTime - lastTimeRef.current;
     lastTimeRef.current = currentTime;
 

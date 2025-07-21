@@ -458,20 +458,6 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
           </>
         )}
         
-        {gameState.gameStatus === 'waiting' && (
-          <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-            <div className="text-center">
-              <h2 className="text-4xl font-bold text-white mb-8">Ready to Begin?</h2>
-              <button
-                onClick={handleStartGame}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-bold text-xl transition-all duration-200 transform hover:scale-105"
-              >
-                🎮 Start Game
-              </button>
-            </div>
-          </div>
-        )}
-        
         {gameState.gameStatus === 'paused' && (
           <PauseScreen
             onResume={handleResume}
