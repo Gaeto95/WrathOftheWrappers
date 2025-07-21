@@ -14,7 +14,6 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const [shouldScroll, setShouldScroll] = useState(false);
   const [creditsAudio, setCreditsAudio] = useState<HTMLAudioElement | null>(null);
 
   const creditsText = `⚔️ WRATH OF THE WRAPPERS ⚔️
@@ -97,7 +96,6 @@ THE END
       setDisplayedText('');
       setCurrentIndex(0);
       setScrollPosition(0);
-      setShouldScroll(false);
       return;
     }
 
@@ -105,72 +103,37 @@ THE END
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + creditsText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-        
-        // Scroll up by 1.5px for each character to keep text in view
-        setScrollPosition(prev => prev + 1.5);
       }, 60); // 60ms per character - faster typing
 
       return () => clearTimeout(timer);
-    } else {
-      // Only start scrolling AFTER all text is fully typed
-      if (!shouldScroll) {
-        setShouldScroll(true);
-      }
     }
-  }, [currentIndex, showCredits, shouldScroll, creditsText.length]);
+  }, [currentIndex, showCredits, creditsText.length]);
 
-  // Final scroll effect - only when typing is complete
+  // Scroll effect - only AFTER typing is complete
   useEffect(() => {
-    if (!shouldScroll) return;
+    if (currentIndex < creditsText.length) return; // Don't scroll until typing is done
 
-    // Additional slow scroll after typing is complete
-    const scrollSpeed = 50; // Slower final scroll
+    const scrollSpeed = 50; // Scroll every 50ms
 
     const scrollTimer = setInterval(() => {
       setScrollPosition(prev => {
         const newPosition = prev + 1;
-        
-        // Conservative max scroll
-        const maxScroll = 500;
-        if (currentIndex >= creditsText.length && newPosition >= maxScroll) {
+        const maxScroll = 400; // Maximum scroll distance
+        if (newPosition >= maxScroll) {
           return maxScroll;
         }
         return newPosition;
       });
-    }, scrollSpeed); // Exact same interval as typing
+    }, scrollSpeed);
 
     return () => clearInterval(scrollTimer);
-  }, [shouldScroll, currentIndex, creditsText.length]);
-
-  // Final scroll effect - only when typing is complete
-  useEffect(() => {
-    if (!shouldScroll) return;
-
-    // Additional slow scroll after typing is complete
-    const scrollSpeed = 50; // Slower final scroll
-
-    const scrollTimer = setInterval(() => {
-      setScrollPosition(prev => {
-        const newPosition = prev + 1;
-        
-        // Conservative max scroll
-        const maxScroll = 500;
-        if (currentIndex >= creditsText.length && newPosition >= maxScroll) {
-          return maxScroll;
-        }
-        return newPosition;
-      });
-    }, scrollSpeed); // Exact same interval as typing
-
-    return () => clearInterval(scrollTimer);
-  }, [shouldScroll, currentIndex, creditsText.length]);
+  }, [currentIndex, creditsText.length]);
 
   const handleCloseCredits = () => {
     setShowCredits(false);
     setDisplayedText('');
     setCurrentIndex(0);
     setScrollPosition(0);
-    setShouldScroll(false);
     if (creditsAudio) {
       creditsAudio.pause();
       creditsAudio.currentTime = 0;
@@ -418,8 +381,8 @@ THE END
               <div 
                 className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
-                  transform: `translateY(${200 - scrollPosition}px)`, // Start 200px down, then scroll up
-                  paddingTop: '100px', // Minimal top padding
+                  transform: `translateY(${-scrollPosition}px)`, // Simple scroll up
+                  paddingTop: '200px', // Start text lower
                   paddingBottom: '400px' // Bottom padding
                 }}
               >
