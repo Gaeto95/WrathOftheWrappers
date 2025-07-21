@@ -66,6 +66,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Initialize variables that will be used throughout the function
   let lastBossDefeat = state.lastBossDefeat || 0;
+  let finalEnemies: any[] = [];
   
   // Initialize projectiles array early so it can be used throughout the function
   let projectiles = state.projectiles
@@ -461,7 +462,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   });
   
   // Handle Mega Bolt activation
-  let finalEnemies = aliveEnemies;
+  finalEnemies = aliveEnemies;
   let finalMegaBoltFlash = megaBoltFlash;
   
   if (activateMegaBolt) {
