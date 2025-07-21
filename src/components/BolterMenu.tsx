@@ -120,8 +120,18 @@ THE END
   useEffect(() => {
     if (!shouldScroll || currentIndex < creditsText.length) return;
 
+    // Calculate maximum scroll to prevent text from going too far down
+    const maxScroll = 2000; // Limit scroll to prevent text from escaping
+
     const scrollTimer = setInterval(() => {
-      setScrollPosition(prev => prev + 1); // 1px per frame for smooth scroll
+      setScrollPosition(prev => {
+        const newPosition = prev + 1;
+        // Stop scrolling when we reach the maximum
+        if (newPosition >= maxScroll) {
+          return maxScroll;
+        }
+        return newPosition;
+      });
     }, 16); // ~60fps for smooth scrolling
 
     return () => clearInterval(scrollTimer);
