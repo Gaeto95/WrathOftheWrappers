@@ -107,14 +107,14 @@ THE END
         setCurrentIndex(prev => prev + 1);
         
         // Check if we need to start scrolling (when text gets long enough)
-        const estimatedLines = Math.floor((currentIndex + 1) / 50); // Rough estimate of lines
-        if (estimatedLines > 15 && !shouldScroll) { // Start scrolling after ~15 lines
+        const estimatedLines = Math.floor((currentIndex + 1) / 40); // Better estimate of lines
+        if (estimatedLines > 12 && !shouldScroll) { // Start scrolling after ~12 lines
           setShouldScroll(true);
         }
         
         // Only scroll if we should be scrolling
         if (shouldScroll) {
-          setScrollPosition(prev => prev + 4); // Faster scrolling
+          setScrollPosition(prev => prev + 2); // Slower, more controlled scrolling
         }
       }, 80); // 80ms per character for faster reveal
 
@@ -353,7 +353,7 @@ THE END
             </button>
 
             {/* Title at top */}
-            <div className="absolute top-0 left-0 right-0 z-10 p-8 text-center">
+            <div className="absolute top-0 left-0 right-0 z-30 p-8 text-center">
               <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
                 ⚔️ Wrath of the Wrappers
               </h1>
@@ -363,17 +363,17 @@ THE END
             {/* Main Content Area */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center">
               {/* Top fade overlay */}
-              <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent z-20 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-black to-transparent z-20 pointer-events-none" />
               
               {/* Bottom fade overlay */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-20 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black to-transparent z-20 pointer-events-none" />
               
               <div 
                 className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
                 style={{ 
                   transform: `translateY(-${scrollPosition}px)`,
-                  paddingTop: '300px', // Start well below the title
-                  paddingBottom: '600px' // Ensure text doesn't escape bottom
+                  paddingTop: '400px', // Start even further below the title
+                  paddingBottom: '800px' // More bottom padding to prevent escape
                 }}
               >
                 <div className="text-center">
