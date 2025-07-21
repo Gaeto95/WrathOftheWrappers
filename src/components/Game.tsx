@@ -175,8 +175,11 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       }).catch(e => console.log('Background music restart failed:', e));
     }
     
-    // Create completely fresh game state
-    setGameState(createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter'));
+    // Create completely fresh game state and start it immediately
+    const freshState = createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter');
+    freshState.gameStartTime = Date.now(); // Start the timer immediately
+    setGameState(freshState);
+    
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
