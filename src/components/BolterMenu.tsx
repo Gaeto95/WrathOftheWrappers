@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Sword, Shield, Zap, Target, Crown, Trophy, Clock, Coins } from 'lucide-react';
+import { Play, Sword, Shield, Zap, Target, Crown, Trophy, Clock, Coins, X } from 'lucide-react';
 import { BolterData } from '../types/bolter';
 import { CLASS_CONFIGS } from '../types/classes';
 
@@ -10,6 +10,29 @@ interface BolterMenuProps {
 
 export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const creditsText = "no spoilers yet";
+
+  // Letter by letter reveal animation
+  useEffect(() => {
+    if (!showCredits) {
+      setDisplayedText('');
+      setCurrentIndex(0);
+      return;
+    }
+
+    if (currentIndex < creditsText.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(prev => prev + creditsText[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 150); // 150ms per character for slow reveal
+
+      return () => clearTimeout(timer);
+    }
+  }, [showCredits, currentIndex, creditsText]);
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -207,9 +230,62 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
                 </div>
               </div>
             </div>
+
+            {/* Credits Button */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setShowCredits(true)}
+                className="text-xs text-gray-400 hover:text-purple-400 transition-colors duration-300 underline"
+              >
+                Credits
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Credits Modal */}
+      {showCredits && (
+        <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center">
+          <div className="relative w-full h-full flex flex-col">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowCredits(false)}
+              className="absolute top-4 right-4 z-10 text-white hover:text-purple-400 transition-colors duration-300"
+            >
+              <X className="w-8 h-8" />
+            </button>
+
+            {/* Credits Content */}
+            <div className="flex-1 flex items-center justify-center overflow-hidden">
+              <div className="text-center max-w-4xl mx-auto px-8">
+                {/* Title */}
+                <div className="mb-16">
+                  <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-4">
+                    ⚔️ Wrath of the Wrappers
+                  </h1>
+                  <div className="text-xl text-gray-300 font-medium">
+                    Credits
+                  </div>
+                </div>
+
+                {/* Rolling Text */}
+                <div className="relative">
+                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wider">
+                    {displayedText}
+                    {currentIndex < creditsText.length && (
+                      <span className="animate-pulse">|</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Gradient fade effect at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </>
   );
