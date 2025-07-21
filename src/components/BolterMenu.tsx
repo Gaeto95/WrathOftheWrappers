@@ -319,7 +319,8 @@ THE END
                   <Play className="w-6 h-6" />
                   <span>Start Game</span>
                 </div>
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
+              </button>
+            </div>
             
             {/* Enhanced "Powered by Bolt" with stronger glow */}
             <div className="mt-4 text-center">
@@ -345,23 +346,17 @@ THE END
                 Credits
               </button>
             </div>
-            </div>
           </div>
         </div>
       </div>
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black to-transparent z-30 pointer-events-none" />
+      </div>
+
       {/* Credits Modal */}
       {showCredits && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
           <div className="relative w-full h-full flex flex-col overflow-hidden">
-                transform: `translateY(${-scrollPosition}px)`,
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: `translate(-50%, -50%) translateY(${-scrollPosition}px)`,
-                width: '100%',
-                maxWidth: '4rem',
-                padding: '0 2rem'
+            <button
+              onClick={handleCloseCredits}
               className="absolute top-8 right-8 z-50 text-gray-400 hover:text-white transition-colors duration-300 bg-black bg-opacity-80 rounded-full p-3 hover:bg-opacity-100"
             >
               <X className="w-6 h-6" />
@@ -392,8 +387,8 @@ THE END
                 }}
               >
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line">
-                <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line" style={{ minHeight: '200px' }}>
+                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line" style={{ minHeight: '200px' }}>
+                    {displayedText}
                     {currentIndex < creditsText.length && (
                       <span className="animate-pulse text-purple-400">|</span>
                     )}
