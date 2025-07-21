@@ -149,7 +149,7 @@ export function createInitialGameState(upgrades: Upgrades, characterClass: Chara
     gold: 0,
     time: 0,
     score: 0,
-    gameStatus: 'paused', // Start paused until user clicks start
+    gameStatus: 'playing', // Start playing when game is created
     lastEnemySpawn: 0,
     nextDifficultyIncrease: GAME_CONFIG.DIFFICULTY_INCREASE_INTERVAL,
     nextEnemyHealthIncrease: GAME_CONFIG.ENEMY_HEALTH_INCREASE_INTERVAL,

@@ -18,11 +18,16 @@ export function useGameLoop(
   const gameStartedRef = useRef<boolean>(false);
 
   const gameLoop = useCallback((currentTime: number) => {
-    // Only update deltaTime if game is actually playing AND has been started
-    if (gameState.gameStatus !== 'playing' || !gameStartedRef.current) {
+    // Only update deltaTime if game is actually playing
+    if (gameState.gameStatus !== 'playing') {
       lastTimeRef.current = currentTime;
       animationFrameRef.current = requestAnimationFrame(gameLoop);
       return;
+    }
+
+    // Mark as started when we first enter playing state
+    if (!gameStartedRef.current) {
+      gameStartedRef.current = true;
     }
 
     const deltaTime = currentTime - lastTimeRef.current;
@@ -32,13 +37,6 @@ export function useGameLoop(
 
     animationFrameRef.current = requestAnimationFrame(gameLoop);
   }, [gameState.gameStatus, setGameState, input, phaseTransition, setPhaseTransition]);
-
-  // Track when game actually starts (not just when component mounts)
-  useEffect(() => {
-    if (gameState.gameStatus === 'playing' && gameState.time === 0) {
-      gameStartedRef.current = true;
-    }
-  }, [gameState.gameStatus, gameState.time]);
 
   useEffect(() => {
     // Always run the game loop, but it will only update when status is 'playing'
