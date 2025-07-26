@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Sword, Shield, Zap, Target, Crown, Trophy, Clock, Coins } from 'lucide-react';
+import { Play, Sword, Shield, Zap, Target, Crown, Trophy, Clock, Coins, X } from 'lucide-react';
 import { BolterData } from '../types/bolter';
 import { CLASS_CONFIGS } from '../types/classes';
 
@@ -10,6 +10,116 @@ interface BolterMenuProps {
 
 export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [creditsAudio, setCreditsAudio] = useState<HTMLAudioElement | null>(null);
+
+  const creditsText = `⚔️ WRATH OF THE WRAPPERS ⚔️
+
+A Complete Survival Action RPG
+Built entirely with Bolt.new
+
+
+GAME DESIGN & DEVELOPMENT
+Created with love and passion
+
+Every line of code crafted with care
+From concept to completion
+
+Powered by the magic of AI assistance
+Making dreams into reality
+
+Thank you for playing Wrath of the Wrappers
+
+May your bolts fly true
+May your upgrades be plentiful  
+May your survival times be legendary
+
+⚡ Powered by Bolt ⚡
+
+
+THE END
+
+
+
+
+`;
+
+  // Initialize credits music
+  useEffect(() => {
+    const audioElement = new Audio('/credits-music.mp3');
+    audioElement.loop = true;
+    audioElement.volume = 0.3;
+    setCreditsAudio(audioElement);
+    
+    return () => {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+    };
+  }, []);
+
+  // Handle credits modal open/close with music
+  useEffect(() => {
+    if (showCredits && creditsAudio) {
+      creditsAudio.currentTime = 0;
+      creditsAudio.play().catch(e => console.log('Credits music failed to play:', e));
+    } else if (creditsAudio) {
+      creditsAudio.pause();
+      creditsAudio.currentTime = 0;
+    }
+  }, [showCredits, creditsAudio]);
+
+  // Letter by letter reveal animation
+  useEffect(() => {
+    if (!showCredits) {
+      setDisplayedText('');
+      setCurrentIndex(0);
+      setScrollPosition(0);
+      return;
+    }
+
+    if (currentIndex < creditsText.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(prev => prev + creditsText[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 60); // 60ms per character - faster typing
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, showCredits, creditsText.length]);
+
+  // Scroll effect - only AFTER typing is complete
+  useEffect(() => {
+    if (currentIndex < creditsText.length) return; // Don't scroll until typing is done
+
+    const scrollSpeed = 30; // Faster scroll speed
+
+    const scrollTimer = setInterval(() => {
+      setScrollPosition(prev => {
+        const newPosition = prev + 1;
+        const maxScroll = 800; // Much larger scroll distance to handle all text
+        if (newPosition >= maxScroll) {
+          return maxScroll;
+        }
+        return newPosition;
+      });
+    }, scrollSpeed);
+
+    return () => clearInterval(scrollTimer);
+  }, [currentIndex, creditsText.length]);
+
+  const handleCloseCredits = () => {
+    setShowCredits(false);
+    setDisplayedText('');
+    setCurrentIndex(0);
+    setScrollPosition(0);
+    if (creditsAudio) {
+      creditsAudio.pause();
+      creditsAudio.currentTime = 0;
+    }
+  };
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -207,10 +317,74 @@ export function BolterMenu({ bolterData, onStartGame }: BolterMenuProps) {
                 </div>
               </div>
             </div>
+
+            {/* Credits Button */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setShowCredits(true)}
+                className="text-xs text-gray-400 hover:text-purple-400 transition-colors duration-300 underline"
+              >
+                Credits
+              </button>
+            </div>
           </div>
         </div>
       </div>
       </div>
+
+      {/* Credits Modal */}
+      {showCredits && (
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          <div className="relative w-full h-full flex flex-col overflow-hidden">
+            <button
+              onClick={handleCloseCredits}
+              className="absolute top-8 right-8 z-50 text-gray-400 hover:text-white transition-colors duration-300 bg-black bg-opacity-80 rounded-full p-3 hover:bg-opacity-100"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Title at top */}
+            <div className="absolute top-0 left-0 right-0 z-40 p-8 text-center">
+              <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
+                ⚔️ Wrath of the Wrappers
+              </h1>
+              <div className="text-gray-300 font-medium mt-2 text-xl">Credits</div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-hidden relative flex items-center justify-center">
+              {/* Top fade overlay - much stronger and longer */}
+              <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black via-black to-transparent z-30 pointer-events-none" />
+              
+              {/* Bottom fade overlay - stronger */}
+              <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black via-black to-transparent z-30 pointer-events-none" />
+              
+              <div 
+                className="w-full max-w-4xl px-8 transition-transform duration-300 ease-out"
+                style={{ 
+                  transform: `translateY(${-scrollPosition}px)`, // Simple scroll up
+                  paddingTop: '200px', // Start text lower
+                  paddingBottom: '400px' // Bottom padding
+                }}
+              >
+                <div className="text-center">
+                  <div className="text-2xl md:text-3xl font-light text-white leading-relaxed tracking-wide whitespace-pre-line" style={{ minHeight: '200px' }}>
+                    {displayedText}
+                    {currentIndex < creditsText.length && (
+                      <span className="animate-pulse text-purple-400">|</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom instruction */}
+            <div className="absolute bottom-8 left-0 right-0 text-center">
+              <div className="text-sm text-gray-500">Press ESC or click X to close</div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

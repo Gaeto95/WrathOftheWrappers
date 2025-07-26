@@ -62,6 +62,14 @@ export const GAME_CONFIG = {
       size: 90, // 125% bigger than tank (40 * 2.25 = 90)
       color: '#800080', // Purple for boss
       goldDrop: { min: 150, max: 225 } // 5x tank gold (adjusted for lower HP)
+    },
+    BOSS_MINION: {
+      hp: 40, // Healthy but not too tanky
+      speed: 160, // Fast like runner
+      damage: 12, // Low damage
+      size: 28, // Medium size
+      color: '#9932cc', // Dark orchid - similar to boss but lighter
+      goldDrop: { min: 20, max: 35 } // Decent gold reward
     }
   },
   
@@ -106,6 +114,11 @@ export const GAME_CONFIG = {
   BOSS_PROJECTILE_COUNT: 5, // Number of projectiles per attack
   BOSS_PROJECTILE_SPREAD: 0.8, // Spread angle in radians
   BOSS_AURA_SIZE: 200, // Boss aura radius - increased for visibility
+  
+  // Side projectile settings
+  SIDE_PROJECTILE_INTERVAL: 2000, // Side projectiles every 2 seconds
+  SIDE_PROJECTILE_SPEED: 200, // Speed of side projectiles
+  SIDE_PROJECTILE_SIZE: 6, // Size of side projectiles
   
   // Mega Bolt settings
   MEGA_BOLT_FLASH_DURATION: 1000, // 1 second flash

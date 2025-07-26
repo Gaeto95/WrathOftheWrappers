@@ -91,6 +91,11 @@ function initializeMonsterSprites() {
     monsterImages.set(key, img);
   });
   
+  // Load boss minion sprite
+  const minionImg = new Image();
+  minionImg.src = '/boss-minion.png';
+  monsterImages.set('boss-minion', minionImg);
+  
   // Load item sprites
   const coinImg = new Image();
   coinImg.src = '/coin.png';
@@ -120,6 +125,7 @@ export function Canvas({ gameState, phaseTransition, width, height, input, backg
       
       img.onload = () => {
         spriteImages.set(animName, img);
+        console.log(`Player sprite loaded: ${animName}`);
       };
       
       img.onerror = () => {
@@ -613,6 +619,18 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: any, time: number, play
         monsterSprite = bigMonster;
       }
     }
+  } else if (enemy.type === 'BOSS_MINION') {
+    const minionMonster = monsterImages.get('boss-minion');
+    
+    if (isMonsterSpriteReady(minionMonster)) {
+      monsterSprite = minionMonster;
+    } else {
+      // Fallback to small monster sprite
+      const smallMonster = monsterImages.get('small');
+      if (isMonsterSpriteReady(smallMonster)) {
+        monsterSprite = smallMonster;
+      }
+    }
   } else if (enemy.type === 'GRUNT' || enemy.type === 'RUNNER' || enemy.type === 'SPEEDER') {
     const smallMonster = monsterImages.get('small');
     if (isMonsterSpriteReady(smallMonster)) {
@@ -743,7 +761,12 @@ function drawBossAura(ctx: CanvasRenderingContext2D, boss: any, time: number) {
 function drawProjectile(ctx: CanvasRenderingContext2D, projectile: any, megaBoltFlash: number = 0) {
   let color, glowColor;
   
-  if (projectile.isBossProjectile) {
+  if (projectile.isBossProjectile && projectile.sourceEnemyId === 'side_spawner') {
+    // Side projectiles - purple/magenta
+    color = '#ff00ff';
+    glowColor = '#ff44ff';
+  } else if (projectile.isBossProjectile) {
+    // Boss projectiles - red
     color = '#ff0000';
     glowColor = '#ff4444';
   } else if (projectile.isFireball) {

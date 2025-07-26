@@ -80,6 +80,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const [gameState, setGameState] = useState<GameState>(() => 
     createInitialGameState(bolterData.permanentUpgrades, 'bolter')
   );
+  const [gameStarted, setGameStarted] = useState(false);
   const [sessionStats, setSessionStats] = useState({
     startTime: Date.now(),
     enemiesKilled: 0
@@ -96,16 +97,41 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
   const input = useInput();
   useGameLoop(gameState, setGameState, input, phaseTransition, setPhaseTransition);
 
-  // Start game session
+  // Handle start game
+  const handleStartGame = useCallback(() => {
+    // Game is already in playing state, just set the start time to begin the timer
+    setGameState(prev => ({
+      ...prev,
+      gameStartTime: Date.now() // This will make the timer start counting
+    }));
+  }, []);
+
+  // Auto-start the game when component mounts
   useEffect(() => {
-    if (!sessionEnded) {
+    const timer = setTimeout(() => {
+      handleStartGame();
+    }, 100); // Small delay to ensure everything is loaded
+    
+    return () => clearTimeout(timer);
+  }, [handleStartGame]);
+
+  // Start game session only when game actually starts
+  useEffect(() => {
+    if (!sessionEnded && gameStarted) {
       bolterSystem.startGameSession();
     }
-  }, []); // Empty dependency array - only run once on mount
+  }, [gameStarted, sessionEnded, bolterSystem]);
+
+  // Mark game as started when it begins playing
+  useEffect(() => {
+    if (gameState.gameStatus === 'playing' && gameState.gameStartTime > 0 && !gameStarted) {
+      setGameStarted(true);
+    }
+  }, [gameState.gameStatus, gameState.gameStartTime, gameStarted]);
 
   // Handle death
   useEffect(() => {
-    if (gameState.gameStatus === 'dead' && !sessionEnded) {
+    if (gameState.gameStatus === 'dead' && !sessionEnded && gameStarted) {
       // Stop background music and play game over sound
       if (audio) {
         audio.pause();
@@ -117,7 +143,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       }
       
       // Save stats if we have a current session
-      if (bolterSystem.currentSession) {
+      if (bolterSystem.currentSession && gameState.gold > 0) {
         const finalStats = {
           survivalTime: gameState.score,
           goldEarned: gameState.gold,
@@ -129,7 +155,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       }
       setSessionEnded(true);
     }
-  }, [gameState.gameStatus, sessionEnded, bolterSystem, audio, gameOverAudio, gameState.score, gameState.gold, gameState.enemiesKilled]);
+  }, [gameState.gameStatus, sessionEnded, gameStarted, bolterSystem, audio, gameOverAudio, gameState.score, gameState.gold, gameState.enemiesKilled]);
 
   const handleRestart = useCallback(() => {
     console.log('Quick restart - creating fresh game without saving current session');
@@ -149,8 +175,11 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       }).catch(e => console.log('Background music restart failed:', e));
     }
     
-    // Create completely fresh game state
-    setGameState(createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter'));
+    // Create completely fresh game state and start it immediately
+    const freshState = createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter');
+    freshState.gameStartTime = Date.now(); // Start the timer immediately
+    setGameState(freshState);
+    
     setSessionStats({
       startTime: Date.now(),
       enemiesKilled: 0
@@ -159,8 +188,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     
     // Start fresh session
     bolterSystem.startGameSession();
-  }
-  )
+  }, [bolterSystem, audio, gameOverAudio]);
 
   const handleUpgrade = useCallback((type: keyof PermanentUpgrades, cost: number) => {
     // Check if we have enough total gold (profile + session)
@@ -174,21 +202,31 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
         ...prev,
         gold: prev.gold - cost
       }));
+      // Purchase the upgrade using profile gold (but we already deducted from session)
+      bolterSystem.updateBolterData({
+        totalGold: bolterSystem.bolterData.totalGold + cost, // Add back what we're about to deduct
+        permanentUpgrades: {
+          ...bolterSystem.bolterData.permanentUpgrades,
+          [type]: bolterSystem.bolterData.permanentUpgrades[type] + 1
+        }
+      });
     } else {
       // Deduct what we can from session, rest from profile
       const remainingCost = cost - gameState.gold;
-      bolterSystem.updateBolterData({
-        totalGold: bolterSystem.bolterData.totalGold - remainingCost
-      });
       setGameState(prev => ({
         ...prev,
         gold: 0
       }));
+      bolterSystem.updateBolterData({
+        totalGold: bolterSystem.bolterData.totalGold - remainingCost,
+        permanentUpgrades: {
+          ...bolterSystem.bolterData.permanentUpgrades,
+          [type]: bolterSystem.bolterData.permanentUpgrades[type] + 1
+        }
+      });
     }
     
-    // Purchase the upgrade (this should NOT modify gold)
-    const success = bolterSystem.purchaseUpgrade(type, cost);
-    return success;
+    return true;
   }, [bolterSystem, gameState.gold]);
 
   const handleAcceptSkill = useCallback(() => {
@@ -324,6 +362,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
     
     // Create brand new game state with current upgrades
     const freshGameState = createInitialGameState(bolterSystem.bolterData.permanentUpgrades, 'bolter');
+    freshGameState.gameStartTime = Date.now(); // Start the timer immediately
     console.log('Fresh game state created:', {
       time: freshGameState.time,
       enemies: freshGameState.enemies.length,
@@ -336,6 +375,7 @@ export function Game({ bolterData, bolterSystem, onReturnToMenu }: GameProps) {
       enemiesKilled: 0
     });
     setSessionEnded(false);
+    setGameStarted(true); // Mark game as started
     
     // Start completely new session
     bolterSystem.startGameSession();

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { GameState, createEnemy, createProjectile, createItem, createParticles, findNearestEnemy } from '../utils/gameLogic';
+import { GameState, createEnemy, createProjectile, createItem, createParticles, findNearestEnemy, EnemyType } from '../utils/gameLogic';
 import { circleToCircle, circleToCircleWithRadius, isOffScreen, getDistance, normalize, getRandomSpawnPosition } from '../utils/collision';
 import { GAME_CONFIG } from '../utils/constants';
 import { InputState } from './useInput';
@@ -15,6 +15,7 @@ export function useGameLoop(
 ) {
   const lastTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>();
+  const gameStartedRef = useRef<boolean>(false);
 
   const gameLoop = useCallback((currentTime: number) => {
     // Only update deltaTime if game is actually playing
@@ -54,14 +55,18 @@ export function useGameLoop(
 function updateGameState(state: GameState, deltaTime: number, input: InputState, phaseTransition: any, setPhaseTransition: any): GameState {
   const dt = deltaTime / 1000; // Convert to seconds
   
-  // Update time
-  const newTime = state.time + deltaTime;
+  // Update time - only if game has actually started (gameStartTime is set)
+  let newTime = state.time;
+  if (state.gameStatus === 'playing' && state.gameStartTime > 0) {
+    newTime = state.time + deltaTime;
+  }
   
   // Update mega bolt flash
   const megaBoltFlash = Math.max(0, state.megaBoltFlash - deltaTime);
   
   // Initialize variables that will be used throughout the function
   let lastBossDefeat = state.lastBossDefeat || 0;
+  let finalEnemies: any[] = [];
   
   // Initialize projectiles array early so it can be used throughout the function
   let projectiles = state.projectiles
@@ -124,26 +129,24 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     
     // Boss attacks - only if boss is alive
     if (enemy.type === 'BOSS' && updatedEnemy.hp > 0 && newTime - updatedEnemy.lastAttack > GAME_CONFIG.BOSS_ATTACK_INTERVAL) {
-      console.log('Boss attacking!', newTime, updatedEnemy.lastAttack);
-      const baseAngle = Math.atan2(player.y - updatedEnemy.y, player.x - updatedEnemy.x);
-      const spreadStep = GAME_CONFIG.BOSS_PROJECTILE_SPREAD / (GAME_CONFIG.BOSS_PROJECTILE_COUNT - 1);
-      const startAngle = baseAngle - GAME_CONFIG.BOSS_PROJECTILE_SPREAD / 2;
+      // Boss fires in a full circle pattern
+      const projectileCount = 8; // 8 projectiles in all directions
+      const angleStep = (Math.PI * 2) / projectileCount; // 360 degrees divided by projectile count
       
-      for (let i = 0; i < GAME_CONFIG.BOSS_PROJECTILE_COUNT; i++) {
-        const angle = startAngle + (i * spreadStep);
+      for (let i = 0; i < projectileCount; i++) {
+        const angle = i * angleStep;
         const targetX = updatedEnemy.x + Math.cos(angle) * 500;
         const targetY = updatedEnemy.y + Math.sin(angle) * 500;
         
         const bossProjectile = createProjectile(
           { x: updatedEnemy.x, y: updatedEnemy.y },
           { x: targetX, y: targetY },
-          updatedEnemy.damage
+          Math.floor(updatedEnemy.damage * state.difficultyMultiplier) // Scale with difficulty
         );
         bossProjectile.isBossProjectile = true;
         bossProjectile.size = 8; // Larger boss projectiles
         bossProjectile.sourceEnemyId = updatedEnemy.id; // Track which enemy fired this
         newBossProjectiles.push(bossProjectile);
-        console.log('Created boss projectile', i, 'at angle', angle);
       }
       
       updatedEnemy.lastAttack = newTime;
@@ -270,7 +273,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const items = [...state.items];
   let pendingSkillDrop = state.pendingSkillDrop;
   let enemiesKilled = state.enemiesKilled;
-  let bossWasDefeated = false;
+  const defeatedBosses: { x: number; y: number }[] = [];
   const aliveEnemies = enemies.filter(enemy => {
     if (enemy.hp <= 0) {
       totalEnemiesKilled++;
@@ -278,7 +281,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
       
       // Check if this was a boss
       if (enemy.type === 'BOSS') {
-        bossWasDefeated = true;
+        defeatedBosses.push({ x: enemy.x, y: enemy.y });
       }
       
       // Create death particles
@@ -313,10 +316,43 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return true;
   });
   
-  // Update last boss defeat time if a boss was defeated
-  if (bossWasDefeated) {
+  // Update last boss defeat time and spawn minions for each defeated boss
+  if (defeatedBosses.length > 0) {
     lastBossDefeat = newTime;
   }
+  
+  // Start with alive enemies
+  finalEnemies = [...aliveEnemies];
+  
+  // Spawn boss minions AFTER all other enemy processing
+  defeatedBosses.forEach(bossDeathPosition => {
+    if (bossDeathPosition) {
+      for (let i = 0; i < 4; i++) {
+        const angle = (Math.PI * 2 * i) / 4; // Evenly spaced around circle
+        const spawnDistance = 80; // Distance from boss death position
+        const minionX = bossDeathPosition.x + Math.cos(angle) * spawnDistance;
+        const minionY = bossDeathPosition.y + Math.sin(angle) * spawnDistance;
+        
+        const minion = {
+          id: `boss_minion_${newTime}_${i}_${Math.random()}`,
+          type: 'BOSS_MINION' as EnemyType,
+          x: minionX,
+          y: minionY,
+          hp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * state.enemyHealthMultiplier,
+          maxHp: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.hp * state.enemyHealthMultiplier,
+          speed: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.speed,
+          damage: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.damage,
+          size: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.size,
+          color: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.color,
+          flashUntil: 0,
+          goldDrop: GAME_CONFIG.ENEMY_TYPES.BOSS_MINION.goldDrop,
+          lastAttack: 0
+        };
+        
+        finalEnemies.push(minion);
+      }
+    }
+  });
   
   // Check player-enemy collisions
   let screenShake = Math.max(0, state.screenShake - deltaTime);
@@ -355,14 +391,16 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   }
   
   if (newTime > player.invulnerableUntil) {
-    for (const enemy of aliveEnemies) {
+    for (const enemy of enemies) {
       const collision = circleToCircle(
         { x: player.x, y: player.y, radius: GAME_CONFIG.PLAYER_SIZE / 2 },
         { x: enemy.x, y: enemy.y, radius: enemy.size }
       );
       
       if (collision) {
-        player.hp -= enemy.damage;
+        // Scale enemy contact damage with difficulty to counter high HP builds
+        const scaledDamage = Math.floor(enemy.damage * state.difficultyMultiplier);
+        player.hp -= scaledDamage;
         player.invulnerableUntil = newTime + GAME_CONFIG.PLAYER_INVINCIBILITY_TIME;
         screenShake = GAME_CONFIG.SCREEN_SHAKE_DURATION;
         
@@ -426,8 +464,6 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     return true;
   });
   
-  // Handle Mega Bolt activation
-  let finalEnemies = aliveEnemies;
   let finalMegaBoltFlash = megaBoltFlash;
   
   if (activateMegaBolt) {
@@ -435,7 +471,7 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
     const survivingEnemies = [];
     const destroyedEnemies = [];
     
-    aliveEnemies.forEach(enemy => {
+    finalEnemies.forEach(enemy => {
       if (enemy.type === 'BOSS') {
         survivingEnemies.push(enemy);
       } else {
@@ -487,8 +523,9 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   const timeSinceLastBossDefeat = newTime - lastBossDefeat;
   const inBossDefeatPause = timeSinceLastBossDefeat < GAME_CONFIG.BOSS_DEFEAT_PAUSE;
   
-  if (newTime - lastEnemySpawn > spawnRate && !inBossDefeatPause && !bossAlive && !phaseTransition.active) {
-    aliveEnemies.push(createEnemy(state));
+  // Check if there's currently a boss alive (use filtered enemies)
+  if (!inBossDefeatPause && !bossAlive && newTime - lastEnemySpawn > spawnRate) {
+    finalEnemies.push(createEnemy(state));
     lastEnemySpawn = newTime;
   }
   
@@ -516,8 +553,8 @@ function updateGameState(state: GameState, deltaTime: number, input: InputState,
   
   // Screen scaling at 60 seconds
   let screenScale = state.screenScale;
-  let currentPhase = Math.floor(newTime / 60000) + 1; // Phase 1 at 60s, Phase 2 at 120s, etc.
   let expectedPhase = Math.floor(state.time / 60000) + 1;
+  let currentPhase = Math.floor(newTime / 60000) + 1;
   
   // Check if we've entered a new phase
   if (currentPhase > expectedPhase && !phaseTransition.active) {

@@ -18,12 +18,12 @@ function App() {
   const handleStartGame = () => {
     console.log('Starting game with Bolter');
     setGameStarted(true);
-    setGameKey(prev => prev + 1);
   };
 
   const handleReturnToMenu = () => {
     console.log('Returning to menu');
     setGameStarted(false);
+    setGameKey(prev => prev + 1); // Increment key when returning to menu for fresh restart
   };
 
   if (isLoading) {
